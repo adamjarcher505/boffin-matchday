@@ -1,0 +1,146 @@
+{
+ "cup": {
+  "club": "Arsenal",
+  "rd": 2,
+  "runs": 3,
+  "won": 1,
+  "best": 4,
+  "w": 9,
+  "l": 2
+ },
+ "v": 1,
+ "made": true,
+ "name": "Big Dave",
+ "club": "Arsenal",
+ "xp": 4310,
+ "div": 2,
+ "season": 4,
+ "cw": {
+  "wk": 2967,
+  "gf": 11,
+  "pts": 7
+ },
+ "week": {
+  "pl": 7,
+  "w": 4,
+  "d": 1,
+  "l": 2,
+  "gf": 19,
+  "ga": 12,
+  "pts": 13
+ },
+ "form": [
+  "W",
+  "L",
+  "W",
+  "D",
+  "W"
+ ],
+ "g": {
+  "v2|4-2-6-123456789": [
+   1,
+   0,
+   1,
+   1,
+   0
+  ]
+ },
+ "played": [
+  "v2|4-2-5-123456789",
+  "v2|4-2-6-123456789"
+ ],
+ "album": {
+  "Zlatan Ibrahimovic|81": 1,
+  "Lionel Messi|87": 2,
+  "Raheem Sterling|94": 3,
+  "Santi Cazorla|84": 1,
+  "Christian Benteke|90": 2,
+  "Nicolás Burdisso|81": 3,
+  "Gary Medel|87": 1,
+  "Martín Montoya|91": 2
+ },
+ "recent": [
+  "Zlatan Ibrahimovic|81",
+  "Lionel Messi|87",
+  "Raheem Sterling|94",
+  "Santi Cazorla|84",
+  "Christian Benteke|90",
+  "Nicolás Burdisso|81",
+  "Gary Medel|87",
+  "Martín Montoya|91"
+ ],
+ "grid": {
+  "2026-11-10": {
+   "c": [
+    1,
+    2,
+    null,
+    null,
+    5,
+    null,
+    null,
+    null,
+    9
+   ],
+   "left": 0,
+   "r": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "xp": 60
+  }
+ },
+ "st": {
+  "m": 63,
+  "w": 35,
+  "goals": 171,
+  "deep": 22,
+  "bestDiv": 3,
+  "grids": 9
+ },
+ "sound": true,
+ "salt": 123456789,
+ "note": null,
+ "ts": {
+  "cell": [
+   60,
+   41
+  ],
+  "top": [
+   30,
+   12
+  ]
+ },
+ "hist": [
+  {
+   "s": 1,
+   "d": 0,
+   "to": 1,
+   "pos": 2,
+   "pts": 41,
+   "w": 13,
+   "dr": 2,
+   "l": 4,
+   "gf": 60,
+   "ga": 31
+  }
+ ],
+ "lb": {
+  "fullsq": 14
+ },
+ "kit": true,
+ "owner": "11111111-2222-3333-4444-555555555555",
+ "seen": [
+  "t3",
+  "x10",
+  "ccc1c2",
+  "q5.3"
+ ]
+}

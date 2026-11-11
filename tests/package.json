@@ -1,0 +1,10 @@
+{
+  "name": "boffin-matchday-tests",
+  "private": true,
+  "description": "Dev-only tests for Boffin Matchday. Nothing in this folder ships with the game.",
+  "scripts": {
+    "test": "node --test unit/",
+    "browser": "node browser/run.js",
+    "sim": "node sim/stickers.js"
+  }
+}
