@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1113">
 <title>Boffin Matchday</title>
+<meta name="description" content="The football quiz where you play fixtures, not quizzes. Do you know ball?">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Boffin">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Inter:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -305,6 +313,95 @@ h2{letter-spacing:2.2px}
 .q .score .sc{font-size:28px}
 .q .score{padding:6px 10px}
 @media (max-height:700px){.q .score .sc{font-size:22px}.q .score .nm{font-size:15px}.q .score{padding:4px 10px}.q .pitchwrap{height:104px}}
+
+/* ---- founder & founding members ---- */
+.badge{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:1px;border-radius:3px;padding:2px 5px;margin-left:6px;vertical-align:1px;white-space:nowrap}
+.badge.fd{background:linear-gradient(135deg,#fff1b8,#e0ac3c 45%,#b9821e 70%,#f6d77c);color:#2a1d04;box-shadow:0 0 10px rgba(240,190,80,.35)}
+.badge.fm{border:1px solid #9aa4ae;color:#d3d9df;background:rgba(160,170,180,.08)}
+.who .badge{margin-left:0}
+.fdn{background:linear-gradient(90deg,#ffe7a0,#e3b04b);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600}
+.fcard{position:relative;overflow:hidden;isolation:isolate;border-radius:10px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.fcard.fd{background:radial-gradient(120% 90% at 0% 0%,#5a4415 0%,#2a200b 45%,#141006 100%);border:1px solid #d9a93f;box-shadow:inset 0 0 0 1px rgba(255,220,130,.12),0 8px 30px rgba(217,169,63,.18)}
+.fcard.fm{background:radial-gradient(120% 90% at 0% 0%,#3a4048 0%,#1f2328 50%,#121417 100%);border:1px solid #8f99a4}
+.fcard .fx{position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.13) 45%,transparent 60%);background-size:250% 100%;animation:foil 5s ease-in-out infinite}
+@keyframes foil{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+.fcard .fh,.fcard .ff{display:flex;justify-content:space-between;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase}
+.fcard .fh{font-size:10.5px}.fcard.fd .fh{color:#f2cf6b}.fcard.fm .fh{color:#c9d0d8}
+.fcard .nm{font-family:var(--disp);font-weight:900;font-size:34px;letter-spacing:1px;text-transform:uppercase;line-height:1;margin-top:6px;overflow-wrap:anywhere}
+.fcard.fd .nm{background:linear-gradient(180deg,#fff3c4,#e8b84f 60%,#b8831f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fcard .mt{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.fcard p{margin:6px 0 2px;font-size:13px;color:#d9d3c2;line-height:1.4}
+.fcard .ff{font-size:10px;color:var(--mute);border-top:1px solid rgba(255,255,255,.08);padding-top:8px;margin-top:6px}
+.fcard.fd .ff span:first-child{color:#f2cf6b}
+/* Founder's kit: gold trim across the whole app (founder only, can be switched off in the profile) */
+.kit-gold{--amber:#f1c85a}
+.kit-gold .top{border-bottom-color:transparent;border-image:linear-gradient(90deg,transparent,#e0ac3c,transparent) 1}
+.kit-gold .mark i{background:linear-gradient(180deg,#fff1b8,#d9a032);-webkit-background-clip:text;background-clip:text;color:transparent}
+.kit-gold .btn:not(.line){background:linear-gradient(135deg,#ffe9a8,#e0ac3c 50%,#f6d77c)}
+.kit-gold .score{border-color:#6b5420}
+.kit-gold .score .sc{text-shadow:0 0 14px rgba(241,200,90,.55)}
+.acct{display:flex;flex-direction:column;gap:10px}
+.acct .btn.sm{width:100%}
+.tag.up{color:var(--good);border-color:var(--good)}.tag.dn{color:var(--bad);border-color:var(--bad)}
+
+/* ---- match review ---- */
+.review{display:grid;grid-template-columns:1fr;gap:12px}
+.rvc{display:flex;flex-direction:column;gap:8px;border-left:3px solid var(--line)}
+.rvc.g{border-left-color:var(--good)}.rvc.n{border-left-color:var(--bad)}
+.rvc .o{font-family:var(--mono);font-size:11px}
+.rvc p{margin:0}.rvc .rule{color:var(--mute);font-size:13px}.rvc s{color:var(--bad)}
+.rv{display:flex;flex-direction:column}
+.rv div{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:6px 0 6px 12px;border-top:1px solid var(--line);font-size:13px;position:relative;align-items:baseline}
+.rv div:first-child{border-top:0}
+.rv div::before{content:"";position:absolute;left:0;top:12px;width:5px;height:5px;border-radius:50%;background:var(--mute)}
+.rv div.ok::before{background:var(--good)}.rv div.no::before{background:var(--bad)}
+.rv span{color:var(--mute)}.rv span:last-of-type{text-align:right}.rv .w{color:var(--text);font-weight:600}
+.rv em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--amber)}
+.rv i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--mute)}
+.rv small{grid-column:1/-1;font-family:var(--mono);font-size:10px;color:#5d646d;letter-spacing:.5px}
+
+/* ---- stats ---- */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile b{font-family:var(--disp);font-size:26px;font-weight:800;line-height:1;color:var(--amber);overflow-wrap:anywhere}
+.tile span{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute)}
+.types{display:flex;flex-direction:column}
+.trow{display:grid;grid-template-columns:130px 1fr 44px 48px;gap:10px;align-items:center;padding:6px 0;font-size:13.5px}
+.trow .bar{height:6px}.trow .bar i{width:auto}
+.trow b{font-family:var(--mono);text-align:right}
+.trow em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--mute);text-align:right}
+.hist td,.hist th{white-space:nowrap}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:10.5px;fill:var(--mute)}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--amber);stroke-width:2.5;stroke-linejoin:round}
+.chart .pt{fill:var(--amber)}.chart .now{fill:var(--bg);stroke:var(--amber);stroke-width:2.5}
+
+/* ---- desktop: wider canvas, tabs under the header, dashboard columns ---- */
+@media (min-width:1024px){
+  .app{max-width:1280px}
+  .top{order:-2;padding:14px 28px}
+  .tabs{order:-1;position:static;border-top:0;border-bottom:1px solid var(--line);padding:0 18px;justify-content:flex-start;background:transparent}
+  .tabs div{max-width:none;width:auto;gap:4px}
+  .tab{flex:none;height:46px;padding:0 18px;font-size:16px}
+  .tab.on::after{left:14px;right:14px;top:auto;bottom:-1px}
+  .tab em{top:10px;right:5px}
+  main{padding:24px 28px 40px;gap:18px}
+  .focus main{width:100%;max-width:720px;margin:0 auto}
+  .focus main:has(> .rvwrap){max-width:1180px;display:grid;grid-template-columns:420px minmax(0,1fr);column-gap:28px;row-gap:0;align-content:start}
+  .focus main:has(> .rvwrap) > *{grid-column:1;margin-bottom:16px}
+  .focus main:has(> .rvwrap) > .rvwrap{grid-column:2;grid-row:1 / span 14;display:flex;flex-direction:column;gap:12px}
+  .rvwrap ~ .hd,.rvwrap ~ .hd + .panel{display:none}
+  .dash{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:20px;align-items:start}
+  .dash.two{grid-template-columns:1fr 1fr}
+  .dash .col{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .tiles{grid-template-columns:repeat(8,1fr)}
+  .mini td,.mini th{padding:6px 5px}.mini td:first-child,.mini th:first-child{padding-left:10px}
+  .stk{grid-template-columns:repeat(4,1fr)}
+  .sheet{align-items:center}
+  .sheet .box{border-radius:10px;border:1px solid var(--line);border-top:1px solid var(--amber);max-height:88%;padding:24px}
+  .sheet.topdock{align-items:flex-start;padding-top:8vh}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -316,7 +413,9 @@ h2{letter-spacing:2.2px}
 </div>
 <div id="over"></div>
 <div class="toasts" id="toasts"></div>
+<script src="config.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script>if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => { }));</script>
 </body>
 </html>
