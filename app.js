@@ -94,9 +94,10 @@ const TUNING = {
   logMinSample: 30                       // question log: aggregates only come back once a question has this many answers
 };
 const STICKER_RULES = {
-  paperDeep: 2,                          // paper offer: a league or cup match with at least this many deep cuts (rarity >= deepAt)
+  paperDeep: 1,                          // paper offer: a league or cup match with at least this many deep cuts (rarity >= deepAt)
   deepAt: .7,
-  foilPerfect: 5,                        // foil offer: five from five (or winning a cup tie)
+  paperGoals: 4,                         // ...or this many goals from the five chances
+  foilCupRound: 2,                       // foil offer: five from five, or winning a cup tie from this round on (0 = any tie, 1 = quarter-final...)
   clues: { paper: 3, foil: 2, gold: 1 }, // clues showing at the start
   tries: { paper: 2, foil: 1, gold: 1 },
   goldClueEvery: 6,                      // gold: one more clue every N seconds
@@ -116,7 +117,7 @@ const STICKER_RULES = {
 const KEY = "boffin-matchday-v1";
 const SAVE_V = 2;
 const freshCup = () => ({ club: "", rd: 0, runs: 0, won: 0, best: -1, w: 0, l: 0 });
-const freshStk = () => ({ got: {}, chase: [], tok: 0, dups: 0, offer: null, free: false, pages: {}, n: { off: 0, won: 0, lost: 0 } });
+const freshStk = () => ({ got: {}, chase: [], pick: "", tok: 0, dups: 0, offer: null, free: false, pages: {}, n: { off: 0, won: 0, lost: 0 } });
 const fresh = () => ({ cup: freshCup(), v: SAVE_V, made: false, name: "", club: "Arsenal", xp: 0, div: 0, season: 1, cw: { wk: weekNo(), gf: 0, pts: 0 }, week: { pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }, form: [], g: {}, played: [], album: {}, recent: [], grid: {}, st: { m: 0, w: 0, goals: 0, deep: 0, bestDiv: 0, grids: 0 }, sound: true, salt: Math.floor(Math.random() * 1e9), note: null, ts: {}, hist: [], lb: {}, kit: true, owner: "",
   t: 0, stk: freshStk(), tr: { d: "", n: 0 }, hap: true });
 const MIGRATIONS = {
@@ -205,7 +206,7 @@ function settleSeason() {
   const pos = myPos(leagueTable()), from = S.div;
   if (pos <= 4 && S.div < DIVS.length - 1) S.div++; else if (pos >= 17 && S.div > 0) S.div--;
   S.st.bestDiv = Math.max(S.st.bestDiv, S.div);
-  S.note = { pos, from, to: S.div, pts: S.week.pts };
+  S.note = { pos, from, to: S.div, pts: S.week.pts, s: S.season, w: S.week.w, d: S.week.d, l: S.week.l };
   S.hist = (S.hist || []).concat({ s: S.season, d: from, to: S.div, pos, pts: S.week.pts, w: S.week.w, dr: S.week.d, l: S.week.l, gf: S.week.gf, ga: S.week.ga }).slice(-60);
   S.season++; S.week = fresh().week; S.g = {}; save(true); return true;
 }
@@ -449,12 +450,12 @@ function msg(t, cls) { const m = $("msg"); if (m) { m.textContent = t; m.classNa
 const QV = "v3|";   // question-generator version: ghosts only replay matches built by this version
 function startLeagueMatch() {
   settleSeason(); const opp = nextOpponent(), tier = tierOf(S.div);
-  let seed = QV + S.season + "-" + S.div + "-" + S.week.pl + "-" + S.salt, ghost = null;
+  const fx = QV + S.season + "-" + S.div + "-" + S.week.pl + "-" + S.salt; let seed = fx + (S.ab && S.ab.f === fx && S.ab.n ? "~a" + S.ab.n : ""), ghost = null;
   if (opp.real && opp.g) { const k = Object.keys(opp.g).find(k => k.indexOf(QV) === 0 && !S.played.includes(k) && Array.isArray(opp.g[k]) && opp.g[k].length === 5 && k.split("-")[1] === String(S.div)); if (k) { seed = k; ghost = opp.g[k]; } }
   if (!ghost) seed = freshSeed(seed, tier);
   const r = rngOf(hash("o" + seed + opp.id)), p = Math.max(.2, Math.min(.85, .3 + .05 * S.div + ((opp.s === undefined ? .5 : opp.s) - .5) * .26));
   const oppRes = ghost ? ghost.map(x => x ? 1 : 0) : [0, 1, 2, 3, 4].map(() => r() < p ? 1 : 0);
-  M = { mode: "league", seed, tier, opp, oppRes, ghost: !!ghost, rounds: makeMatch(seed, tier), i: 0, my: [], out: [], xp: 0, picks: [], deep: 0 };
+  M = { mode: "league", fx, seed, tier, opp, oppRes, ghost: !!ghost, rounds: makeMatch(seed, tier), i: 0, my: [], out: [], xp: 0, picks: [], deep: 0 };
   view = "match"; chanceCover();
 }
 /* ============ club cup: your club's questions, against fellow fans of the same club ============ */
@@ -486,14 +487,16 @@ function cupContinue() {
 }
 function cupFullTime() {
   const a = M.my.reduce((s, x) => s + x, 0), b0 = M.oppRes.reduce((s, x) => s + x, 0), coin = a === b0, win = coin ? M.pr() < .5 : a > b0, b = b0, rdName = CUPR[S.cup.rd], pens = M.rounds.length > 5;
-  const lines = [["Chances", M.xp]]; let head, sub;
+  const lines = [["Chances", M.xp - (M.tb || 0)]].concat(M.tb ? [["Theme of the day", M.tb]] : []); let head, sub;
   if (win) { S.cup.w++; if (S.cup.rd === 3) { S.cup.won++; S.cup.best = 4; S.cup.rd = 0; S.cup.runs++; lines.push(["Cup winners", 200]); head = "Cup winners"; sub = "Lift it. Nobody at your club knows more."; } else { S.cup.rd++; S.cup.best = Math.max(S.cup.best, S.cup.rd); lines.push(["Through to the " + CUPR[S.cup.rd].toLowerCase(), 40 + 20 * S.cup.rd]); head = "Through"; sub = "Next up: the " + CUPR[S.cup.rd].toLowerCase() + "."; } }
   else { S.cup.l++; S.cup.best = Math.max(S.cup.best, S.cup.rd); S.cup.rd = 0; S.cup.runs++; lines.push(["Cup run", 10]); head = "Knocked out"; sub = "Out in the " + rdName.toLowerCase() + ". A new run starts from the round of 16."; }
-  const tot = lines.reduce((s, l) => s + l[1], 0); addXp(tot); S.st.goals += a; S.st.deep += M.deep; M.picks.forEach(() => { }); save(true); sfx.whistle();
+  const tot = lines.reduce((s, l) => s + l[1], 0); addXp(tot); S.st.goals += a; S.st.deep += M.deep; logMatch();
+  const offer = stkAfterMatch({ mode: "cup", goals: M.my.slice(0, 5).reduce((x, y) => x + y, 0), round: CUPR.indexOf(rdName), deep: M.deep, perfect: M.my.slice(0, 5).every(x => x), won: win, cupWin: win, final: head === "Cup winners" });
+  save(true); sfx.whistle();
   const lv = levelOf(S.xp), l0 = levelAt(lv - 1), l1 = levelAt(lv); view = "ft";
-  SHARE = `BOFFIN CLUB CUP · ${S.club} · ${rdName}\n${S.name || "Me"} ${a}–${b} ${M.opp.name}${pens ? " (pens)" : ""}\n${pips(M.my)}\n${head === "Cup winners" ? "🏆 CUP WINNERS. Biggest " + S.club + " brain going." : head === "Through" ? "Through to the " + CUPR[S.cup.rd].toLowerCase() + " ✅" : "Knocked out ❌"}\nThink you know ${S.club} better? ${SHARE_URL}`;
+  SHARE = shareCup({ a, b, opp: M.opp.name, round: rdName, my: M.my, pens, win, out: head === "Cup winners" ? "won" : win ? "through" : "out", next: win && head !== "Cup winners" ? CUPR[S.cup.rd] : "" });
   $("main").innerHTML = `<div class="panel ft"><span class="eyebrow">Club Cup · ${esc(S.club)} · ${esc(rdName)}</span><div class="res ${win ? "W" : "L"}">${esc(head)}</div><p class="note">${a}–${b}${pens ? " after penalties" : ""}${coin ? ", settled on a coin toss" : ""}. ${esc(sub)}</p></div>
-  <div class="vidi" id="vidi"></div>
+  <div class="vidi" id="vidi"></div>${offer}
   <div class="panel pad"><div class="lines">${lines.map(l => `<div><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`).join("")}<div class="tot"><span>XP</span><b>+${tot}</b></div></div><div style="margin-top:10px"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(l1 - S.xp)}</b> XP to level ${lv + 1}</span></div><div class="bar" style="margin-top:6px"><i id="xpb"></i></div></div></div>
   <div class="panel pad"><div class="statline"><span>Cups won <b>${S.cup.won}</b></span><span>Cup ties <b>${S.cup.w}W ${S.cup.l}L</b></span><span>Best <b>${S.cup.best >= 4 ? "Winners" : S.cup.best >= 0 ? CUPR[S.cup.best] : "—"}</b></span></div></div>
   <button class="btn" data-act="cup">${win && head !== "Cup winners" ? "Play the " + CUPR[S.cup.rd].toLowerCase() : "Start a new cup run"}</button>${shareBtns()}<button class="btn line" data-act="go" data-v="home">Home</button>
@@ -545,7 +548,9 @@ function vidi(el, text) { let k = 0; el.innerHTML = '<span class="cur"></span>';
 function endChance() {
   if (!M || !M.live) return; M.live = false; cancelAnimationFrame(raf); document.getElementById("app").classList.remove("q");
   const run = M.run, res = run.end(), spec = curSpec(), T = TYPES[spec.type], q = $("q"); if (q) q.blur();
-  M.my.push(res.goal ? 1 : 0); M.xp += res.xp; if (res.deep) M.deep++;
+  const bonus = themeHit(spec, res) ? Math.round(res.xp * TUNING.themeBonus) : 0;
+  (M.tt = M.tt || []).push(Math.round((Date.now() - (M.t0 || Date.now())) / 100) / 10);
+  M.my.push(res.goal ? 1 : 0); M.xp += res.xp + bonus; M.tb = (M.tb || 0) + bonus; if (res.deep) M.deep++; buzz(res.goal ? [30, 40, 60] : 70);
   let newN = 0; (run.picks || []).forEach(i => { M.picks.push(i); if (addAlbum(i)) newN++; });
   M.out.push({ n: T.n, goal: res.goal, title: run.title || "" });
   M.rev = (M.rev || []).concat({ n: T.n, rule: run.rule || T.rule, goal: res.goal, html: res.html, after: res.after || (run.review ? run.review() : "") });
@@ -553,10 +558,10 @@ function endChance() {
   let pb = false; if (M.long) { const n = longCount(run); if (n > (S.lb[M.long] || 0)) { S.lb[M.long] = n; pb = n > 0; } }
   if (res.goal) sfx.goal(); else sfx.no();
   const train = M.mode === "train", og = train ? 0 : M.oppRes[M.i], a = M.my.reduce((s, x) => s + x, 0), b = train ? 0 : M.oppRes.slice(0, M.i + 1).reduce((s, x) => s + x, 0);
-  if (train) addXp(M.long ? 10 + Math.round(res.xp * .6) : res.goal ? 12 : 2);
+  if (train) addXp(trainXp((M.long ? 10 + Math.round(res.xp * .6) : res.goal ? TUNING.trainGoalXp : TUNING.trainMissXp) + bonus));
   const last = !train && M.i === M.rounds.length - 1;
   $("main").innerHTML = `<div class="board">${scoreHTML()}</div>
-  <div class="verdict ${res.goal ? "goal" : "nogoal"}"><div class="big">${M.long ? (res.goal ? "Full house" : "Final whistle") : res.goal ? "Goal" : M.timeout && !res.goal ? "Time's up" : "No goal"}</div>${res.html}${pb ? "<p><b>New personal best.</b></p>" : ""}${M.timeout && !res.goal && !M.long ? `<p>${esc(pickR(SAY.slow))}</p>` : ""}${newN ? `<p>${newN} new ${newN === 1 ? "name" : "names"} for the album.</p>` : ""}</div>
+  <div class="verdict ${res.goal ? "goal" : "nogoal"}"><div class="big">${M.long ? (res.goal ? "Full house" : "Final whistle") : res.goal ? "Goal" : M.timeout && !res.goal ? "Time's up" : "No goal"}</div>${res.html}${pb ? "<p><b>New personal best.</b></p>" : ""}${bonus ? `<p class="tb">Theme of the day: +${bonus} XP</p>` : ""}${M.timeout && !res.goal && !M.long ? `<p>${esc(pickR(SAY.slow))}</p>` : ""}${newN ? `<p>${newN} new ${newN === 1 ? "name" : "names"} for the album.</p>` : ""}</div>
   ${res.after ? `<div>${res.after}</div>` : ""}
   ${train ? "" : `<div class="vidi" id="vidi"></div>`}
   <button class="btn" data-act="cont">${last ? "Full time" : train ? "Next one" : "Next chance"}</button>${train ? `<button class="btn line" data-act="quit">Finish training</button>` : ""}`;
@@ -577,25 +582,28 @@ function reviewHTML() {
 }
 function fullTime() {
   const a = M.my.reduce((s, x) => s + x, 0), b = M.oppRes.reduce((s, x) => s + x, 0), res = a > b ? "W" : a < b ? "L" : "D";
-  const before = myPos(leagueTable());
+  const rowsB = leagueTable(), before = myPos(rowsB);
   const w = S.week; w.pl++; w.gf += a; w.ga += b; if (res === "W") { w.w++; w.pts += 3; } else if (res === "D") { w.d++; w.pts++; } else w.l++;
   const cw = cwNow(); cw.gf += a; cw.pts += res === "W" ? 3 : res === "D" ? 1 : 0;
   S.form = S.form.concat(res).slice(-5); S.g[M.seed] = M.my.slice(); const gk = Object.keys(S.g); while (gk.length > 8) delete S.g[gk.shift()]; S.played = S.played.concat(M.seed).slice(-60);
   S.st.m++; if (res === "W") S.st.w++; S.st.goals += a; S.st.deep += M.deep;
-  const lines = [["Chances", M.xp], [res === "W" ? "Win" : res === "D" ? "Draw" : "Turning up", res === "W" ? 60 : res === "D" ? 25 : 10]]; if (res === "W" && b === 0) lines.push(["Clean sheet", 20]); if (a === 5) lines.push(["Five from five", 40]);
+  const lines = [["Chances", M.xp - (M.tb || 0)]].concat(M.tb ? [["Theme of the day", M.tb]] : []).concat([[res === "W" ? "Win" : res === "D" ? "Draw" : "Turning up", res === "W" ? 60 : res === "D" ? 25 : 10]]); if (res === "W" && b === 0) lines.push(["Clean sheet", 20]); if (a === 5) lines.push(["Five from five", 40]);
   const tot = lines.reduce((s, l) => s + l[1], 0); addXp(tot);
-  const after = myPos(leagueTable()), divName = DIVS[S.div], pl = w.pl, pts = w.pts, ended = settleSeason(); save(true); sfx.whistle();
+  const rowsA = leagueTable(), after = myPos(rowsA), around = aroundYou(rowsB, rowsA), divName = DIVS[S.div], pl = w.pl, pts = w.pts, ended = settleSeason();
+  S.ab = null; logMatch();
+  const offer = stkAfterMatch({ mode: "league", goals: a, deep: M.deep, perfect: a === 5 && M.my.length === 5, won: res === "W", promoted: ended && S.note.to > S.note.from });
+  save(true); sfx.whistle();
   const sp = n => n >= 4 ? ` (${WORDS[n]})` : "", lv = levelOf(S.xp), l0 = levelAt(lv - 1), l1 = levelAt(lv);
   view = "ft";
-  SHARE = `BOFFIN MATCHDAY · ${divName}\n${S.name || "Me"} ${a}–${b} ${M.opp.name} ${res === "W" ? "✅" : res === "D" ? "🤝" : "❌"}\n${pips(M.my)}\nLevel ${levelOf(S.xp)} · ${S.club} fan\nDo you know ball? ${SHARE_URL}`;
+  SHARE = shareLeague({ a, b, res, opp: M.opp.name, div: divName, my: M.my, before, after, pl, pts });
   $("main").innerHTML = `<div class="panel ft"><span class="eyebrow">Full time · ${esc(divName)}</span><div class="res ${res}">${res === "W" ? "Won" : res === "D" ? "Drew" : "Lost"} ${a}–${b}</div><p class="note">${esc(pickR(SAY[res]))}</p></div>
-  <div class="vidi" id="vidi"></div>
+  <div class="vidi" id="vidi"></div>${offer}
   <div class="panel pad"><div class="lines">${lines.map(l => `<div><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`).join("")}<div class="tot"><span>XP</span><b>+${tot}</b></div></div><div style="margin-top:10px"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(l1 - S.xp)}</b> XP to level ${lv + 1}</span></div><div class="bar" style="margin-top:6px"><i id="xpb"></i></div></div></div>
   <div class="panel pad"><div class="statline"><span>${esc(divName)} · ${pl} of ${SEASON} played</span><span><b>${ord(after)}</b> of 20${after < before ? " · up " + (before - after) : after > before ? " · down " + (after - before) : ""}</span><span><b>${pts}</b> pts</span></div></div>
-  ${ended ? `<div class="panel pad" style="border-color:var(--amber)"><span class="eyebrow" style="color:var(--amber)">Season over</span><p class="note" style="margin-top:6px">${noteText()}</p></div>` : ""}
+  ${ended ? seasonEndHTML(S.note) : ""}
   <button class="btn" data-act="kick">${ended ? "Start the new season" : "Next fixture"}</button>${shareBtns()}<div class="row"><button class="btn line" data-act="go" data-v="league">Table</button><button class="btn line" data-act="go" data-v="home">Home</button></div>
   ${reviewHTML()}<div class="hd"><h2>How it went</h2></div><div class="panel pad"><div class="recap">${M.out.map((o, k) => `<div><span class="m">${MINS[k]}'</span><span>${esc(o.n)}${o.title ? " · " + esc(o.title) : ""}</span><span class="o ${o.goal ? "g" : "n"}">YOU ${o.goal ? "SCORED" : "MISSED"} · THEY ${M.oppRes[k] ? "SCORED" : "MISSED"}</span></div>`).join("")}</div></div>`;
-  vidi($("vidi"), `FT  ${(S.name || "YOU")} ${a}${sp(a)}  ${M.opp.name} ${b}${sp(b)}`);
+  vidi($("vidi"), `FT  ${(S.name || "YOU")} ${a}${sp(a)}  ${M.opp.name} ${b}${sp(b)}` + (around.length ? "\n" + around.join("\n") : ""));
   requestAnimationFrame(() => { const x = $("xpb"); if (x) x.style.width = Math.max(2, Math.min(100, (S.xp - l0) / (l1 - l0) * 100)) + "%"; });
   window.scrollTo(0, 0);
 }
@@ -629,7 +637,7 @@ function renderGrid() {
   let h = `<div class="hd"><h2>Daily Grid No. ${gridNo()}</h2><span class="eyebrow">${done ? "Finished" : g.left + " guesses left"}</span></div><div class="grid"><div></div>${GRID.cols.map(c => `<div class="gh">${esc(catLabel(c))}</div>`).join("")}`;
   GRID.rows.forEach((a, ri) => { h += `<div class="gh">${esc(catLabel(a))}</div>`; GRID.cols.forEach((b, ci) => { const k = ri * 3 + ci, v = g.c[k]; h += v ? `<div class="gc done"><b>${esc(v.split("|")[0])}</b><span>${g.r[k]}% obscure</span></div>` : done ? `<div class="gc"><span style="color:var(--mute)">${esc((x => x.length ? PL[x[0]][0] : "")(validSet(a, b)))}</span></div>` : `<button class="gc open" data-act="cell" data-v="${k}" aria-label="${esc(catLabel(a))} and ${esc(catLabel(b))}"><span class="plus">+</span></button>`; }); });
   h += `</div><p class="note">One player per square, nine guesses, nobody twice. Clubs count from 1992 where the records reach; the more obscure the answer, the better the score.</p>`;
-  if (done) h += `<div class="panel pad"><div class="statline"><span><b>${got}</b> of 9</span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span></div></div><button class="btn" data-act="sharegrid">Copy result</button><p class="note">Greyed squares show the answer most people would have given. A new grid lands at midnight.</p>`;
+  if (done) h += `<div class="panel pad"><div class="statline"><span><b>${got}</b> of 9</span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span></div></div><div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the answer most people would have given. A new grid lands at midnight.</p>`;
   $("main").innerHTML = h;
 }
 
@@ -641,17 +649,17 @@ function chrome() {
   document.body.classList.toggle("kit-gold", badgeOf(me) === "fd" && S.kit !== false);
   const g = S.grid[dayKey()], gridOpen = !g || (g.left > 0 && !g.c.every(x => x));
   $("tabs").innerHTML = [["home", "Matchday"], ["league", "League"], ["grid", "Grid"], ["album", "Album"]].concat(wide() ? [["stats", "Stats"]] : []).map(t => `<button class="tab ${view === t[0] ? "on" : ""}" data-act="go" data-v="${t[0]}">${t[1]}${t[0] === "grid" && gridOpen ? "<em></em>" : ""}</button>`).join("");
-  document.getElementById("app").classList.toggle("focus", view === "match" || view === "ft");
-  if (view !== "match") document.getElementById("app").classList.remove("q");
+  document.getElementById("app").classList.toggle("focus", view === "match" || view === "ft" || view === "stk");
+  if (view !== "match" && view !== "stk") document.getElementById("app").classList.remove("q");
 }
 const noteText = () => S.note ? `You finished <b>${ord(S.note.pos)}</b> with ${S.note.pts} points. ${S.note.to > S.note.from ? "Promoted to <b>" + esc(DIVS[S.note.to]) + "</b>. Onwards." : S.note.to < S.note.from ? "Relegated to <b>" + esc(DIVS[S.note.to]) + "</b>. It happens to the best of them." : "You stay in <b>" + esc(DIVS[S.note.to]) + "</b>."}` : "";
 function countdown() { const left = (7 - daysIn()) * 24; return left >= 24 ? Math.floor(left / 24) + "d " + Math.floor(left % 24) + "h" : Math.floor(left) + "h " + pad(Math.floor(left * 60 % 60)) + "m"; }
 function renderHome() {
   const rows = leagueTable(), pos = myPos(rows), opp = nextOpponent(), lv = levelOf(S.xp), l0 = levelAt(lv - 1), l1 = levelAt(lv);
   const fourth = rows[3], gap = pos <= 4 ? 0 : fourth.pts - S.week.pts, g = S.grid[dayKey()], gdone = g && (g.left <= 0 || g.c.every(x => x));
-  const zone = S.div < DIVS.length - 1 && pos <= 4 ? "In the promotion places" : S.div > 0 && pos >= 17 ? "In the drop zone" : S.div < DIVS.length - 1 ? gap + " pts off promotion" : "Top division";
+  const zone = S.div < DIVS.length - 1 && pos <= 4 ? "In the promotion places" : S.div > 0 && pos >= 17 ? "In the drop zone" : S.div < DIVS.length - 1 ? (gap > 0 ? gap + (gap === 1 ? " pt" : " pts") + " off promotion" : "Level on points with 4th") : "Top division";
   const pNote = `${S.note ? `<div class="panel pad" style="border-color:var(--amber)"><span class="eyebrow" style="color:var(--amber)">Last season</span><p class="note" style="margin-top:6px">${noteText()}</p><button class="linkb" data-act="clearnote">Dismiss</button></div>` : ""}`;
-  const pFix = `<div class="panel fix"><div class="statline"><span>${esc(DIVS[S.div])} · Season ${S.season}</span><span>Match <b>${S.week.pl + 1}</b> of ${SEASON}</span></div>
+  const pFix = `<div class="panel fix${runIn() ? " fday" : ""}">${runIn() ? `<div class="fdtag">${runInLabel()}</div>` : ""}<div class="statline"><span>${esc(DIVS[S.div])} · Season ${S.season}</span><span>Match <b>${S.week.pl + 1}</b> of ${SEASON}</span></div>
    <div class="vs"><div class="t">${esc(S.name || "You")}<small>${esc(S.club)} · ${ord(pos)}</small></div><div class="v">v</div><div class="t">${esc(opp.name)}<small>${opp.real ? "REAL PLAYER" : "HOUSE SIDE"} · ${ord(rows.findIndex(r => r.id === opp.id) + 1)}</small></div></div>
    <button class="btn" data-act="kick">Kick off<small>Five chances each. About 90 seconds.</small></button>
    <div class="statline"><span class="form">${S.form.length ? S.form.map(f => `<i class="${f}">${f}</i>`).join("") : "<span>No form yet</span>"}</span><span><b>${zone}</b></span></div></div>`;
@@ -662,10 +670,11 @@ function renderHome() {
   <div class="panel list">${Object.keys(TYPES).map((k, i) => `<button class="li" data-act="train" data-v="${k}"><span class="k">${pad(i + 1)}</span><span class="tx"><b>${TYPES[k].n}</b><span>${({ cell: "Two categories, one player.", top: "Top scorers, record signings, most appearances.", xi: "Real line-ups with names blanked out.", mates: "Find the team-mate two players share.", career: "A list of clubs. Name the player.", hl: "Which transfer cost more?", season: "A final table. Which year?", squad: "One club, one season. Name the squad.", odd: "Three played there. One never did.", race: "Goals, appearances, fees. Who had more?", champ: "Who finished where, season by season." })[k]}</span></span><span class="go">›</span></button>`).join("")}</div>`;
   const pLevel = `<div class="panel pad"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(S.xp)}</b> XP · ${fmt(l1 - S.xp)} to level ${lv + 1}</span></div><div class="bar" style="margin-top:8px"><i style="width:${Math.max(2, (S.xp - l0) / (l1 - l0) * 100).toFixed(1)}%"></i></div></div>`;
   const pFoot = `<p class="foot">${fmt(PL.length)} PLAYERS · ${fmt(BD.xi.length)} LINE-UPS · ${fmt(BD.lists.length)} TOP TENS · ${fmt(BD.tables.length)} FINAL TABLES<br>${Net.ready && !Net.readonly ? "CONNECTED · YOUR RESULTS COUNT IN THE SHARED TABLES" : "PLAYING LOCALLY ON THIS DEVICE"}</p>`;
-  if (!wide()) { $("main").innerHTML = pNote + pFix + cupCard() + pOff + pGrid + pTrain + pLevel + pFoot; return; }
+  const pTheme = themeBanner(), pStk = stkHomeCard();
+  if (!wide()) { $("main").innerHTML = pNote + pFix + pStk + pTheme + cupCard() + pOff + pGrid + pTrain + pLevel + pFoot; return; }
   const pLong = `<div class="hd"><h2>Extra time</h2><span class="eyebrow">Long-form · PC only</span></div><div class="panel list">${Object.keys(LONG).map((k, i) => `<button class="li" data-act="long" data-v="${k}"><span class="k">ET${i + 1}</span><span class="tx"><b>${LONG[k].n}</b><span>${LONG[k].d}${S.lb[k] ? " Best: " + S.lb[k] + "." : ""}</span></span><span class="go">›</span></button>`).join("")}</div>`;
-  const pTable = `<div class="hd"><h2>${esc(DIVS[S.div])}</h2><button class="linkb" data-act="go" data-v="league">Full table</button></div>${tableHTML(rows, true)}`;
-  $("main").innerHTML = `${pNote}<div class="dash"><div class="col">${pFix}${cupCard()}${pGrid}${pOff}${pLevel}</div><div class="col">${pTable}</div><div class="col">${pLong}${pTrain}</div></div>${pFoot}`;
+  const pTable = `<div class="hd"><h2>${esc(DIVS[S.div])}</h2><button class="linkb" data-act="go" data-v="league">Full table</button></div>${stakesHTML(rows)}${tableHTML(rows, true)}`;
+  $("main").innerHTML = `${pNote}<div class="dash"><div class="col">${pFix}${pStk}${pTheme}${cupCard()}${pGrid}${pOff}${pLevel}</div><div class="col">${pTable}</div><div class="col">${pLong}${pTrain}</div></div>${pFoot}`;
 }
 function tableHTML(rows, mini) {
   const up = S.div < DIVS.length - 1, down = S.div > 0, full = !mini && wide();
@@ -676,13 +685,10 @@ function renderLeague() {
   const rows = leagueTable(), up = S.div < DIVS.length - 1, down = S.div > 0;
   let body;
   if (leagueTab === "table") {
-    body = `${tableHTML(rows)}
+    body = `${stakesHTML(rows)}${tableHTML(rows)}
     <p class="note">A season is ${SEASON} matches: you play everyone once. <b>House sides</b> fill the places real players haven't taken yet, and play a match every time you do.</p>`;
   } else {
-    const by = {}; Net.rows.filter(r => r && r.w === weekNo() && r.id !== Net.uid && r.c).map(r => ({ c: r.c, gf: r.cg, p: r.cp })).concat([{ c: S.club, gf: cwNow().gf, p: cwNow().pts, me: true }]).forEach(r => { const k = String(r.c).slice(0, 30); by[k] = by[k] || { c: k, fans: 0, gf: 0, pts: 0, me: false }; by[k].fans++; by[k].gf += r.gf | 0; by[k].pts += r.p | 0; if (r.me) by[k].me = true; });
-    const cw = Object.values(by).sort((a, b) => b.gf - a.gf || b.pts - a.pts);
-    body = `<div class="panel"><table><tr><th>#</th><th>Club Wars · this week</th><th>FANS</th><th>PTS</th><th>GOALS</th></tr>${cw.map((r, i) => `<tr class="${r.me ? "me" : ""}"><td>${i + 1}</td><td>${esc(r.c)}${r.me ? '<span class="tag me">YOURS</span>' : ""}</td><td>${r.fans}</td><td>${r.pts}</td><td>${r.gf}</td></tr>`).join("")}</table></div>
-    <p class="note">Every goal you score counts for <b>${esc(S.club)}</b>. ${cw.length < 2 ? "You're the only fan on the board so far. It fills up as others sign on." : "Real fans only on this one. No house sides."} Resets in ${countdown()}.${Net.ready ? "" : " You're playing locally, so only your own club shows here."}</p>`;
+    body = warsHTML();
   }
   $("main").innerHTML = `<div class="seg"><button class="${leagueTab === "table" ? "on" : ""}" data-act="ltab" data-v="table">League table</button><button class="${leagueTab === "wars" ? "on" : ""}" data-act="ltab" data-v="wars">Club Wars</button></div>${body}
   <div class="hd"><h2>The pyramid</h2></div><div class="panel list">${DIVS.map((d, i) => i).reverse().map(i => `<div class="li"><span class="k">${pad(i + 1)}</span><span class="tx"><b style="${i === S.div ? "color:var(--amber)" : i > S.div ? "color:var(--mute)" : ""}">${esc(DIVS[i])}</b><span>${i === S.div ? "You are here" : i === 7 ? "The summit" : ["Kind questions, famous names", "Still the household names", "The big clubs, fewer gimmes", "Sterner tests begin", "Cult heroes start appearing", "Deep squads, tighter margins", "Obscure and proud of it"][i]}</span></span></div>`).join("")}</div>`;
@@ -693,14 +699,15 @@ const RARN = ["Household name", "Squad regular", "Cult hero"];
 function cardHTML(i, n) { const p = PL[i]; return `<div class="panel card r${rarOf(i)}"><div class="nm">${esc(p[0])}</div><div class="mt">${POSN[p[2]]}${p[1] >= 0 ? " · " + esc(NAT[p[1]]) : ""}${p[3] > 0 ? " · '" + pad(p[3] % 100) : ""}</div><div class="cl">${clubsOf(i).slice(0, 5).map(c => esc(CLUB[c])).join(", ")}</div><div class="rr">${RARN[rarOf(i)]}${n > 1 ? " ×" + n : ""}</div></div>`; }
 let albumClub = "";
 function renderAlbum() {
+  if (albumTab === "stk") { renderStickers(); return; }
   const keys = Object.keys(S.album), idx = keys.map(k => KEY2IDX[k]).filter(i => i !== undefined), cult = idx.filter(i => rarOf(i) === 2).length;
   let list, head;
   if (albumClub !== "") { const c = +albumClub; list = idx.filter(i => hasClub(i, c)).sort((a, b) => a - b); head = `${esc(CLUB[c])}: ${list.length} of ${fmt(clubPl[c].length)}`; }
   else { list = S.recent.map(k => KEY2IDX[k]).filter(i => i !== undefined); head = "Latest names"; }
-  $("main").innerHTML = `${founderCard()}<div class="counts"><div class="panel ct"><b>${fmt(idx.length)}</b><span>Collected</span></div><div class="panel ct"><b>${fmt(PL.length)}</b><span>In the book</span></div><div class="panel ct"><b>${cult}</b><span>Cult heroes</span></div></div>
+  $("main").innerHTML = `${albumSeg()}${founderCard()}<div class="counts"><div class="panel ct"><b>${fmt(idx.length)}</b><span>Collected</span></div><div class="panel ct"><b>${fmt(PL.length)}</b><span>In the book</span></div><div class="panel ct"><b>${cult}</b><span>Cult heroes</span></div></div>
   <label class="field" for="ac">Show<select id="ac"><option value="">Latest names</option>${BD.gridClubs.map(c => `<option value="${c}" ${String(c) === albumClub ? "selected" : ""}>${esc(CLUB[c])}</option>`).join("")}</select></label>
   <div class="hd"><h2>${head}</h2></div>
-  ${list.length ? `<div class="stk">${list.slice(0, 80).map(i => cardHTML(i, S.album[pkey(i)])).join("")}</div>` : `<div class="panel pad"><p class="note">${idx.length ? "None from here yet." : "Empty for now. Every player you name correctly, in a match, the grid or training, goes in the album. The obscure ones are worth the most."}</p></div>`}`;
+  ${list.length ? `<div class="stk">${list.slice(0, 80).map(i => cardHTML(i, S.album[pkey(i)])).join("")}</div>` : `<div class="panel pad"><p class="note">${idx.length ? "None from here yet." : "Empty for now. Every player you name correctly, in a match, the grid or training, goes in this log. The obscure ones are worth the most."}</p></div>`}`;
 }
 function renderStats() {
   const st = S.st, ts = S.ts || {}, hist = S.hist || [], got = Object.keys(S.album).length;
@@ -727,15 +734,16 @@ function renderStats() {
   <p class="foot">Per-type stats and season history started recording on 11 November 2026.</p>`;
 }
 function render() { settleSeason(); chrome(); if (view === "stats" && !wide()) view = "home"; if (view === "home") renderHome(); else if (view === "stats") renderStats(); else if (view === "league") renderLeague(); else if (view === "grid") renderGrid(); else if (view === "album") renderAlbum(); window.scrollTo(0, 0); }
+const IOS_APP = navigator.standalone === true;   // installed to an iPhone home screen: Google's redirect lands in Safari, so offer the email code only
 function accountHTML() {
   if (!Net.canSignIn()) return "";
-  if (Net.uid) return `<div class="panel pad acct"><span class="eyebrow">Account</span><p class="note">Signed in as <b>${esc(Net.email)}</b>. Your progress saves to your account and follows you to any device.</p><button type="button" class="linkb" data-act="signout">Sign out</button></div>`;
+  if (Net.uid) return `<div class="panel pad acct"><span class="eyebrow">Account</span><p class="note">Signed in as <b>${esc(Net.email)}</b>. Your progress saves to your account and follows you to any device.</p><div class="row"><button type="button" class="btn line sm" data-act="signout">Sign out</button><button type="button" class="btn line sm" data-act="delacct">Delete account</button></div><p class="msg" id="amsg"></p></div>`;
   return `<div class="panel pad acct"><span class="eyebrow">${S.made ? "Save your progress" : "Already signed up?"}</span><p class="note">${S.made ? "Sign in to keep your level, division and album safe, and carry on from any device." : "Sign in and your progress comes with you."}</p>
-  ${CFG.google ? '<button type="button" class="btn line sm gbtn" data-act="google">Continue with Google</button>' : ""}
+  ${CFG.google && !IOS_APP ? '<button type="button" class="btn line sm gbtn" data-act="google">Continue with Google</button>' : ""}
   <label class="field" for="em">Email<input id="em" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc(Net.pending)}"></label>
   <button type="button" class="btn line sm" data-act="sendcode">Email me a code</button>
   <div id="codebox" ${Net.pending ? "" : "hidden"}><label class="field" for="otp">6-digit code from the email<input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></label><button type="button" class="btn sm" data-act="verify" style="margin-top:8px">Sign in</button></div>
-  <p class="msg" id="amsg"></p></div>`;
+  <p class="msg" id="amsg"></p><p class="note priv">We keep your email only so you can sign in. No marketing, no mailing lists, never sold. Delete your account any time from here.</p></div>`;
 }
 function profileSheet(first) {
   const clubs = CLUBS_PICK.map(c => CLUB[c]).sort();
@@ -745,7 +753,7 @@ function profileSheet(first) {
   <label class="field" for="cl">Your club<select id="cl">${clubs.map(c => `<option ${c === S.club ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
   <button class="btn" type="submit">${first ? "Sign the forms" : "Save"}</button>
   ${accountHTML()}
-  ${first ? "" : `<div class="row"><button type="button" class="btn line sm" data-act="sound">Sound ${S.sound ? "on" : "off"}</button>${badgeOf(meB()) === "fd" ? `<button type="button" class="btn line sm" data-act="kit">Founder's kit ${S.kit !== false ? "on" : "off"}</button>` : ""}<button type="button" class="btn line sm" data-act="closeover">Close</button></div><button type="button" class="linkb" data-act="reset">Reset everything</button>`}</form></div>`;
+  ${first ? "" : `<div class="row"><button type="button" class="btn line sm" data-act="sound">Sound ${S.sound ? "on" : "off"}</button>${navigator.vibrate ? `<button type="button" class="btn line sm" data-act="hap">Buzz ${S.hap !== false ? "on" : "off"}</button>` : ""}${badgeOf(meB()) === "fd" ? `<button type="button" class="btn line sm" data-act="kit">Founder's kit ${S.kit !== false ? "on" : "off"}</button>` : ""}<button type="button" class="btn line sm" data-act="closeover">Close</button></div><button type="button" class="linkb" data-act="reset">Reset everything</button>`}</form></div>`;
   $("pf").addEventListener("submit", e => { e.preventDefault(); const ae = document.activeElement && document.activeElement.id; if (ae === "em") { acctAct("sendcode"); return; } if (ae === "otp") { acctAct("verify"); return; } const n = $("nm").value.trim().slice(0, 16); S.name = n || "Unnamed Trialist"; S.club = $("cl").value; S.made = true; $("over").innerHTML = ""; save(true); render(); });
 }
 function cellSheet(k) {
@@ -755,6 +763,7 @@ function cellSheet(k) {
   const q = $("q"); try { q.focus(); } catch (e) { }
 }
 function confirmSheet(title, text, yes, fn) { $("over").innerHTML = `<div class="sheet"><div class="box"><h1>${esc(title)}</h1><p class="note">${esc(text)}</p><div class="row"><button class="btn line" data-act="closeover">Cancel</button><button class="btn" id="yes">${esc(yes)}</button></div></div></div>`; $("yes").addEventListener("click", () => { $("over").innerHTML = ""; fn(); }); }
+function abandonMatch() { if (M && M.mode === "league") { if (M.ghost) S.played = S.played.concat(M.seed).slice(-60); S.ab = { f: M.fx, n: ((S.ab && S.ab.f === M.fx ? S.ab.n : 0) | 0) + 1 }; } quitMatch(); }
 function quitMatch() { cancelAnimationFrame(raf); if (M) M.live = false; M = null; view = "home"; save(true); render(); }
 
 /* ============ events ============ */
@@ -769,6 +778,7 @@ async function acctAct(act) {
       Net.pending = em; $("codebox").hidden = false; am("Code sent to " + em + ". Check your inbox (and junk). Type the code here, or tap the link in the email."); try { $("otp").focus(); } catch (e) { }
     }
     else if (act === "verify") { const code = ($("otp").value || "").replace(/\D/g, ""); if (code.length < 6) { am("The code is 6 digits."); return; } am("Checking…"); const err = await Net.verifyCode(Net.pending, code); if (err) am("That code didn't work. Check it or send a new one."); else Net.pending = ""; }
+    else if (act === "delacct") { confirmSheet("Delete your account?", "Your account, your saved progress online and your place in the shared tables go for good, badges included. This can't be undone. Progress on this device stays unless you also reset it.", "Delete it", async () => { try { toast("Deleting…"); await Net.deleteAccount(); S.owner = ""; save(); Net.signedOut(); toast("Account deleted. Gone, like a free transfer."); } catch (e) { toast(/not find|does not exist|PGRST/i.test((e && e.message) || "") ? "Deleting accounts isn't switched on yet. Try again soon." : "Couldn't delete it just now. Check your signal and try again."); } }); }
     else if (act === "signout") { await Net.signOut(); toast("Signed out. Progress stays on this device."); }
   } catch (e) { am("Something went wrong. Check your connection and try again."); }
 }
@@ -787,7 +797,7 @@ document.addEventListener("click", e => {
   else if (act === "kick") { if (!S.made) { profileSheet(true); return; } startLeagueMatch(); }
   else if (act === "train") startTraining(v);
   else if (act === "long") startLong(v);
-  else if (act === "google" || act === "sendcode" || act === "verify" || act === "signout") acctAct(act);
+  else if (act === "google" || act === "sendcode" || act === "verify" || act === "signout" || act === "delacct") acctAct(act);
   else if (act === "kit") { S.kit = S.kit === false; save(); chrome(); profileSheet(false); }
   else if (act === "share") doShare();
   else if (act === "cup") { if (!S.made) { profileSheet(true); return; } startCupMatch(); }
@@ -795,10 +805,12 @@ document.addEventListener("click", e => {
   else if (act === "sugg") submitPick(+v);
   else if (act === "tap") { if (M && M.live && M.run && M.run.onTap) M.run.onTap(v); }
   else if (act === "cont") { if (!M) return; if (M.mode === "league" && M.i >= 5) fullTime(); else if (M.mode === "cup" && M.i >= M.rounds.length) cupContinue(); else chanceCover(); }
-  else if (act === "quit") { if (!M) return; if (M.mode === "cup" && !(M.i === 0 && !M.live)) { confirmSheet("Walk off?", "Walk off a cup tie and you're knocked out.", "Walk off", () => { S.cup.l++; S.cup.best = Math.max(S.cup.best, S.cup.rd); S.cup.rd = 0; S.cup.runs++; save(true); quitMatch(); }); return; } if (M.mode === "train" || M.i === 0 && !M.live) quitMatch(); else confirmSheet("Walk off?", "An abandoned match doesn't count in the table. You keep nothing from it.", "Abandon", quitMatch); }
+  else if (act === "quit") { if (!M) return; if (M.mode === "cup" && !(M.i === 0 && !M.live)) { confirmSheet("Walk off?", "Walk off a cup tie and you're knocked out.", "Walk off", () => { S.cup.l++; S.cup.best = Math.max(S.cup.best, S.cup.rd); S.cup.rd = 0; S.cup.runs++; save(true); quitMatch(); }); return; } if (M.mode === "train" || M.i === 0 && !M.live) quitMatch(); else confirmSheet("Walk off?", "An abandoned match doesn't count in the table. You keep nothing from it, and the rematch is five new questions.", "Abandon", abandonMatch); }
   else if (act === "ltab") { leagueTab = v; renderLeague(); }
   else if (act === "cell") cellSheet(+v);
-  else if (act === "sharegrid") { const g = gridState(), got = g.c.filter(x => x).length, obs = got ? Math.round(g.r.reduce((s, x) => s + x, 0) / got) : 0; const t = `BOFFIN GRID No. ${gridNo()}\n${[0, 1, 2].map(r => [0, 1, 2].map(c => g.c[r * 3 + c] ? "🟩" : "⬛").join("")).join("\n")}\n${got}/9 · Obscurity ${obs}%`; try { navigator.clipboard.writeText(t).then(() => toast("Result copied"), () => toast("Couldn't copy on this device")); } catch (err) { toast("Couldn't copy on this device"); } }
+  else if (act === "sharegrid") { SHARE = shareGrid(); doShare(); }
+  else if (act === "shareseason") { if (S.note) { SHARE = shareSeason(S.note); doShare(); } }
+  else if (act === "hap") { S.hap = S.hap === false; save(); if (S.hap) buzz(40); profileSheet(false); }
   else if (act === "profile") profileSheet(!S.made);
   else if (act === "sound") { S.sound = !S.sound; save(); profileSheet(false); }
   else if (act === "clearnote") { S.note = null; save(); render(); }
@@ -806,4 +818,4 @@ document.addEventListener("click", e => {
   else if (act === "closeover") $("over").innerHTML = "";
 });
 let wasWide = wide();
-addEventListener("resize", () => { const w = wide(); if (w === wasWide) return; wasWide = w; if (view !== "match" && view !== "ft") render(); else chrome(); });
+addEventListener("resize", () => { const w = wide(); if (w === wasWide) return; wasWide = w; if (view !== "match" && view !== "ft" && view !== "stk") render(); else chrome(); });

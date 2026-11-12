@@ -7,9 +7,9 @@
 //
 //   >>> Run `node tools/bump-sw.js` before every deploy. It sets VERSION from the contents of the shipped
 //   >>> files and checks the list below is complete. (tests/unit/sw.test.js fails if you forget.)
-const VERSION = "boffin-v1";
+const VERSION = "boffin-503f4df5aa";
 const SHELL = [
-  "./", "index.html", "config.js", "data.js", "app.js", "net.js", "boot.js", "manifest.webmanifest",
+  "./", "index.html", "config.js", "data.js", "sticker-pages.js", "app.js", "extras.js", "stickers.js", "net.js", "boot.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"
 ];
 // Third-party files worth keeping offline: fonts and the Supabase client library (refreshed in the background).

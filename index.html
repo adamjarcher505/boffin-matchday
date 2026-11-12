@@ -221,6 +221,7 @@ input[type=range]{width:100%;accent-color:var(--amber);height:30px}
 .sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center}
 .sheet .box{width:100%;max-width:520px;max-height:92%;overflow:auto;background:var(--bg);border-top:1px solid var(--amber);border-radius:10px 10px 0 0;padding:20px 16px calc(20px + var(--sb));display:flex;flex-direction:column;gap:14px}
 .sheet.topdock{align-items:flex-start}
+.sheet.topdock .box{overflow:visible}.sheet.topdock .sug button:nth-child(n+4){display:none}
 .sheet.topdock .box{border-radius:0 0 10px 10px;border-top:0;border-bottom:1px solid var(--amber);padding-top:calc(var(--st) + 16px);min-height:300px}
 .sheet h1{font-size:28px;letter-spacing:2px}
 .field{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute)}
@@ -342,6 +343,7 @@ h2{letter-spacing:2.2px}
 .kit-gold .score .sc{text-shadow:0 0 14px rgba(241,200,90,.55)}
 .acct{display:flex;flex-direction:column;gap:10px}
 .acct .btn.sm{width:100%}
+.acct .priv{font-size:12px;line-height:1.4}
 .tag.up{color:var(--good);border-color:var(--good)}.tag.dn{color:var(--bad);border-color:var(--bad)}
 
 /* ---- match review ---- */
@@ -377,6 +379,83 @@ h2{letter-spacing:2.2px}
 .chart .ln{fill:none;stroke:var(--amber);stroke-width:2.5;stroke-linejoin:round}
 .chart .pt{fill:var(--amber)}.chart .now{fill:var(--bg);stroke:var(--amber);stroke-width:2.5}
 
+/* ---- update toast (tappable, unlike the others) ---- */
+.toast.act{pointer-events:auto;cursor:pointer;min-height:44px;padding:10px 14px;font-weight:600}
+
+/* ---- season stakes ---- */
+.stakes{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.sk{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sk div{border-left:3px solid var(--line);padding-left:10px}
+.sk div.ok{border-left-color:var(--good)}.sk div.bad{border-left-color:var(--bad)}
+.sk span{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute)}
+.sk p{margin:3px 0 0;font-size:13px;color:var(--mute);line-height:1.35}.sk p b{color:var(--text);font-family:var(--mono)}
+.fday{border-color:var(--amber)!important;box-shadow:0 0 0 1px rgba(240,181,65,.25),0 0 30px rgba(240,181,65,.12)}
+.fdtag{align-self:flex-start;font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:#14110a;background:var(--amber);border-radius:3px;padding:3px 7px;animation:fdpulse 2.4s ease-in-out infinite}
+@keyframes fdpulse{50%{opacity:.7}}
+
+/* ---- season end ---- */
+.send{padding:16px 14px;display:flex;flex-direction:column;gap:10px;text-align:center;border-color:var(--amber)}
+.send.up{border-color:var(--good)}.send.dn{border-color:var(--bad)}
+.send .mv{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.send .mv i{font-style:normal;font-size:18px;color:var(--amber)}.send.up .mv i{color:var(--good)}.send.dn .mv i{color:var(--bad)}
+.send .mv span:last-child{color:var(--text)}
+.send .big{font-family:var(--disp);font-weight:900;font-size:38px;letter-spacing:4px;text-transform:uppercase;line-height:1;color:var(--amber)}
+.send.up .big{color:var(--good)}.send.dn .big{color:var(--bad)}
+.send .statline{justify-content:center;gap:16px}
+.verdict .tb{color:var(--amber)}
+
+/* ---- theme of the day ---- */
+.theme{padding:12px 14px;display:flex;flex-direction:column;gap:4px;border-left:3px solid var(--amber)}
+.theme .eyebrow{color:var(--amber)}
+.theme b{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:1.5px;text-transform:uppercase;line-height:1.05}
+
+/* ---- sticker offers ---- */
+.stkoffer{padding:14px;display:flex;flex-direction:column;gap:8px;border-color:#d8c9a3}
+.stkoffer b{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:2px;text-transform:uppercase;line-height:1}
+.stkoffer.paper b{color:#efe3c2}.stkoffer.foil{border-color:#9fc3e6}.stkoffer.foil b{color:#bfe0ff}.stkoffer.gold{border-color:#e0ac3c}.stkoffer.gold b{color:#f2cf6b}
+.stkwait .k{color:#efe3c2}.stkwait.foil .k{color:#bfe0ff}.stkwait.gold .k{color:#f2cf6b}
+
+/* ---- stickers: typographic, retro. Paper = cream and slightly off-square; Foil shimmers; Gold Icon shimmers harder ---- */
+.stkpage{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stkr{position:relative;overflow:hidden;isolation:isolate;aspect-ratio:3/4;border-radius:4px;padding:22px 7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;gap:2px;min-width:0;font-family:var(--disp);text-transform:uppercase;color:#1c1a14}
+.stkr.got{background:#efe3c2;box-shadow:0 2px 0 rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.25) inset}
+.stkr.got.paper{transform:rotate(-.8deg)}.stkr.got.paper:nth-child(2n){transform:rotate(.7deg)}.stkr.got.paper:nth-child(3n){transform:rotate(-.3deg)}
+.stkr.got.foil{background:linear-gradient(135deg,#dfe9f2,#b9cfe2 40%,#eef4fa 60%,#a9c2d9);color:#0e1a26}
+.stkr.got.gold{background:linear-gradient(135deg,#fff1b8,#e0ac3c 45%,#b9821e 70%,#f6d77c);color:#2a1d04}
+.stkr.got.foil::after,.stkr.got.gold::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%);background-size:250% 100%;animation:foil 4.5s ease-in-out infinite}
+.stkr.got.gold::after{animation-duration:2.6s;background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.7) 45%,transparent 65%);background-size:250% 100%}
+.stkr .band{position:absolute;left:0;right:0;top:0;height:18px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:#fff;background:#2c3138;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.stkr.got.paper .band{background:#7a2e2a}.stkr.got.foil .band{background:#1f4f7a}.stkr.got.gold .band{background:#5a4415}
+.stkr .fn{font-weight:600;font-size:10px;letter-spacing:.5px;line-height:1;opacity:.75;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stkr .sn{font-weight:900;font-size:17px;letter-spacing:.3px;line-height:.95;max-width:100%;overflow-wrap:anywhere}
+.stkr .meta{font-family:var(--mono);font-size:8.5px;letter-spacing:.4px;line-height:1.2;opacity:.8}
+.stkr .yrs{font-family:var(--mono);font-size:9px;font-weight:600}
+.stkr .no{position:absolute;right:5px;top:21px;font-style:normal;font-family:var(--mono);font-size:9px;opacity:.6}
+.stkr .x{position:absolute;left:5px;top:21px;font-style:normal;font-family:var(--mono);font-size:9px;font-weight:700}
+.stkr.need{background:rgba(6,7,8,.6);border:1px dashed #3a4048;color:var(--mute);justify-content:center;width:100%}
+.stkr.need.gold{border-color:#6b5420}.stkr.need.foil{border-color:#35506a}
+.stkr.need.chase{border-style:solid;border-color:var(--amber)}.stkr.need.picked{border-style:solid;border-color:var(--good)}
+.stkr .sil{width:44%;aspect-ratio:1/1.25;border-radius:50% 50% 12px 12px / 42% 42% 12px 12px;background:radial-gradient(circle at 50% 30%,#2c3138 0 34%,transparent 35%),radial-gradient(ellipse at 50% 100%,#2c3138 0 58%,transparent 59%);opacity:.9}
+.stkr .needt{font-family:var(--mono);font-size:10px;letter-spacing:1.4px}
+.stkr.need.chase .needt{color:var(--amber)}.stkr.need.picked .needt{color:var(--good)}
+.stkr.gone{opacity:.5}
+.stkmys{display:flex;justify-content:center}
+.stkr.big{width:min(46vw,190px);padding-top:30px}.stkr.big .band{height:24px;font-size:11px}.stkr.big .sn{font-size:30px}.stkr.big .fn{font-size:13px}.stkr.big .meta{font-size:10.5px}.stkr.big .yrs{font-size:11px}.stkr.big .no,.stkr.big .x{top:29px}
+.stkr.stick{animation:stick .55s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stick{0%{transform:translateY(-40px) scale(1.18) rotate(-6deg);opacity:0;box-shadow:0 30px 40px rgba(0,0,0,.6)}70%{transform:translateY(0) scale(.97) rotate(1deg);opacity:1}100%{transform:none}}
+.stkpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stkkey .k{border-radius:2px}.stkkey .k.gold{background:#e0ac3c}.stkkey .k.foil{background:#9fc3e6}.stkkey .k.paper{background:#efe3c2}
+
+/* ---- sticker clues ---- */
+.clues{display:flex;flex-direction:column;gap:6px}
+.clue{display:flex;align-items:baseline;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+.clue span{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute);width:48px;flex:none}
+.clue b{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.6px;text-transform:uppercase;line-height:1.1}
+.clue.lock b{color:#4a515a;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:1px}
+.clue.trail{flex-direction:column;align-items:stretch;gap:5px}.clue.trail > span{width:auto}.clue.trail .path span{width:auto;font-size:14px;padding:3px 7px;color:var(--text);letter-spacing:.4px}
+.q .clue{padding:6px 9px}.q .clue b{font-size:17px}.q .clue.trail .path span{font-size:13px;padding:2px 6px}
+.q .stkmys{display:none}
+
 /* ---- desktop: wider canvas, tabs under the header, dashboard columns ---- */
 @media (min-width:1024px){
   .app{max-width:1280px}
@@ -398,10 +477,18 @@ h2{letter-spacing:2.2px}
   .tiles{grid-template-columns:repeat(8,1fr)}
   .mini td,.mini th{padding:6px 5px}.mini td:first-child,.mini th:first-child{padding-left:10px}
   .stk{grid-template-columns:repeat(4,1fr)}
+  .stkpage{grid-template-columns:repeat(9,1fr);gap:10px}
+  .stkpick{max-width:520px;margin:0 auto;width:100%}
+  .sk{grid-template-columns:1fr}
+  .dash .col > .stakes .sk{grid-template-columns:1fr 1fr}
+  .send{padding:22px}
+  .send .big{font-size:52px}
   .sheet{align-items:center}
   .sheet .box{border-radius:10px;border:1px solid var(--line);border-top:1px solid var(--amber);max-height:88%;padding:24px}
   .sheet.topdock{align-items:flex-start;padding-top:8vh}
 }
+/* keyboard open (short viewport): sheets drop the extras so the fields stay on screen */
+@media (max-height:520px){.sheet .box{padding-top:12px;gap:9px;max-height:100%}.sheet .steps,.sheet .fcard,.sheet .box > .panel.pad:not(.acct),.acct > .note:not(.priv),.acct .priv{display:none}.sheet h1{font-size:22px}.field input,.field select{height:40px}.sheet .btn{min-height:42px;padding:8px 14px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -415,7 +502,10 @@ h2{letter-spacing:2.2px}
 <div class="toasts" id="toasts"></div>
 <script src="config.js"></script>
 <script src="data.js"></script>
+<script src="sticker-pages.js"></script>
 <script src="app.js"></script>
+<script src="extras.js"></script>
+<script src="stickers.js"></script>
 <script src="net.js"></script>
 <script src="boot.js"></script>
 </body>

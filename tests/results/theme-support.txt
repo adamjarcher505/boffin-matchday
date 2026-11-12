@@ -1,0 +1,23 @@
+Theme support (league chances, 300 matches per tier, 6,000 chances)
+
+Golden Boot               13.4%   55.4% of matches have one  
+Deadline Day              15.1%   62.6% of matches have one  
+Invincibles                0.9%   4.5% of matches have one  DROPPED
+Cult Heroes              n/a      depends on the answer given (deep cuts), always possible  
+Title Race                16.6%   67.6% of matches have one  
+Teamsheet Day             16.0%   66.8% of matches have one  
+International Break        6.0%   29.8% of matches have one  DROPPED
+Journeymen                15.7%   67.0% of matches have one  
+North London derby        29.7%   86.7% of matches have one  
+Merseyside derby          29.2%   85.1% of matches have one  
+Manchester derby          35.6%   92.8% of matches have one  
+Tyne–Wear derby           13.1%   51.4% of matches have one  
+Northwest derby           34.6%   90.9% of matches have one  
+Second City derby         10.0%   40.4% of matches have one  
+M23 derby                  4.7%   21.6% of matches have one  DROPPED
+El Clásico                10.2%   44.8% of matches have one  
+Derby della Madonnina      5.7%   26.2% of matches have one  DROPPED
+Der Klassiker              5.3%   24.6% of matches have one  DROPPED
+
+Rota (13): boot, deadline, cult, title, sheet, road, derby0, derby1, derby2, derby3, derby4, derby5, derby7
+Dropped (5): Invincibles, International Break, M23 derby, Derby della Madonnina, Der Klassiker
