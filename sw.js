@@ -7,7 +7,7 @@
 //
 //   >>> Run `node tools/bump-sw.js` before every deploy. It sets VERSION from the contents of the shipped
 //   >>> files and checks the list below is complete. (tests/unit/sw.test.js fails if you forget.)
-const VERSION = "boffin-8f8a176874";
+const VERSION = "boffin-d7c56bfdcf";
 const SHELL = [
   "./", "index.html", "config.js", "data.js", "sticker-pages.js", "app.js", "extras.js", "stickers.js", "net.js", "boot.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"
