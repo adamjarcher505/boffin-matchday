@@ -27,6 +27,7 @@ From now on, every `git push` updates the live game.
 
 1. Make a free account at supabase.com. Click **New project**, pick the **London** region and set a database password (store it in your password manager; the game doesn't need it).
 2. When the project is ready, open **SQL Editor**, paste in all of `supabase/schema.sql` and click **Run**. It should say "Success".
+   Then do the same with `supabase/002_additions.sql` (fair Club Wars, the question log, Delete account). The game works without it, but those three stay switched off.
 3. **Authentication → URL Configuration**
    - Site URL: `https://YOUR-USERNAME.github.io/boffin-matchday/`
    - Redirect URLs: add the same address, plus `http://localhost:8080/` for testing at home.
@@ -42,7 +43,7 @@ From now on, every `git push` updates the live game.
    shareUrl: "https://YOUR-USERNAME.github.io/boffin-matchday/"
    ```
    The anon key is safe to publish. The database rules stop anyone touching data that isn't theirs.
-6. In `sw.js`, change `VERSION = "boffin-v1"` to `"boffin-v2"` so phones pick up the new config. Then commit and push.
+6. Run `node tools/bump-sw.js` so phones pick up the new config. Then commit and push.
 
 ## 3. Become the Founder
 
@@ -59,7 +60,7 @@ The next 99 people to sign up get a silver **Founding Member No. 0xx** badge and
 1. Go to console.cloud.google.com and create a project. Open **APIs & Services → OAuth consent screen**, choose External and fill in the app name.
 2. Open **Credentials → Create credentials → OAuth client ID** and choose **Web application**. Under **Authorised redirect URIs**, add `https://xxxx.supabase.co/auth/v1/callback` (your Supabase project URL plus that path).
 3. Copy the Client ID and Secret into Supabase: **Authentication → Providers → Google**, then switch it on.
-4. In `config.js`, set `google: true`, bump `VERSION` in `sw.js`, then commit and push.
+4. In `config.js`, set `google: true`, run `node tools/bump-sw.js`, then commit and push. (The Google button stays hidden inside an installed iPhone app, where its redirect would land in Safari; the email code works there.)
 
 ## 5. Install it
 
@@ -71,7 +72,7 @@ Once opened, it works with no signal. Progress saves on the device and syncs to 
 
 ## Good to know
 
-- **Shipping an update:** change the files, bump `VERSION` in `sw.js`, then commit and push. Players get the new version the next time they open the app.
+- **Shipping an update:** change the files, run `node tools/bump-sw.js` (it sets the version and checks every file is cached), run the tests (README.md), then commit and push. Players see "New version ready, tap to refresh".
 - **Supabase free tier** pauses a project after a week with no visits. One click in the dashboard wakes it up. Real players visiting keep it awake.
-- **Login emails:** Supabase's built-in sender only allows a few emails an hour. That's fine for you and some mates. If lots of people join, connect a free email service (e.g. Resend) under **Authentication → Emails → SMTP settings**.
+- **Login emails:** Supabase's built-in sender only allows a few emails an hour. That's fine for you and some mates. If lots of people join, connect a free email service: sign up at resend.com (free tier), verify a sending domain or use their test domain, create an API key, then in Supabase go to **Authentication → Emails → SMTP settings** → enable custom SMTP → host `smtp.resend.com`, port `465`, username `resend`, password = the API key, sender = an address on your verified domain. The game already tells players to wait a minute if they hit the limit.
 - **Previewing badges locally:** `http://localhost:8080/?preview=founder` or `?preview=member`. This only works on localhost.
