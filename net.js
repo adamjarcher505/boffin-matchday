@@ -81,7 +81,11 @@ const Net = {
   wars: null, warsAt: 0,
   canSignIn: () => Net.kind === "supabase",
   home: () => location.origin + location.pathname,
-  async init() { try { await Net._init(); } catch (e) { } Net.checked = true; if (view === "home" || view === "stats") render(); },
+  async init() {
+    try { await Net._init(); } catch (e) { } Net.checked = true; if (view === "home" || view === "stats") render();
+    // the welcome/profile sheet was drawn before we knew sign-in was available: redraw it with the sign-in box, keeping what was typed
+    if (Net.canSignIn() && $("pf") && !document.querySelector(".acct")) { const nm = $("nm") ? $("nm").value : "", cl = $("cl") ? $("cl").value : ""; profileSheet(!S.made); if ($("nm") && nm) $("nm").value = nm; if ($("cl") && cl) $("cl").value = cl; }
+  },
   async _init() {
     for (const k of ["supabase", "claude"]) {
       let ok = false; try { ok = await Backends[k].start(); } catch (e) { ok = false; }
