@@ -1,5 +1,12 @@
 # Changelog
 
+## 12/11/2026 (evening): bigger question screens, stickers worth having
+- **Question screens use the whole screen** when the keyboard is down: bigger answer cards and category boxes, a bigger pitch for Missing XI, a faint drawing for each question type, and a chance strip under the scoreboard. While the keyboard is up you get the compact layout as before, so the answer box and what you're answering stay above it.
+- **Each chance opens with a title card**: the question type's badge, name and a one-line description.
+- **Stickers carry real records.** The front shows the best line from the data ("PL top scorer 16/17", "PL title squad 15/16", "€117m move"). Tap a sticker to turn it over: clubs on record, title-winning squads, top-ten finishes, biggest fee, big-match line-ups, and when you stuck him in.
+- **Condition and Shiny.** Name him first go on the fewest clues and he's Mint. About 1 in 25 stickers comes out ✦ Shiny (holographic), and a duplicate can still roll shiny.
+- Local testing: `node tools/dev-server.js` (never caches) and `?offline` (keeps a test session off the live database).
+
 ## 12/11/2026: stickers, stakes and fair Club Wars
 **New**
 - **Sticker album.** Earn a shot in a match (a deep cut or four goals → Paper; five from five or a cup semi-final win → Foil; promotion or lifting the cup → Gold Icon), then name the man on the sticker from the clues. Miss and he's gone. 79 club pages of 18, swaps, pick-your-player tokens, a chase list, page-complete titles. The old album lives on as "Names".

@@ -29,6 +29,28 @@ const TYPES = {
   race: { n: "Higher or Lower", rule: "", t: 20, typed: 0 },
   champ: { n: "Final Standings", rule: "", t: 20, typed: 0 }
 };
+const QDESC = { cell: "Two categories, one player.", top: "Top scorers, record signings, most appearances.", xi: "Real line-ups with names blanked out.", mates: "Find the team-mate two players share.", career: "A list of clubs. Name the player.", hl: "Which transfer cost more?", season: "A final table. Which year?", squad: "One club, one season. Name the squad.", odd: "Three played there. One never did.", race: "Goals, appearances, fees. Who had more?", champ: "Who finished where, season by season." };
+/* line drawings for each question type (original, drawn in code): a faint backdrop on question screens and the badge on each chance's title card */
+const QART = {
+  cell: '<rect x="8" y="8" width="48" height="48" rx="4"/><path d="M24 8v48M40 8v48M8 24h48M8 40h48"/>',
+  top: '<path d="M10 12h44M10 22h38M10 32h32M10 42h26M10 52h20"/>',
+  xi: '<rect x="8" y="6" width="48" height="52" rx="3"/><path d="M8 32h48M22 6v9h20V6M22 58v-9h20v9"/><circle cx="32" cy="32" r="7"/>',
+  mates: '<rect x="5" y="23" width="30" height="18" rx="9"/><rect x="29" y="23" width="30" height="18" rx="9"/>',
+  career: '<circle cx="12" cy="48" r="5"/><circle cx="32" cy="18" r="5"/><circle cx="52" cy="40" r="5"/><path d="M15 43l14-21M36 22l12 14"/>',
+  hl: '<rect x="6" y="18" width="52" height="28" rx="4"/><circle cx="32" cy="32" r="7"/><path d="M14 26v12M50 26v12"/>',
+  season: '<rect x="8" y="12" width="48" height="44" rx="4"/><path d="M8 24h48M20 6v12M44 6v12M18 34h8M30 34h8M42 34h4M18 44h8M30 44h8"/>',
+  squad: '<path d="M22 8 8 16l6 12 6-3v31h24V25l6 3 6-12-14-8c-2 5-6 7-10 7s-8-2-10-7z"/>',
+  odd: '<circle cx="20" cy="20" r="8"/><circle cx="44" cy="20" r="8"/><circle cx="20" cy="44" r="8"/><circle cx="44" cy="44" r="8" fill="currentColor"/>',
+  race: '<path d="M20 52V12M8 24l12-12 12 12M44 12v40M32 40l12 12 12-12"/>',
+  champ: '<path d="M6 56h52M22 56V28h20v28M6 56V40h16M42 56V46h16M27 18l5-9 5 9"/>'
+};
+const qart = t => `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${QART[t] || QART.cell}</svg>`;
+/* the five chances so far, under the scoreboard (league and cup only) */
+function chanceStrip() {
+  if (!M || M.mode === "train") return "";
+  const n = Math.max(5, M.rounds.length);
+  return `<div class="cstrip" aria-label="Chances so far">${Array.from({ length: n }, (_, k) => `<i class="${k < M.my.length ? (M.my[k] ? "g" : "n") : k === M.i ? "cur" : ""}${k === 5 ? " pen" : ""}"></i>`).join("")}</div>`;
+}
 const WORDS = ["NIL", "ONE", "TWO", "THREE", "FOUR", "FIVE"];
 const SAY = {
   ok: ["Tidy.", "That'll do.", "No fuss.", "Never in doubt.", "Bread and butter.", "Passed it into the net."],
@@ -107,7 +129,8 @@ const STICKER_RULES = {
   winXp: { paper: 40, foil: 90, gold: 200 },
   pageSize: 18, pageIcons: 3, pageFoils: 5,
   pageXp: 600, ownPageXp: 1500,
-  goldChoices: 3
+  goldChoices: 3,
+  shinyChance: .04, shinyXp: 100           // about 1 in 25 won stickers comes out holographic; a duplicate can still roll shiny
 };
 
 /* ============ state ============
@@ -117,7 +140,7 @@ const STICKER_RULES = {
 const KEY = "boffin-matchday-v1";
 const SAVE_V = 2;
 const freshCup = () => ({ club: "", rd: 0, runs: 0, won: 0, best: -1, w: 0, l: 0 });
-const freshStk = () => ({ got: {}, chase: [], pick: "", tok: 0, dups: 0, offer: null, free: false, pages: {}, n: { off: 0, won: 0, lost: 0 } });
+const freshStk = () => ({ got: {}, meta: {}, chase: [], pick: "", tok: 0, dups: 0, offer: null, free: false, pages: {}, n: { off: 0, won: 0, lost: 0 } });
 const fresh = () => ({ cup: freshCup(), v: SAVE_V, made: false, name: "", club: "Arsenal", xp: 0, div: 0, season: 1, cw: { wk: weekNo(), gf: 0, pts: 0 }, week: { pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }, form: [], g: {}, played: [], album: {}, recent: [], grid: {}, st: { m: 0, w: 0, goals: 0, deep: 0, bestDiv: 0, grids: 0 }, sound: true, salt: Math.floor(Math.random() * 1e9), note: null, ts: {}, hist: [], lb: {}, kit: true, owner: "",
   t: 0, stk: freshStk(), tr: { d: "", n: 0 }, hap: true });
 const MIGRATIONS = {
@@ -137,6 +160,8 @@ const hydrate = o => {
    comes whole from the save that was updated last. Everything that only ever grows is combined: the Names album and the
    stickers are unioned, XP and records take the higher value, season history keeps every season. Counters are NOT added
    together: without a common starting point that would double-count everything both devices already shared. */
+/* sticker collector details: keep the earliest date, the best condition and any shiny from either device */
+function mergeMeta(x, y) { const o = {}; [x || {}, y || {}].forEach(src => Object.keys(src).forEach(k => { const a = o[k] || {}, b = src[k] || {}; o[k] = { d: a.d && b.d ? (a.d < b.d ? a.d : b.d) : a.d || b.d, c: Math.max(a.c || 0, b.c || 0) || undefined, sh: a.sh || b.sh || undefined }; })); return o; }
 function mergeSaves(a, b) {
   if (!a || !a.made) return b || a; if (!b || !b.made) return a;
   const ta = a.t || 0, tb = b.t || 0, aNewer = ta !== tb ? ta > tb : a.season !== b.season ? a.season > b.season : (a.xp || 0) >= (b.xp || 0);
@@ -151,7 +176,7 @@ function mergeSaves(a, b) {
   const hs = {}; (other.hist || []).concat(base.hist || []).forEach(h => { hs[h.s] = h; }); m.hist = Object.keys(hs).map(k => hs[k]).sort((x, y) => x.s - y.s).slice(-60);
   m.cup = Object.assign({}, base.cup, { won: max(base.cup.won, other.cup.won), best: Math.max(base.cup.best, other.cup.best), w: max(base.cup.w, other.cup.w), l: max(base.cup.l, other.cup.l) });
   const bs = base.stk || freshStk(), os = other.stk || freshStk();
-  m.stk = Object.assign({}, bs, { got: maxMap(bs.got, os.got), free: !!(bs.free || os.free), tok: max(bs.tok, os.tok), n: maxMap(bs.n, os.n), pages: Object.assign({}, os.pages || {}, bs.pages || {}) });
+  m.stk = Object.assign({}, bs, { got: maxMap(bs.got, os.got), free: !!(bs.free || os.free), tok: max(bs.tok, os.tok), n: maxMap(bs.n, os.n), pages: Object.assign({}, os.pages || {}, bs.pages || {}), meta: mergeMeta(os.meta, bs.meta) });
   m.t = max(ta, tb);
   return hydrate(m);
 }
@@ -523,20 +548,22 @@ function chLbl(min) { if (M.mode === "train") return M.long ? "Extra time · " +
 function chanceCover() {
   document.getElementById("app").classList.remove("q"); document.getElementById("app").classList.add("focus"); cancelAnimationFrame(raf);
   const spec = curSpec(), T = TYPES[spec.type], run = RUN[spec.type](spec); M.run = run; if (M.long) run.rule = LONG[M.long].rule(spec);
-  $("main").innerHTML = `<div class="board">${scoreHTML()}<div class="clock"><i id="clk"></i></div></div>
-  <div class="chance"><h3>${esc(T.n)}</h3><span class="eyebrow">${chLbl(true)}</span></div>
+  document.getElementById("app").dataset.qt = spec.type;
+  $("main").innerHTML = `<div class="board">${scoreHTML()}<div class="clock"><i id="clk"></i></div>${chanceStrip()}</div>
+  <div class="cvwrap"><div class="qhero"><i class="qic">${qart(spec.type)}</i><div class="qht"><span class="eyebrow">${chLbl(true)}</span><b>${esc(M.long ? LONG[M.long].n : T.n)}</b><span>${esc(M.long ? LONG[M.long].d : QDESC[spec.type] || "")}</span></div></div>
   <p class="rule qq">${esc(run.rule || T.rule)}${run.hint ? `<span>${esc(run.hint)}</span>` : ""}</p>
   <div class="panel pad"><p class="note">${M.i >= 5 ? "<b>Penalties.</b> Sudden death. Score and hope they miss. " : ""}${limitS(T)} seconds on the clock once you start.${M.i === 0 && M.mode === "league" ? " <b>" + esc(M.opp.name) + "</b> " + (M.ghost ? "took these same five chances earlier." : "get five chances of their own.") : ""}${M.i === 0 && M.mode === "cup" ? " <b>" + esc(M.opp.name) + "</b> is a " + esc(S.club) + " fan too, so it's all " + esc(S.club) + " questions. Lose and you're out." : ""}</p></div>
-  <button class="btn" data-act="take">${M.i === 0 ? "Kick off" : "Take it"}</button>`;
+  <button class="btn" data-act="take">${M.i === 0 ? "Kick off" : "Take it"}</button></div>`;
   window.scrollTo(0, 0);
 }
 function takeChance() {
   const spec = curSpec(), T = TYPES[spec.type], run = M.run; markSeen(spec);
-  $("main").innerHTML = `<div class="board">${scoreHTML()}<div class="clock"><i id="clk"></i></div></div>
+  document.getElementById("app").dataset.qt = spec.type;
+  $("main").innerHTML = `<div class="board">${scoreHTML()}<div class="clock"><i id="clk"></i></div>${chanceStrip()}</div>
   <div class="chance"><h3>${esc(T.n)}</h3><span class="eyebrow">${chLbl(false)}</span></div>
   <p class="rule qq">${esc(run.rule || T.rule)}${run.hint ? `<span>${esc(run.hint)}</span>` : ""}</p>
   ${T.typed ? `<div class="entry"><input id="q" type="text" placeholder="${spec.type === "xi" ? "Type a surname" : "Type a player's name"}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><div class="sug" id="sug" hidden></div></div>` : ""}
-  <p class="msg" id="msg"></p><div id="rbody"></div>`;
+  <p class="msg" id="msg"></p><div id="rbody"></div><div class="qart">${qart(spec.type)}</div>`;
   document.getElementById("app").classList.add("q");
   ctx = { paint: () => { const b = $("rbody"); if (b) b.innerHTML = run.body(false); }, done: () => endChance() };
   ctx.paint(); M.t0 = Date.now(); M.limit = limitS(T) * 1000; M.live = true;
@@ -667,7 +694,7 @@ function renderHome() {
     : Net.checked && !Net.ready ? `<div class="panel pad"><p class="note"><b>Playing offline.</b> Your progress saves on this device, but your results won't show in your mates' tables and your opponents are house sides. Share your result after a match to show off.</p></div>` : "";
   const pGrid = `<button class="panel li" data-act="go" data-v="grid" style="border-radius:6px"><span class="k">${gridNo()}</span><span class="tx"><b>Daily Grid</b><span>${gdone ? "Done for today. " + g.c.filter(x => x).length + " of 9." : g ? g.left + " guesses left. Finish the job." : "Nine squares, nine guesses. Same grid for everyone."}</span></span><span class="go">›</span></button>`;
   const pTrain = `<div class="hd"><h2>Training ground</h2><span class="eyebrow">No table, small XP</span></div>
-  <div class="panel list">${Object.keys(TYPES).map((k, i) => `<button class="li" data-act="train" data-v="${k}"><span class="k">${pad(i + 1)}</span><span class="tx"><b>${TYPES[k].n}</b><span>${({ cell: "Two categories, one player.", top: "Top scorers, record signings, most appearances.", xi: "Real line-ups with names blanked out.", mates: "Find the team-mate two players share.", career: "A list of clubs. Name the player.", hl: "Which transfer cost more?", season: "A final table. Which year?", squad: "One club, one season. Name the squad.", odd: "Three played there. One never did.", race: "Goals, appearances, fees. Who had more?", champ: "Who finished where, season by season." })[k]}</span></span><span class="go">›</span></button>`).join("")}</div>`;
+  <div class="panel list">${Object.keys(TYPES).map((k, i) => `<button class="li" data-act="train" data-v="${k}"><span class="k">${pad(i + 1)}</span><span class="tx"><b>${TYPES[k].n}</b><span>${QDESC[k]}</span></span><span class="go">›</span></button>`).join("")}</div>`;
   const pLevel = `<div class="panel pad"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(S.xp)}</b> XP · ${fmt(l1 - S.xp)} to level ${lv + 1}</span></div><div class="bar" style="margin-top:8px"><i style="width:${Math.max(2, (S.xp - l0) / (l1 - l0) * 100).toFixed(1)}%"></i></div></div>`;
   const pFoot = `<p class="foot">${fmt(PL.length)} PLAYERS · ${fmt(BD.xi.length)} LINE-UPS · ${fmt(BD.lists.length)} TOP TENS · ${fmt(BD.tables.length)} FINAL TABLES<br>${Net.ready && !Net.readonly ? "CONNECTED · YOUR RESULTS COUNT IN THE SHARED TABLES" : "PLAYING LOCALLY ON THIS DEVICE"}</p>`;
   const pTheme = themeBanner(), pStk = stkHomeCard();

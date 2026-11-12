@@ -141,9 +141,77 @@ function stkPick(i) {
   msg(PL[i][0] + "? " + pickR(["Not him.", "Wrong sticker.", "Have another look at the clues.", "Nope. One more go."]), "bad"); const b = $("rbody"); if (b) b.innerHTML = stkCluesHTML();
 }
 function stkStop() { cancelAnimationFrame(stkRaf); if (M && M.mode === "stk") M = null; STKA = null; document.getElementById("app").classList.remove("q"); const q = $("q"); if (q) q.blur(); }
+/* ---------- what's on a sticker: real facts from the data only, never written from memory ----------
+   Title squads: on a club's books (squad records, 2010–11 on) in a season that club topped one of the five league tables.
+   Top-ten finishes: the top-ten lists. Fees: the transfer records. Big matches: the historic line-ups (only for names that
+   are unique in the data, so nobody gets someone else's caps). */
+const LG_SHORT = { "Premier League": "PL", "La Liga": "La Liga", "Serie A": "Serie A", "Bundesliga": "Bundesliga", "Ligue 1": "Ligue 1" };
+const ssn = y => String(y).slice(2) + "/" + String(y + 1).slice(2);
+const NAME_N = {}; PL.forEach(p => { NAME_N[p[0]] = (NAME_N[p[0]] || 0) + 1; });
+const FACTS = {};
+function stkFacts(i) {
+  if (FACTS[i]) return FACTS[i];
+  const p = PL[i], f = { titles: [], tops: [], fee: null, big: [], bigN: 0, leagues: [] };
+  const ss = p[6];
+  for (let k = 0; k < ss.length; k += 3) for (let y = ss[k + 1]; y <= ss[k + 2]; y++) {
+    const T = BD.tables.find(t => t[1] === SQ0 + y && t[3][0] && t[3][0][0] === CLUB[ss[k]]);
+    if (T && !f.titles.some(x => x.lg === T[0] && x.y === T[1])) f.titles.push({ lg: T[0], y: T[1], club: CLUB[ss[k]] });
+  }
+  f.titles.sort((a, b) => a.y - b.y);
+  BD.lists.forEach(l => l[3].forEach((it, k) => { if (it[0] === i) f.tops.push({ r: k + 1, v: it[1], u: l[1], t: l[0] }); }));
+  f.tops.sort((a, b) => a.r - b.r || b.v - a.v);
+  BD.hl.forEach(h => { if (h[0] === i && (!f.fee || h[4] > f.fee.fee)) f.fee = { fee: h[4], from: CLUB[h[1]], to: CLUB[h[2]], y: h[3] }; });
+  if (NAME_N[p[0]] === 1) {
+    const big = BD.xi.filter(x => x[6].some(q => q[0] === p[0]));
+    const w = x => /final(?!s)/i.test(x[4]) && !/quarter|semi/i.test(x[4]) ? 3 : /semi/i.test(x[4]) ? 2 : /World Cup|Euro|Copa|Champions League/.test(x[4]) ? 1 : 0;
+    f.bigN = big.length; f.big = big.sort((a, b) => w(b) - w(a) || (b[3] > a[3] ? 1 : -1)).slice(0, 2).map(x => ({ comp: x[4], a: x[0], b: x[1], sc: x[2], d: x[3], w: w(x) }));
+  }
+  for (let b = 0; b < 5; b++) if (p[7] & (1 << b)) f.leagues.push(BD.leagues[b]);
+  return (FACTS[i] = f);
+}
+const topLabel = t => { const m = t.t.match(/^(.*?) top scorers, (\d{4})/), a = t.t.match(/^(.*?): most assists, (\d{4})/); if (m && t.r === 1) return (LG_SHORT[m[1]] || m[1]) + " top scorer " + ssn(+m[2]); if (a && t.r === 1) return "Most " + (LG_SHORT[a[1]] || a[1]) + " assists " + ssn(+a[2]); return ""; };
+/* one short line for the front, the most impressive thing the data says */
+function stkHighlight(i, c) {
+  const f = stkFacts(i), top = f.tops.map(topLabel).find(x => x), ti = f.titles.filter(t => t.club === CLUB[c]).reverse()[0];   // only a title won with this page's club; others go on the back
+  if (top) return top;
+  if (ti) return (LG_SHORT[ti.lg] || ti.lg) + " title squad " + ssn(ti.y);
+  if (f.fee && f.fee.fee >= 25) return "€" + f.fee.fee + "m move";
+  if (f.big[0] && f.big[0].w === 3) return "Started a final";
+  if (f.leagues.length > 1) return f.leagues.map(l => LG_SHORT[l] || l).join(" · ");
+  const y = stkYears(i, c); return y ? "Joined " + y.from : "";
+}
+const STARS = { paper: "★", foil: "★★", gold: "★★★" };
+const CONDN = ["", "Good", "Near mint", "Mint"];
+const stkMeta = k => (S.stk.meta || {})[k] || {};
+const SHIRT = '<svg class="shirt" viewBox="0 0 64 64" aria-hidden="true"><path d="M22 8 8 16l6 12 6-3v31h24V25l6 3 6-12-14-8c-2 5-6 7-10 7s-8-2-10-7z"/></svg>';
 function stkCard(slot, n, cls) {
-  const p = PL[slot.i], nm = p[0].split(" "), sn = nm[nm.length - 1], fn = nm.slice(0, -1).join(" "), y = stkYears(slot.i, slot.c), col = CLUB_COLOURS[slot.club];
-  return `<div class="stkr ${slot.tier} got ${cls || ""}"><span class="band"${col ? ` style="background:${col}"` : ""}>${esc(slot.club)}</span><span class="fn">${esc(fn)}</span><b class="sn">${esc(sn)}</b><span class="meta">${POSN[p[2]]} · ${esc(NAT[p[1]])}</span><span class="yrs">${y ? "Joined " + y.from : ""}</span><i class="no">${slot.n + 1}</i>${n > 1 ? `<em class="x">×${n}</em>` : ""}</div>`;
+  const p = PL[slot.i], nm = p[0].split(" "), sn = nm[nm.length - 1], fn = nm.slice(0, -1).join(" "), col = CLUB_COLOURS[slot.club], mt = stkMeta(slot.key), hi = stkHighlight(slot.i, slot.c);
+  return `<div class="stkr ${slot.tier} got${mt.sh ? " shiny" : ""} ${cls || ""}"><span class="band"${col ? ` style="background:${col}"` : ""}>${esc(slot.club)}</span>${SHIRT}<span class="stars">${STARS[slot.tier]}</span><span class="fn">${esc(fn)}</span><b class="sn">${esc(sn)}</b><span class="meta">${POSN[p[2]]} · ${esc(NAT[p[1]])}</span>${hi ? `<span class="hi">${esc(hi)}</span>` : ""}<i class="no">${slot.n + 1}</i>${n > 1 ? `<em class="x">×${n}</em>` : ""}${mt.sh ? '<em class="shtag">✦ Shiny</em>' : mt.c === 3 ? '<em class="mint">Mint</em>' : ""}</div>`;
+}
+/* the back: everything the data knows about him */
+function stkBack(slot) {
+  const p = PL[slot.i], f = stkFacts(slot.i), mt = stkMeta(slot.key), a = p[5], path = [];
+  for (let k = 0; k < a.length; k += 2) if (!path.length || path[path.length - 1][0] !== a[k]) path.push([a[k], a[k + 1] + 1990]);
+  const byLg = {}; f.titles.forEach(t => { (byLg[t.lg] = byLg[t.lg] || []).push(ssn(t.y) + (t.club !== slot.club ? " (" + t.club + ")" : "")); });
+  const unit = t => t.u === "€m" ? "€" + t.v + "m" : t.v + " " + t.u;
+  const sec = (h, body) => `<div class="bks"><span>${h}</span>${body}</div>`;
+  return `<div class="bk">
+  <div class="bkh"><b>${esc(p[0])}</b><span>${POSN[p[2]]} · ${esc(NAT[p[1]])} · b. ${1900 + p[3]}</span></div>
+  ${sec("Clubs on record", `<p>${path.map(c => esc(CLUB[c[0]]) + " <i>'" + String(c[1]).slice(2) + "</i>").join(" › ")}</p>`)}
+  ${Object.keys(byLg).length ? sec("Title-winning squads", Object.keys(byLg).map(l => `<p><b>${esc(l)}</b> ${byLg[l].map(esc).join(", ")}</p>`).join("")) : ""}
+  ${f.tops.length ? sec("Top-ten finishes", `<ul>${f.tops.slice(0, 4).map(t => `<li><b>${ord(t.r)}</b> ${esc(t.t)} · ${esc(unit(t))}</li>`).join("")}${f.tops.length > 4 ? `<li class="more">and ${f.tops.length - 4} more</li>` : ""}</ul>`) : ""}
+  ${f.fee ? sec("Biggest fee on record", `<p><b>€${f.fee.fee}m</b> · ${esc(f.fee.from)} → ${esc(f.fee.to)}, ${f.fee.y}</p>`) : ""}
+  ${f.big.length ? sec(f.big[0].w ? "Big-match line-ups" : "Line-ups on record", f.big.map(x => `<p>${esc(x.comp)}: ${esc(x.a)} ${esc(x.sc)} ${esc(x.b)}</p>`).join("") + (f.bigN > f.big.length ? `<p class="more">${f.bigN} line-ups on record in all</p>` : "")) : ""}
+  <div class="bkf"><span>No. ${slot.n + 1} of ${SR.pageSize} · ${TIER_N[slot.tier]}${mt.sh ? " · ✦ Shiny" : ""}</span><span>${mt.d ? "Stuck in " + mt.d.split("-").reverse().join("/") : ""}${mt.c ? " · " + CONDN[mt.c] : ""}</span></div>
+  </div>`;
+}
+/* front and back in one card that turns over */
+function stkFlip(slot, n, cls) {
+  return `<div class="flip" data-act="stkturn" role="button" tabindex="0" aria-label="Turn the sticker over"><div class="flipin"><div class="face front">${stkCard(slot, n, cls)}</div><div class="face back"><div class="stkr ${slot.tier} got${stkMeta(slot.key).sh ? " shiny" : ""} rev">${stkBack(slot)}</div></div></div></div><p class="fliphint">Tap the sticker to turn it over</p>`;
+}
+function stkView(key) {
+  const sl = STK.all[key]; if (!sl || !S.stk.got[key]) return;
+  $("over").innerHTML = `<div class="sheet"><div class="box stkbox"><div class="hd"><span class="eyebrow">${esc(sl.club)} · No. ${sl.n + 1}</span><button class="linkb" data-act="closeover">Close</button></div><div class="stkmys">${stkFlip(sl, S.stk.got[key], "big")}</div></div></div>`;
 }
 const STK_LOST = ["He's gone. Back in the packet he goes.", "Gone. Somebody's little brother has him now.", "Missed. He's off to the bottom of a school bag.", "Gone. You'll see him again, and you'd better know him."];
 function stkLose(silent, timeUp) {
@@ -162,10 +230,15 @@ function stkWin() {
   if (dup) { S.stk.dups++; if (S.stk.dups % SR.dupsPerToken === 0) { S.stk.tok++; token = true; } }
   const slots = STK.by[slot.club];
   if (!dup && slots.every(s => S.stk.got[s.key]) && !S.stk.pages[slot.club]) { page = true; S.stk.pages[slot.club] = dayKey(); const px = slot.club === S.club ? SR.ownPageXp : SR.pageXp; lines.push(["Page complete", px]); xp += px; }
+  // collector details: date, how cleanly he was named (condition), and the shiny roll
+  const used = A.max - A.tries + 1, clues = A.gold ? (A.lastShown || 1) : A.shown, cond = used === 1 && clues <= SR.clues[A.rt] ? 3 : used === 1 ? 2 : 1;
+  S.stk.meta = S.stk.meta || {}; const mt = S.stk.meta[k] = Object.assign({}, S.stk.meta[k] || {});
+  if (!mt.d) mt.d = dayKey(); const better = cond > (mt.c || 0); if (better) mt.c = cond;
+  const shiny = !mt.sh && Math.random() < SR.shinyChance; if (shiny) { mt.sh = 1; lines.push(["✦ Shiny!", SR.shinyXp]); xp += SR.shinyXp; }
   addAlbum(slot.i); addXp(xp); stkStop(); save(true); sfx.goal(); buzz([20, 30, 20, 30, 90]);
   SHARE = shareSticker(slot.tier, slot.club);
-  stkScreen(`${stkBar("IN")}<div class="verdict goal"><div class="big">${dup ? "Got, got, got" : "Stuck in"}</div><p>${dup ? "You've already got him. One for the swaps pile." : esc(pickR(["Straight in the album. No bubbles.", "Pressed down with the thumb. Lovely.", "He's yours. Earned, not bought."]))}</p></div>
-  <div class="stkmys">${stkCard(slot, S.stk.got[k], "big stick")}</div>
+  stkScreen(`${stkBar("IN")}<div class="verdict goal"><div class="big">${dup ? "Got, got, got" : "Stuck in"}</div><p>${dup ? (shiny ? "Already had him, but this one's shiny. Swapped straight in." : "You've already got him. One for the swaps pile.") : esc(pickR(["Straight in the album. No bubbles.", "Pressed down with the thumb. Lovely.", "He's yours. Earned, not bought."]))}</p></div>
+  ${shiny ? `<div class="panel pad shinyban"><b>✦ It's a shiny</b><p class="note">A holographic one. Roughly one sticker in ${Math.round(1 / SR.shinyChance)} comes out like this.</p></div>` : dup && better ? `<div class="panel pad"><p class="note">Upgraded to <b>${CONDN[mt.c]}</b> condition.</p></div>` : ""}<div class="stkmys">${stkFlip(slot, S.stk.got[k], "big stick")}</div>
   <div class="panel pad"><div class="lines">${lines.map(l => `<div><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`).join("")}<div class="tot"><span>XP</span><b>+${xp}</b></div></div><div class="statline" style="margin-top:10px"><span>${esc(slot.club)} page</span><span><b>${stkPageGot(slot.club)}</b> of ${SR.pageSize}</span></div>${token ? `<p class="note" style="margin-top:8px"><b>Three swaps make a token.</b> Spend it in the album to choose which missing sticker your next shot is for.</p>` : dup ? `<p class="note" style="margin-top:8px">${SR.dupsPerToken - S.stk.dups % SR.dupsPerToken} more ${SR.dupsPerToken - S.stk.dups % SR.dupsPerToken === 1 ? "swap" : "swaps"} for a pick-your-player token.</p>` : ""}</div>
   ${page ? `<div class="panel send up"><span class="eyebrow">Page complete</span><div class="big">${esc(slot.club)}</div><p class="note">${slot.club === S.club ? "Your own club, every last one of them named. That's the whole point of all this." : "All eighteen. Not a gap on the page."} New title: <b>${esc(slot.club)} Completist</b>.</p></div>` : ""}
   <button class="btn" data-act="stkalbum">To the album</button>${slot.tier !== "paper" ? shareBtns() : ""}<button class="btn line" data-act="go" data-v="home">Home</button>`);
@@ -182,12 +255,12 @@ function renderStickers() {
   $("main").innerHTML = `${albumSeg()}${o && !o.started ? stkOfferHTML(o, true) : ""}
   <div class="counts"><div class="panel ct"><b>${fmt(total)}</b><span>Stuck in</span></div><div class="panel ct"><b>${fmt(all)}</b><span>In the album</span></div><div class="panel ct"><b>${S.stk.tok}</b><span>${S.stk.tok === 1 ? "Token" : "Tokens"}</span></div></div>
   <label class="field" for="sc">Page<select id="sc">${order.map(c => `<option value="${esc(c)}" ${c === club ? "selected" : ""}>${esc(c)}${c === S.club ? " (yours)" : ""} · ${stkPageGot(c)}/${SR.pageSize}${S.stk.pages[c] ? " ✓" : ""}</option>`).join("")}</select></label>
-  <div class="hd"><h2>${esc(club)}</h2><span class="eyebrow">${S.stk.pages[club] ? "★ Complete" : `Got ${got} · Need ${SR.pageSize - got}`}</span></div>
-  <div class="stkpage">${slots.map(s => S.stk.got[s.key] && s.i !== undefined ? stkCard(s, S.stk.got[s.key]) : `<button class="stkr need ${s.tier}${S.stk.chase.includes(s.key) ? " chase" : ""}${S.stk.pick === s.key ? " picked" : ""}" data-act="stkslot" data-v="${esc(s.key)}" aria-label="Missing sticker ${s.n + 1}, ${TIER_N[s.tier]}"><i class="sil"></i><span class="needt">${S.stk.pick === s.key ? "Next shot" : S.stk.chase.includes(s.key) ? "Chasing" : "Need"}</span><i class="no">${s.n + 1}</i></button>`).join("")}</div>
+  <div class="hd"><h2>${esc(club)}</h2><span class="eyebrow">${S.stk.pages[club] ? "★ Complete" : `Got ${got} · Need ${SR.pageSize - got}`}${slots.filter(x => stkMeta(x.key).sh && S.stk.got[x.key]).length ? " · ✦ " + slots.filter(x => stkMeta(x.key).sh && S.stk.got[x.key]).length + " shiny" : ""}</span></div>
+  <div class="stkpage">${slots.map(s => S.stk.got[s.key] && s.i !== undefined ? `<button class="stkb" data-act="stkview" data-v="${esc(s.key)}" aria-label="${esc(PL[s.i][0])}, look at the sticker">${stkCard(s, S.stk.got[s.key])}</button>` : `<button class="stkr need ${s.tier}${S.stk.chase.includes(s.key) ? " chase" : ""}${S.stk.pick === s.key ? " picked" : ""}" data-act="stkslot" data-v="${esc(s.key)}" aria-label="Missing sticker ${s.n + 1}, ${TIER_N[s.tier]}"><i class="sil"></i><span class="needt">${S.stk.pick === s.key ? "Next shot" : S.stk.chase.includes(s.key) ? "Chasing" : "Need"}</span><i class="no">${s.n + 1}</i></button>`).join("")}</div>
   <div class="key stkkey"><span><i class="k gold"></i>1–${SR.pageIcons} Gold Icons</span><span><i class="k foil"></i>${SR.pageIcons + 1}–${SR.pageIcons + SR.pageFoils} Foils</span><span><i class="k paper"></i>${SR.pageIcons + SR.pageFoils + 1}–${SR.pageSize} Paper</span></div>
   ${swaps.length ? `<div class="hd"><h2>Swaps</h2><span class="eyebrow">${SR.dupsPerToken - S.stk.dups % SR.dupsPerToken} more for a token</span></div><div class="panel pad"><div class="chips">${swaps.map(s => `<span class="hit">${esc(PL[s.i][0])} ×${S.stk.got[s.key] - 1}</span>`).join("")}</div></div>` : ""}
   ${titles.length ? `<div class="panel pad"><div class="statline"><span>Titles</span><span><b>${titles.map(esc).join(" · ")}</b></span></div></div>` : ""}
-  <div class="panel pad"><p class="note"><b>How you get them.</b> Nothing is handed out. A match with ${SR.paperDeep > 1 ? SR.paperDeep + " deep cuts" : "a deep cut"} or ${SR.paperGoals} goals earns a Paper shot; five from five${SR.foilCupRound <= 3 ? ` or winning a cup ${["tie", "quarter-final", "semi-final", "final"][SR.foilCupRound]}${SR.foilCupRound ? " or better" : ""}` : ""} earns a Foil; promotion or lifting the cup earns a Gold Icon. Then you have to <b>name the man on the sticker</b> from the clues. Miss and he's gone.</p><p class="note" style="margin-top:8px">Tap a missing sticker to <b>chase</b> it (up to ${SR.chaseMax}, ${SR.chaseWeight} times likelier to come up). ${SR.dupsPerToken} swaps make a token, which lets you choose which missing sticker your next shot is for. You still have to name him.</p></div>`;
+  <div class="panel pad"><p class="note"><b>How you get them.</b> Nothing is handed out. A match with ${SR.paperDeep > 1 ? SR.paperDeep + " deep cuts" : "a deep cut"} or ${SR.paperGoals} goals earns a Paper shot; five from five${SR.foilCupRound <= 3 ? ` or winning a cup ${["tie", "quarter-final", "semi-final", "final"][SR.foilCupRound]}${SR.foilCupRound ? " or better" : ""}` : ""} earns a Foil; promotion or lifting the cup earns a Gold Icon. Then you have to <b>name the man on the sticker</b> from the clues. Miss and he's gone.</p><p class="note" style="margin-top:8px">Tap one you've got to turn it over: his record is on the back. Name him first go on the fewest clues and he's <b>Mint</b>; about one in ${Math.round(1 / SR.shinyChance)} comes out <b>✦ Shiny</b>, and a swap can still turn up shiny. Tap a missing sticker to <b>chase</b> it (up to ${SR.chaseMax}, ${SR.chaseWeight} times likelier to come up). ${SR.dupsPerToken} swaps make a token, which lets you choose which missing sticker your next shot is for. You still have to name him.</p></div>`;
 }
 function stkSlotSheet(key) {
   const s = STK.all[key]; if (!s) return; const chasing = S.stk.chase.includes(key), full = S.stk.chase.length >= SR.chaseMax, picked = S.stk.pick === key;
@@ -206,6 +279,8 @@ document.addEventListener("click", e => {
   else if (act === "stkalbum") { M = null; view = "album"; albumTab = "stk"; render(); }
   else if (act === "atab") { albumTab = v; render(); }
   else if (act === "stkslot") stkSlotSheet(v);
+  else if (act === "stkview") stkView(v);
+  else if (act === "stkturn") { b.classList.toggle("over"); sfx.tick(); }
   else if (act === "stkchase") { const i = S.stk.chase.indexOf(v); if (i >= 0) S.stk.chase.splice(i, 1); else if (S.stk.chase.length < SR.chaseMax) S.stk.chase.push(v); save(); $("over").innerHTML = ""; render(); }
   else if (act === "stktoken") { S.stk.pick = S.stk.pick === v ? "" : v; save(); $("over").innerHTML = ""; render(); toast(S.stk.pick ? "Token lined up. Now earn the shot." : "Token kept."); }
 });

@@ -5,9 +5,9 @@ Live at https://adamjarcher505.github.io/boffin-matchday/ once GitHub Pages has 
 
 ## Run it
 ```
-python -m http.server 8080
+node tools/dev-server.js
 ```
-Open http://localhost:8080. The service worker caches everything, so when you're testing changes, clear it first
+Open http://localhost:8080/?offline (`?offline` keeps test sessions off the live database; the dev server never caches). The service worker caches everything, so when you're testing changes, clear it first
 (DevTools → Application → Service workers → Unregister, then Storage → Clear site data) or you'll see old files.
 `?preview=founder` / `?preview=member` show the badges, on localhost only.
 

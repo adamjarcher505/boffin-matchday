@@ -429,7 +429,7 @@ h2{letter-spacing:2.2px}
 .stkr .fn{font-weight:600;font-size:10px;letter-spacing:.5px;line-height:1;opacity:.75;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stkr .sn{font-weight:900;font-size:17px;letter-spacing:.3px;line-height:.95;max-width:100%;overflow-wrap:anywhere}
 .stkr .meta{font-family:var(--mono);font-size:8.5px;letter-spacing:.4px;line-height:1.2;opacity:.8}
-.stkr .yrs{font-family:var(--mono);font-size:9px;font-weight:600}
+
 .stkr .no{position:absolute;right:5px;top:21px;font-style:normal;font-family:var(--mono);font-size:9px;opacity:.6}
 .stkr .x{position:absolute;left:5px;top:21px;font-style:normal;font-family:var(--mono);font-size:9px;font-weight:700}
 .stkr.need{background:rgba(6,7,8,.6);border:1px dashed #3a4048;color:var(--mute);justify-content:center;width:100%}
@@ -446,6 +446,46 @@ h2{letter-spacing:2.2px}
 .stkpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .stkkey .k{border-radius:2px}.stkkey .k.gold{background:#e0ac3c}.stkkey .k.foil{background:#9fc3e6}.stkkey .k.paper{background:#efe3c2}
 
+/* ---- sticker extras: shirt, stars, highlight, condition, shiny, and a card that turns over ---- */
+.stkb{display:block;width:100%;padding:0;border:0;background:none;text-align:inherit;min-width:0}
+.stkr .shirt{position:absolute;left:50%;top:44%;width:62%;transform:translate(-50%,-50%);z-index:-1;fill:currentColor;opacity:.09}
+.stkr.got.gold .shirt{opacity:.14}
+.stkr .stars{position:absolute;left:5px;top:21px;font-size:9px;letter-spacing:1px;line-height:1;opacity:.75}
+.stkr .x{top:auto;bottom:5px;left:5px}
+.stkr .hi{margin-top:3px;max-width:100%;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.3px;line-height:1.15;text-transform:uppercase;padding:2px 5px;border-radius:3px;background:rgba(0,0,0,.12);overflow-wrap:anywhere}
+.stkr.got.gold .hi{background:rgba(42,29,4,.16)}
+.stkr .mint,.stkr .shtag{position:absolute;right:4px;top:34px;font-style:normal;font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:1px 4px;border-radius:2px;transform:rotate(-6deg)}
+.stkr .mint{border:1px solid currentColor;opacity:.8}
+.stkr .shtag{background:linear-gradient(90deg,#ff6ec7,#ffd86e,#6effa8,#6ec8ff,#b36eff);color:#1a1405}
+.stkr.shiny{box-shadow:0 0 0 2px #fff6,0 0 18px rgba(180,140,255,.45),0 2px 0 rgba(0,0,0,.35)}
+.stkr.shiny::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,#ff6ec7 0%,#ffd86e 20%,#6effa8 40%,#6ec8ff 60%,#b36eff 80%,#ff6ec7 100%);background-size:300% 300%;mix-blend-mode:multiply;opacity:.38;animation:holo 6s linear infinite}
+@keyframes holo{to{background-position:300% 300%}}
+.stkr.big .stars{top:30px;font-size:12px}.stkr.big .hi{font-size:10.5px;padding:3px 7px;margin-top:5px}.stkr.big .mint,.stkr.big .shtag{font-size:10px;padding:2px 6px;top:48px}
+/* turning over */
+.flip{perspective:1100px;width:min(72vw,280px);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.flipin{position:relative;aspect-ratio:3/4;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,1.3,.5,1)}
+.flip.over .flipin{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.face.back{transform:rotateY(180deg)}
+.face .stkr,.face .stkr.big{width:100%;height:100%}
+.fliphint{margin:8px 0 0;text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.stkmys{flex-direction:column;align-items:center}
+.stkr.rev{justify-content:flex-start;align-items:stretch;text-align:left;padding:10px 11px;text-transform:none;overflow:auto;font-family:var(--body)}
+.stkr.rev.paper,.stkr.rev{background:#efe3c2}
+.stkr.rev.foil{background:linear-gradient(160deg,#e6eef6,#cfdeec)}.stkr.rev.gold{background:linear-gradient(160deg,#fbefc6,#ecd08a)}
+.bk{display:flex;flex-direction:column;gap:7px;color:#1c1a14;font-size:11.5px;line-height:1.3}
+.bkh{display:flex;flex-direction:column;border-bottom:2px solid rgba(0,0,0,.18);padding-bottom:5px}
+.bkh b{font-family:var(--disp);font-weight:900;font-size:19px;letter-spacing:.4px;text-transform:uppercase;line-height:1}
+.bkh span{font-family:var(--mono);font-size:9.5px;letter-spacing:.4px;text-transform:uppercase;opacity:.7;margin-top:2px}
+.bks > span{display:block;font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.6;margin-bottom:2px}
+.bks p{margin:0}.bks p + p{margin-top:2px}.bks i{font-style:normal;font-family:var(--mono);font-size:9.5px;opacity:.7}
+.bks ul{margin:0;padding:0;list-style:none}.bks li{margin:0 0 2px}.bks li b{font-family:var(--mono);font-size:10px}
+.bks .more{opacity:.6;font-size:10.5px}
+.bkf{margin-top:auto;display:flex;flex-direction:column;gap:1px;border-top:1px dashed rgba(0,0,0,.25);padding-top:5px;font-family:var(--mono);font-size:8.5px;letter-spacing:.4px;text-transform:uppercase;opacity:.75}
+.shinyban{border-color:#b36eff;background:linear-gradient(110deg,rgba(255,110,199,.10),rgba(110,200,255,.10))}
+.shinyban b{font-family:var(--disp);font-size:22px;letter-spacing:1.5px;text-transform:uppercase;background:linear-gradient(90deg,#ff6ec7,#ffd86e,#6effa8,#6ec8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stkbox{align-items:stretch}.stkbox .stkmys{margin:4px 0 6px}
+
 /* ---- sticker clues ---- */
 .clues{display:flex;flex-direction:column;gap:6px}
 .clue{display:flex;align-items:baseline;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
@@ -455,6 +495,56 @@ h2{letter-spacing:2.2px}
 .clue.trail{flex-direction:column;align-items:stretch;gap:5px}.clue.trail > span{width:auto}.clue.trail .path span{width:auto;font-size:14px;padding:3px 7px;color:var(--text);letter-spacing:.4px}
 .q .clue{padding:6px 9px}.q .clue b{font-size:17px}.q .clue.trail .path span{font-size:13px;padding:2px 6px}
 .q .stkmys{display:none}
+
+/* ---- question screens: title card, chance strip, roomy layout when the keyboard is down ---- */
+.cstrip{display:flex;gap:5px;justify-content:center}
+.cstrip i{width:22px;height:5px;border-radius:3px;background:var(--raise)}
+.cstrip i.g{background:var(--good)}.cstrip i.n{background:var(--bad)}
+.cstrip i.cur{background:var(--amber);animation:fdpulse 1.6s ease-in-out infinite}
+.cstrip i.pen{margin-left:8px}
+.cvwrap{display:flex;flex-direction:column;gap:16px}
+.qhero{display:flex;align-items:center;gap:14px;padding:16px 14px;border:1px solid var(--line);border-radius:10px;background:radial-gradient(120% 140% at 0% 0%,rgba(240,181,65,.10),transparent 60%),rgba(6,7,8,.6);box-shadow:var(--glow)}
+.qhero .qic{flex:none;width:58px;height:58px;color:var(--amber);font-style:normal;display:grid;place-items:center;border:1px solid rgba(240,181,65,.35);border-radius:12px;background:rgba(240,181,65,.06)}
+.qhero .qic svg{width:38px;height:38px}
+.qht{display:flex;flex-direction:column;gap:3px;min-width:0}
+.qht .eyebrow{color:var(--amber)}
+.qht b{font-family:var(--disp);font-weight:900;font-size:28px;letter-spacing:1.5px;text-transform:uppercase;line-height:1}
+.qht > span:last-child{font-size:13px;color:var(--mute)}
+.qart{display:none}
+@media (min-height:640px){
+  /* title card: centred in the screen */
+  .focus main:has(> .cvwrap){min-height:100svh}
+  .cvwrap{flex:1;justify-content:center;padding-bottom:8vh}
+  .cvwrap .qhero{flex-direction:column;text-align:center;padding:26px 16px 22px;gap:14px}
+  .cvwrap .qhero .qic{width:96px;height:96px;border-radius:20px}.cvwrap .qhero .qic svg{width:60px;height:60px}
+  .cvwrap .qht{align-items:center}.cvwrap .qht b{font-size:38px}
+  .cvwrap .rule.qq{text-align:center;font-size:18px}
+  /* live question, keyboard down: fill the screen */
+  .q:not(.kb) main{min-height:100svh;gap:12px;position:relative;isolation:isolate;padding-bottom:calc(var(--sb) + 16px)}
+  .q:not(.kb) #rbody{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;padding-bottom:5vh}
+  /* typed questions: keep what you are answering right under the answer box, just bigger */
+  .q:not(.kb) main:has(.entry) #rbody{justify-content:flex-start;padding-top:1vh}
+  .q:not(.kb) main:has(.entry) .cat{min-height:clamp(110px,20vh,190px)}.q:not(.kb) main:has(.entry) .cat b{font-size:28px}
+  .q:not(.kb) .qart{display:block;position:absolute;right:-30px;bottom:-24px;width:min(62vw,280px);color:var(--amber);opacity:.032;z-index:-1;pointer-events:none}
+  .q:not(.kb) .qart svg{display:block;width:100%;height:auto}
+  .q:not(.kb) .chance h3{font-size:26px}
+  .q:not(.kb) .rule.qq{font-size:17px}
+  .q:not(.kb) .tc{padding:16px 14px}.q:not(.kb) .tc b{font-size:26px}.q:not(.kb) .tc span{font-size:14px}.q:not(.kb) .tc em{font-size:15px;min-height:19px}
+  .q:not(.kb) .duo{gap:12px}.q:not(.kb) .duo .tc{min-height:clamp(96px,15vh,140px);display:flex;flex-direction:column;justify-content:center}
+  .q:not(.kb) .quad{gap:10px}.q:not(.kb) .quad .tc{min-height:clamp(96px,19vh,180px);display:flex;flex-direction:column;justify-content:center}.q:not(.kb) .quad .tc b{font-size:23px}.q:not(.kb) .quad .tc span,.q:not(.kb) .quad .tc em{font-size:12.5px}
+  .q:not(.kb) .pips{justify-content:center;gap:6px}.q:not(.kb) .pips i{width:30px;height:6px;border-radius:3px}
+  .q:not(.kb) .ask{font-size:27px;text-align:center}
+  .q:not(.kb) .cat{min-height:clamp(90px,15vh,150px);padding:14px 10px}.q:not(.kb) .cat b{font-size:25px}.q:not(.kb) .cat span{font-size:10.5px}
+  .q:not(.kb) .cats .amp{font-size:22px;align-self:center}
+  .q:not(.kb) .pitchwrap{height:clamp(190px,38vh,360px)}.q:not(.kb) .pp{font-size:13.5px}
+  .q:not(.kb) .slot{padding:7px 0;font-size:15px}.q:not(.kb) .slot .n{font-size:12px}.q:not(.kb) .slot .v{font-size:13px}
+  .q:not(.kb) .path{justify-content:center}.q:not(.kb) .path span{font-size:20px;padding:8px 11px}
+  .q:not(.kb) .chips span{font-size:18px;padding:8px 12px;min-width:56px}
+  .q:not(.kb) .tbl td{font-size:14px;padding:8px}.q:not(.kb) .tbl td:nth-child(2){font-size:15px}
+  .q:not(.kb) .season output{font-size:34px}
+  .q:not(.kb) .tries{justify-content:center}
+  .q:not(.kb) .clue{padding:12px}.q:not(.kb) .clue b{font-size:22px}
+}
 
 /* ---- desktop: wider canvas, tabs under the header, dashboard columns ---- */
 @media (min-width:1024px){

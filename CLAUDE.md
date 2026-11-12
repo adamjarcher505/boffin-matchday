@@ -26,7 +26,7 @@ Full map and data model in README.md. Judgment calls in DECISIONS.md; what's blo
   - `clubs` 1,358, `nats` 157, `leagues` 5; `lists` 236 top tens, `xi` 839 line-ups, `tables` 109 (top four + relegated only), `hl` 900 fees, `pairs` 700, `gridClubs`, `gridNats`.
 
 ## Running it
-Serve the folder: `python -m http.server 8080` (launch config `boffin` in `.claude/launch.json`). The service worker serves cached files: unregister it and clear caches before testing changes. Tests: `cd tests && node --test unit/*.test.js`; browser no-scroll check: `tests/browser/qa.js`.
+Serve the folder: `node tools/dev-server.js` (no caching; launch config `boffin`), open `/?offline` so tests don't touch the live Supabase. The service worker serves cached files: unregister it and clear caches before testing changes. Tests: `cd tests && node --test unit/*.test.js`; browser no-scroll check: `tests/browser/qa.js`.
 
 ## Things Adam cares about
 - Don't ruin the league mode — it feels like being in a match with a tight promotion battle. Enhance, don't redesign.

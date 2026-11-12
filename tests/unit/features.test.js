@@ -153,3 +153,39 @@ test("sticker choice: about half from your own club, chase list triples the odds
 test("service worker: precache list complete and VERSION matches the files", () => {
   execFileSync(process.execPath, [path.join(ROOT, "tools", "bump-sw.js"), "--check"], { stdio: "pipe" });
 });
+
+test("sticker facts come from the data: titles, top tens, fees, line-ups", () => {
+  const g = load();
+  const f = JSON.parse(g.run(`(() => { const i = PL.findIndex(p => p[0] === "Cristiano Ronaldo"); const f = stkFacts(i); return JSON.stringify({ titles: f.titles.map(t => t.lg + " " + t.y + " " + t.club), top1: f.tops.filter(t => t.r === 1).length, fee: f.fee, bigN: f.bigN, hi: stkHighlight(i, clubIdx("Manchester United")) }); })()`));
+  // every title listed must be a season where that club topped that league table, with him on the books
+  const ok = JSON.parse(g.run(`(() => { const i = PL.findIndex(p => p[0] === "Cristiano Ronaldo"), f = stkFacts(i), ss = PL[i][6]; return JSON.stringify(f.titles.every(t => { const T = BD.tables.find(x => x[0] === t.lg && x[1] === t.y); let on = false; for (let k = 0; k < ss.length; k += 3) if (CLUB[ss[k]] === t.club && ss[k + 1] <= t.y - SQ0 && t.y - SQ0 <= ss[k + 2]) on = true; return T && T[3][0][0] === t.club && on; })); })()`));
+  assert.strictEqual(ok, true);
+  assert.ok(f.titles.length >= 2); assert.ok(f.top1 >= 1); assert.strictEqual(f.fee.to, "Juventus"); assert.ok(f.bigN > 0);
+  assert.match(f.hi, /top scorer/);
+});
+
+test("sticker front only claims a title won with that page's club", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { const out = []; Object.values(STK.all).forEach(s => { if (s.i === undefined) return; const h = stkHighlight(s.i, s.c), m = h.match(/title squad ([0-9][0-9])[/]([0-9][0-9])$/); if (m) { const y = 2000 + +m[1]; if (!stkFacts(s.i).titles.some(t => t.y === y && t.club === s.club)) out.push(s.key + " " + h); } }); return JSON.stringify(out); })()`));
+  assert.deepStrictEqual(r, []);
+});
+
+test("sticker collector details: condition, shiny, and merging two devices", () => {
+  const g = load({ localStorage: { "boffin-matchday-v1": JSON.stringify({ v: 2, made: true, name: "T", club: "Arsenal", salt: 1 }) } });
+  const key = g.run("STK.by['Arsenal'][0].key");
+  g.run(`Math.random = () => 0.01; S.stk.offer = { tier: 'gold', free: true }; S.stk.offer.key = ${JSON.stringify(key)}; stkStart(); stkPick(STKA.slot.i);`);
+  const m = JSON.parse(g.run(`JSON.stringify(S.stk.meta[${JSON.stringify(key)}])`));
+  assert.strictEqual(m.c, 3, "named first go on the starting clues = Mint"); assert.strictEqual(m.sh, 1, "shiny roll"); assert.ok(m.d);
+  assert.ok(g.els.main.innerHTML.includes("It's a shiny"));
+  const merged = JSON.parse(g.run(`JSON.stringify(mergeMeta({ a: { d: "2026-11-10", c: 1 }, b: { d: "2026-11-12", c: 2 } }, { a: { d: "2026-11-11", c: 3, sh: 1 } }))`));
+  assert.deepStrictEqual(merged.a, { d: "2026-11-10", c: 3, sh: 1 }); assert.strictEqual(merged.b.c, 2);
+});
+
+test("question screens: title card and backdrop drawing for every type, chance strip in matches", () => {
+  const g = load({ localStorage: { "boffin-matchday-v1": JSON.stringify({ v: 2, made: true, name: "T", club: "Arsenal", salt: 1 }) } });
+  for (const t of JSON.parse(g.run("JSON.stringify(Object.keys(TYPES))"))) {
+    g.run(`startTraining("${t}")`); assert.ok(g.els.main.innerHTML.includes('class="qhero"'), t); assert.ok(g.run("!!QART." + t), "art for " + t);
+    g.run("takeChance()"); assert.ok(g.els.main.innerHTML.includes('class="qart"'), t); g.run("M.live = false");
+  }
+  g.run("startLeagueMatch()"); assert.ok(g.els.main.innerHTML.includes('class="cstrip"'));
+});

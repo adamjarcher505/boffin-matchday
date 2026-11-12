@@ -2,6 +2,18 @@
 render(); if (!S.made) profileSheet(true);
 Net.init();
 
+/* On-screen keyboard: question screens use the whole screen, but while the keyboard is up they switch to the compact
+   layout so the answer box and what you're answering stay above it. The keyboard shrinks the visual viewport. */
+(function () {
+  const app = document.getElementById("app"), vv = window.visualViewport, touch = window.matchMedia("(pointer: coarse)").matches;
+  const check = () => app.classList.toggle("kb", !!vv && innerHeight - vv.height > 140);
+  if (vv) vv.addEventListener("resize", check);
+  // a touch screen focusing a text box means the keyboard is on its way: go compact straight away instead of jumping after it lands
+  document.addEventListener("focusin", e => { if (touch && e.target.matches && e.target.matches("input[type=text], input:not([type])")) app.classList.add("kb"); });
+  document.addEventListener("focusout", () => setTimeout(check, 250));
+  check();
+})();
+
 /* Service worker: offline play, and a "new version ready" toast when an update has downloaded.
    A new version never takes over mid-session on its own: the player taps the toast (or it lands next launch). */
 (function () {

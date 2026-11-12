@@ -87,6 +87,7 @@ const Net = {
     if (Net.canSignIn() && $("pf") && !document.querySelector(".acct")) { const nm = $("nm") ? $("nm").value : "", cl = $("cl") ? $("cl").value : ""; profileSheet(!S.made); if ($("nm") && nm) $("nm").value = nm; if ($("cl") && cl) $("cl").value = cl; }
   },
   async _init() {
+    if (/[?&]offline\b/.test(location.search)) return;   // ?offline: play fully local (testing without touching the live database)
     for (const k of ["supabase", "claude"]) {
       let ok = false; try { ok = await Backends[k].start(); } catch (e) { ok = false; }
       if (!ok) continue; Net.kind = k; Net.b = Backends[k];

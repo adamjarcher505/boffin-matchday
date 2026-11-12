@@ -42,6 +42,12 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - **One offer waits at a time.** A better offer replaces a waiting worse one; a worse one never replaces a better one.
 - **The free first sticker** (after your first win) is a Gold Icon from your own club, a household name, played on Paper rules (3 clues, 2 guesses).
 
+## Question screens and sticker records (12/11/2026, evening)
+- **Keyboard detection, not screen size alone.** The roomy layout only applies when the screen is tall (640px or more) **and** the keyboard isn't up (`.kb`, from the visual viewport shrinking, or straight away when a text box is focused on a touch screen). On iPhones the page doesn't shrink when the keyboard opens, so height alone can't tell; the visual viewport can. Checked: with the keyboard up, every typed question keeps the answer box and the question body above a 336px keyboard on a 390×844 screen.
+- **Typed questions keep their content under the answer box** (bigger, not centred). Centring left a gap between the box and the question. Tap questions centre their cards.
+- **Sticker facts are computed from data.js at display time**, never stored or written by hand. Title squads need both the squad record and the final table; line-ups are only used for names that appear once in the data, so a shared name can't pick up someone else's caps. The front only claims a title won with that page's club (a test checks every sticker).
+- **Shiny is a cosmetic rarity on top of winning**: 4% of wins, and duplicates can roll it, which gives swaps a purpose. It never changes how hard a sticker is to get.
+
 ## Testing
 - **Browser checks ran in the app's built-in browser, not Playwright.** Installing Playwright means a large browser download. `tests/browser/qa.js` drives the real game in-page and reports any screen that scrolls. All question types, both grid and sign-in sheets, all three sticker tiers: no scrolling at 375×667, 390×844 or 375×400. Screenshots from that pass were checked by eye, not saved to the repo.
 - **Short-screen sheets.** At keyboard height (≤520px tall) the profile and sign-on sheets hide the welcome steps, the founder card and the privacy line, so the fields fit.
