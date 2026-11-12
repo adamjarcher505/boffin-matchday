@@ -741,8 +741,8 @@ function accountHTML() {
   return `<div class="panel pad acct"><span class="eyebrow">${S.made ? "Save your progress" : "Already signed up?"}</span><p class="note">${S.made ? "Sign in to keep your level, division and album safe, and carry on from any device." : "Sign in and your progress comes with you."}</p>
   ${CFG.google && !IOS_APP ? '<button type="button" class="btn line sm gbtn" data-act="google">Continue with Google</button>' : ""}
   <label class="field" for="em">Email<input id="em" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc(Net.pending)}"></label>
-  <button type="button" class="btn line sm" data-act="sendcode">Email me a code</button>
-  <div id="codebox" ${Net.pending ? "" : "hidden"}><label class="field" for="otp">6-digit code from the email<input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></label><button type="button" class="btn sm" data-act="verify" style="margin-top:8px">Sign in</button></div>
+  <button type="button" class="btn line sm" data-act="sendcode">Email me a sign-in link</button>
+  <div id="codebox" ${Net.pending ? "" : "hidden"}><label class="field" for="otp">Got a 6-digit code instead? Type it here<input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></label><button type="button" class="btn sm" data-act="verify" style="margin-top:8px">Sign in</button></div>
   <p class="msg" id="amsg"></p><p class="note priv">We keep your email only so you can sign in. No marketing, no mailing lists, never sold. Delete your account any time from here.</p></div>`;
 }
 function profileSheet(first) {
@@ -775,7 +775,7 @@ async function acctAct(act) {
       const em = ($("em").value || "").trim(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { am("That doesn't look like an email address."); return; }
       if (!navigator.onLine) { am("You're offline. Sign in when you've got signal."); return; }
       am("Sending…"); const err = await Net.sendCode(em); if (err) { am(/fetch|network/i.test(err.message || "") ? "Couldn't reach the server. Check your signal and try again." : /rate|seconds/i.test(err.message || "") ? "Hang on a minute before asking for another code." : "Couldn't send it: " + err.message); return; }
-      Net.pending = em; $("codebox").hidden = false; am("Code sent to " + em + ". Check your inbox (and junk). Type the code here, or tap the link in the email."); try { $("otp").focus(); } catch (e) { }
+      Net.pending = em; $("codebox").hidden = false; am("Sent to " + em + ". Open the email on this device and tap Sign in (check junk too). If it shows a 6-digit code, type it below."); try { $("otp").focus(); } catch (e) { }
     }
     else if (act === "verify") { const code = ($("otp").value || "").replace(/\D/g, ""); if (code.length < 6) { am("The code is 6 digits."); return; } am("Checking…"); const err = await Net.verifyCode(Net.pending, code); if (err) am("That code didn't work. Check it or send a new one."); else Net.pending = ""; }
     else if (act === "delacct") { confirmSheet("Delete your account?", "Your account, your saved progress online and your place in the shared tables go for good, badges included. This can't be undone. Progress on this device stays unless you also reset it.", "Delete it", async () => { try { toast("Deleting…"); await Net.deleteAccount(); S.owner = ""; save(); Net.signedOut(); toast("Account deleted. Gone, like a free transfer."); } catch (e) { toast(/not find|does not exist|PGRST/i.test((e && e.message) || "") ? "Deleting accounts isn't switched on yet. Try again soon." : "Couldn't delete it just now. Check your signal and try again."); } }); }
