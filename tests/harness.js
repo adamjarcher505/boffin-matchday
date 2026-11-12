@@ -29,7 +29,7 @@ function load(opts = {}) {
     requestAnimationFrame: () => 0, cancelAnimationFrame: () => { },
     localStorage: { getItem: k => (k in ls ? ls[k] : null), setItem: (k, v) => { ls[k] = String(v); }, removeItem: k => { delete ls[k]; } },
     location: { hostname: opts.hostname || "localhost", search: opts.search || "", origin: "http://localhost:8080", pathname: "/", protocol: "http:", href: "http://localhost:8080/", reload() { } },
-    navigator: { onLine: true, serviceWorker: undefined, clipboard: undefined, userAgent: "node-test" },
+    navigator: { onLine: true, userAgent: "node-test" },
     document: { getElementById: id => els[id] || (els[id] = dummyEl()), createElement: () => dummyEl(), addEventListener() { }, querySelector: () => null, querySelectorAll: () => [], head: dummyEl(), body: dummyEl(), documentElement: dummyEl(), activeElement: null, visibilityState: "visible" },
     addEventListener(k, f) { (listeners[k] = listeners[k] || []).push(f); }, removeEventListener() { },
     matchMedia: () => ({ matches: !!opts.wide, addEventListener() { } }),
@@ -37,6 +37,7 @@ function load(opts = {}) {
   };
   sandbox.window = sandbox; sandbox.self = sandbox; sandbox.globalThis = sandbox;
   if (opts.config) sandbox.BOFFIN_CONFIG = opts.config;
+  Object.assign(sandbox, opts.globals || {});
   const ctx = vm.createContext(sandbox);
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => !/^https?:/.test(s));

@@ -1,6 +1,6 @@
 # Progress (combined brief: finish, extend, go live)
 
-Run 1 stopped early on 11/11/2026 (usage limit). Resume from the first unchecked item.
+Run 1 stopped early on 11/11/2026 (usage limit). Run 2 resumed 12/11/2026. Resume from the first unchecked item.
 
 ## Phase 0: orient
 - [x] Read CLAUDE.md, SETUP.md, git log, code
@@ -15,10 +15,14 @@ Run 1 stopped early on 11/11/2026 (usage limit). Resume from the first unchecked
       Plan: add an empty `.nojekyll` file (Pages then copies files instead of running Jekyll) and let the end-of-run push trigger a new build.
       If that build also sticks, Adam re-runs it from the Actions tab.
 
-## Phase 2: build (nothing below is started)
-- [ ] A. Foundations: save version 2 + migrations, TUNING/STICKER_RULES block, SHARE_URL, Net adapter (supabase / claude / local) in net.js,
-      update toast (SW must stop calling skipWaiting on install), timestamp/field save merge, hide Google button on iOS standalone
-- [ ] F. Question bank: see findings below
+## Phase 2: build
+- [x] A. Foundations: save v2 + MIGRATIONS, TUNING / STICKER_RULES, SHARE_URL, net.js adapter (supabase / claude / local), boot.js,
+      update toast (sw.js no longer skips waiting; tools/bump-sw.js sets VERSION), mergeSaves + pull-merge-push sync, tests
+- [ ] A (leftover): hide Google button on iOS standalone, toast.act CSS, README data model
+- [x] F. Question bank: data expansion BLOCKED (no build process or source list in repo). Fixed instead: club-scoped
+      Odd One Out and The Link adapt their fame bar per club, so all 60 original picker clubs build 5+ question types with no padding.
+      Added 19 former Premier League clubs to the picker (CLUBS_PICK). QV bumped v2 -> v3. COVERAGE.md regenerated.
+- [ ] F (leftover): DATA_SOURCES.md, spot-check of thin-club facts against a second source
 - [ ] B. Spoiler-free share card
 - [ ] C. Season stakes (points needed, Final Day, around-you lines, season end, training XP diminishing)
 - [ ] E. Club Wars top-10 tally (function in supabase/002_additions.sql, client fallback)

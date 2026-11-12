@@ -3,7 +3,7 @@
   "private": true,
   "description": "Dev-only tests for Boffin Matchday. Nothing in this folder ships with the game.",
   "scripts": {
-    "test": "node --test unit/",
+    "test": "node --test unit/*.test.js",
     "browser": "node browser/run.js",
     "sim": "node sim/stickers.js"
   }

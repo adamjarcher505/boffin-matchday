@@ -8,7 +8,7 @@ const rows = JSON.parse(g.run(`(() => {
   const TYPES11 = ["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season"];
   // "Premier League club" = any club with a Premier League squad on record (2010-11 onwards) or named in a Premier League table/line-up
   const now = CLUB.map((n, c) => c).filter(c => PLC.has(c) || [...Array(SQN).keys()].some(y => squadOf(c, y).filter(isPLp).length >= 15 && PLC.has(c)));
-  const picker = new Set(BD.gridClubs);
+  const picker = new Set(CLUBS_PICK);
   return JSON.stringify(now.map(c => {
     const name = CLUB[c], lists = listsOf(c).length, xi = BD.xi.filter(x => x[0] === name).length, xiAny = BD.xi.filter(x => x[0] === name || x[1] === name).length;
     const tabs = BD.tables.filter(t => t[3].some(r => r[0] === name)).length, releg = BD.tables.filter(t => t[4].includes(name)).length;

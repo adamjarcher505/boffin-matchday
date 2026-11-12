@@ -76,101 +76,95 @@ const sqLabel = y => seasonLabel(SQ0 + y) + (y === SQN - 1 ? " (this season)" : 
 const squadOf = (c, y) => clubPl[c].filter(i => { const a = PL[i][6]; for (let k = 0; k < a.length; k += 3) if (a[k] === c && a[k + 1] <= y && y <= a[k + 2]) return true; return false; });
 const sqClubs = BD.gridClubs.filter(c => squadOf(c, 5).length >= 15);
 const clubIdx = name => CLUB.indexOf(name);
+const EXTRA_CLUBS = ["Birmingham", "Blackpool", "Cardiff", "Huddersfield", "Norwich", "QPR", "Reading", "Swansea", "Watford", "West Brom", "Wigan", "Barnsley FC", "Bradford", "Charlton", "Derby", "Oldham Athletic", "Portsmouth", "Sheffield Wednesday", "Swindon Town"];
+const CLUBS_PICK = BD.gridClubs.concat(EXTRA_CLUBS.map(n => CLUB.indexOf(n)).filter(c => c >= 0 && !BD.gridClubs.includes(c)));
 const listsOf = c => BD.lists.map((l, i) => i).filter(i => BD.lists[i][0].indexOf(CLUB[c] + ":") === 0 || BD.lists[i][0].indexOf(CLUB[c] + "'s ") === 0);
 const PLLISTS = BD.lists.map((l, i) => i).filter(i => BD.lists[i][0].indexOf("Premier League") === 0 || PLGRID.some(c => BD.lists[i][0].indexOf(CLUB[c] + ":") === 0 || BD.lists[i][0].indexOf(CLUB[c] + "'s ") === 0));
 
 /* ============ state ============ */
+/* ============ tuning: every balance number in one place ============ */
+const CFG = window.BOFFIN_CONFIG || {};
+const SHARE_URL = CFG.shareUrl || (/^https?:$/.test(location.protocol) ? location.origin + location.pathname : "");   // the one share link; set shareUrl in config.js
+const TUNING = {
+  trainGoalXp: 12, trainMissXp: 2,       // training XP per chance...
+  trainSoftCap: 20, trainSoftFactor: .5, // ...halved after this many training chances in a day (never zero), so it can't be farmed
+  themeBonus: .5,                        // theme of the day: +50% XP on matching chances only
+  finalDay: 3,                           // the last N fixtures of a season get the Final Day treatment
+  warsTop: 10,                           // Club Wars: a club's score is its top N fans' weekly goals divided by N
+  logMinSample: 30                       // question log: aggregates only come back once a question has this many answers
+};
+const STICKER_RULES = {
+  paperDeep: 2,                          // paper offer: a league or cup match with at least this many deep cuts (rarity >= deepAt)
+  deepAt: .7,
+  foilPerfect: 5,                        // foil offer: five from five (or winning a cup tie)
+  clues: { paper: 3, foil: 2, gold: 1 }, // clues showing at the start
+  tries: { paper: 2, foil: 1, gold: 1 },
+  goldClueEvery: 6,                      // gold: one more clue every N seconds
+  ownClub: .5,                           // share of offers that come from the player's own club
+  chaseWeight: 3, chaseMax: 3,           // chase-list players are this many times likelier
+  dupXp: 15, dupsPerToken: 3,            // duplicates: bonus XP, and every N make one pick-your-player token
+  winXp: { paper: 40, foil: 90, gold: 200 },
+  pageSize: 18, pageIcons: 3, pageFoils: 5,
+  pageXp: 600, ownPageXp: 1500,
+  goldChoices: 3
+};
+
+/* ============ state ============
+   The storage key never changes (so nobody loses a save); the format version is S.v.
+   To change the format: bump SAVE_V and add a MIGRATIONS[old] step that upgrades a save in place. Never remove or
+   rename a field an older client reads: old clients keep unknown fields, so new ones are safe to add. */
 const KEY = "boffin-matchday-v1";
+const SAVE_V = 2;
 const freshCup = () => ({ club: "", rd: 0, runs: 0, won: 0, best: -1, w: 0, l: 0 });
-const fresh = () => ({ cup: freshCup(), v: 1, made: false, name: "", club: "Arsenal", xp: 0, div: 0, season: 1, cw: { wk: weekNo(), gf: 0, pts: 0 }, week: { pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }, form: [], g: {}, played: [], album: {}, recent: [], grid: {}, st: { m: 0, w: 0, goals: 0, deep: 0, bestDiv: 0, grids: 0 }, sound: true, salt: Math.floor(Math.random() * 1e9), note: null, ts: {}, hist: [], lb: {}, kit: true, owner: "" });
-const hydrate = o => { const s = Object.assign(fresh(), o); s.week = Object.assign(fresh().week, o.week || {}); s.st = Object.assign(fresh().st, o.st || {}); s.cw = Object.assign(fresh().cw, o.cw || {}); s.cup = Object.assign(freshCup(), o.cup || {}); return s; };
+const freshStk = () => ({ got: {}, chase: [], tok: 0, dups: 0, offer: null, free: false, pages: {}, n: { off: 0, won: 0, lost: 0 } });
+const fresh = () => ({ cup: freshCup(), v: SAVE_V, made: false, name: "", club: "Arsenal", xp: 0, div: 0, season: 1, cw: { wk: weekNo(), gf: 0, pts: 0 }, week: { pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }, form: [], g: {}, played: [], album: {}, recent: [], grid: {}, st: { m: 0, w: 0, goals: 0, deep: 0, bestDiv: 0, grids: 0 }, sound: true, salt: Math.floor(Math.random() * 1e9), note: null, ts: {}, hist: [], lb: {}, kit: true, owner: "",
+  t: 0, stk: freshStk(), tr: { d: "", n: 0 }, hap: true });
+const MIGRATIONS = {
+  // v1 -> v2 (12/11/2026): stickers (S.stk), last-updated stamp (S.t), daily training counter (S.tr), haptics toggle (S.hap). Nothing removed.
+  1: s => { if (!s.stk) s.stk = freshStk(); if (!s.t) s.t = 0; if (!s.tr) s.tr = { d: "", n: 0 }; if (s.hap === undefined) s.hap = true; }
+};
+function migrate(o) { let v = (o.v | 0) || 1; while (v < SAVE_V) { if (MIGRATIONS[v]) MIGRATIONS[v](o); v++; } if (v > (o.v | 0)) o.v = v; return o; }
+const hydrate = o => {
+  o = migrate(Object.assign({}, o || {})); const s = Object.assign(fresh(), o);
+  s.week = Object.assign(fresh().week, o.week || {}); s.st = Object.assign(fresh().st, o.st || {}); s.cw = Object.assign(fresh().cw, o.cw || {}); s.cup = Object.assign(freshCup(), o.cup || {});
+  s.stk = Object.assign(freshStk(), o.stk || {}); s.stk.n = Object.assign(freshStk().n, (o.stk || {}).n || {}); s.tr = Object.assign({ d: "", n: 0 }, o.tr || {});
+  ["album", "grid", "g", "ts", "lb"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; }); ["form", "played", "recent", "hist"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  return s;
+};
+/* Merge two saves of the same account (two devices that both played, possibly offline).
+   League and season state has to stay in one piece (division, season, week, salt and the table all hang together), so it
+   comes whole from the save that was updated last. Everything that only ever grows is combined: the Names album and the
+   stickers are unioned, XP and records take the higher value, season history keeps every season. Counters are NOT added
+   together: without a common starting point that would double-count everything both devices already shared. */
+function mergeSaves(a, b) {
+  if (!a || !a.made) return b || a; if (!b || !b.made) return a;
+  const ta = a.t || 0, tb = b.t || 0, aNewer = ta !== tb ? ta > tb : a.season !== b.season ? a.season > b.season : (a.xp || 0) >= (b.xp || 0);
+  const base = aNewer ? a : b, other = aNewer ? b : a, m = JSON.parse(JSON.stringify(base)), max = (x, y) => Math.max(x || 0, y || 0);
+  const maxMap = (x, y) => { const o = Object.assign({}, x || {}); Object.keys(y || {}).forEach(k => { o[k] = max(o[k], y[k]); }); return o; };
+  m.xp = max(a.xp, b.xp);
+  m.album = maxMap(base.album, other.album);
+  m.seen = (other.seen || []).filter(k => !(base.seen || []).includes(k)).concat(base.seen || []).slice(-400);
+  m.played = (other.played || []).filter(k => !(base.played || []).includes(k)).concat(base.played || []).slice(-60);
+  m.st = maxMap(base.st, other.st); m.lb = maxMap(base.lb, other.lb);
+  m.ts = Object.assign({}, other.ts || {}); Object.keys(base.ts || {}).forEach(k => { const x = base.ts[k], y = m.ts[k]; m.ts[k] = !y || x[0] >= y[0] ? x : y; });
+  const hs = {}; (other.hist || []).concat(base.hist || []).forEach(h => { hs[h.s] = h; }); m.hist = Object.keys(hs).map(k => hs[k]).sort((x, y) => x.s - y.s).slice(-60);
+  m.cup = Object.assign({}, base.cup, { won: max(base.cup.won, other.cup.won), best: Math.max(base.cup.best, other.cup.best), w: max(base.cup.w, other.cup.w), l: max(base.cup.l, other.cup.l) });
+  const bs = base.stk || freshStk(), os = other.stk || freshStk();
+  m.stk = Object.assign({}, bs, { got: maxMap(bs.got, os.got), free: !!(bs.free || os.free), tok: max(bs.tok, os.tok), n: maxMap(bs.n, os.n), pages: Object.assign({}, os.pages || {}, bs.pages || {}) });
+  m.t = max(ta, tb);
+  return hydrate(m);
+}
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = hydrate(JSON.parse(raw)); } catch (e) { }
 let saveT = 0;
-function save(push) { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }, 50); if (push) Net.push(); }
+function persist() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }, 50); }
+function save(push) { S.t = Date.now(); persist(); if (push) Net.push(); }
 const cwNow = () => { if (S.cw.wk !== weekNo()) S.cw = { wk: weekNo(), gf: 0, pts: 0 }; return S.cw; };
 const levelAt = n => Math.round(120 * Math.pow(n, 1.6) / 10) * 10;
 const levelOf = xp => { let n = 0; while (xp >= levelAt(n + 1)) n++; return n + 1; };
 function addXp(n) { const a = levelOf(S.xp); S.xp += Math.round(n); const b = levelOf(S.xp); if (b > a) toast("Level " + b + ". The knowledge grows."); }
 function addAlbum(i) { const k = pkey(i); const isNew = !S.album[k]; S.album[k] = (S.album[k] || 0) + 1; S.recent = [k].concat(S.recent.filter(x => x !== k)).slice(0, 40); return isNew; }
 
-/* ============ shared backend ============
-   Supabase (config.js) when set up: sign in with Google or an emailed code, progress saved to the account,
-   shared league tables. Inside claude.ai the artifact runtime is used instead. With neither, the game runs
-   solo and saves on the device. Offline is always fine: localStorage first, the cloud catches up later. */
-const CFG = window.BOFFIN_CONFIG || {};
-const SUPA_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
-const loadScript = src => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-const COLS = "id,n,c,d,w,cg,cp,s,p,pl,wn,dr,ls,gf,ga,xp,g,cu,t,f,m";
-const Net = {
-  kind: "", db: null, sb: null, uid: null, email: "", ready: false, readonly: false, rows: [], last: 0, busy: false, again: false, checked: false, me: {}, pending: "",
-  canSignIn: () => Net.kind === "sb",
-  home: () => location.origin + location.pathname,
-  async init() { try { await Net._init(); } catch (e) { } Net.checked = true; if (view === "home" || view === "stats") render(); },
-  async _init() {
-    if (CFG.supabaseUrl && CFG.supabaseKey) return Net._supabase();
-    if (window.claude && window.claude.use) return Net._claude();
-  },
-  async _claude() {
-    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
-    if (!db || !user) return; const uid = await user.id(); if (!uid) return;
-    Net.kind = "claude"; Net.db = db; Net.uid = uid; Net.ready = true;
-    try { const snap = await db.doc("data/users/" + uid + "/save").get(); if (snap.exists) { const d = snap.data(); if (d && d.json) { const r = JSON.parse(d.json); if ((r.xp || 0) > (S.xp || 0)) { S = hydrate(r); save(); } } } } catch (e) { }
-    await Net.pull(true); if (view !== "match") render();
-  },
-  async _supabase() {
-    await loadScript(SUPA_JS); if (!window.supabase) return;
-    const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
-    Net.sb = sb; Net.kind = "sb";
-    await Promise.race([new Promise(done => {
-      sb.auth.onAuthStateChange((ev, session) => {
-        setTimeout(async () => {   // supabase-js: don't await other calls inside this callback
-          if (session && session.user.id !== Net.uid) await Net.signedIn(session.user, ev === "SIGNED_IN");
-          else if (!session && Net.uid) Net.signedOut();
-          if (ev === "INITIAL_SESSION") done();
-        }, 0);
-      });
-    }), new Promise(done => setTimeout(done, 8000))]);
-    if (!Net.uid) await Net.pull(true);
-  },
-  async signedIn(user, announce) {
-    Net.uid = user.id; Net.email = user.email || ""; Net.ready = true;
-    if (S.owner && S.owner !== user.id) { const salt = S.salt; S = fresh(); S.salt = salt; }   // someone else's progress on this device: start clean
-    try { const { data } = await Net.sb.from("saves").select("json").eq("id", user.id).maybeSingle(); if (data && data.json) { const r = JSON.parse(data.json); if ((r.xp || 0) > (S.xp || 0)) S = hydrate(r); } } catch (e) { }
-    S.owner = user.id; save();
-    await Net.pull(true);
-    if (announce) toast(badgeOf(Net.me) === "fd" ? "The Founder is in the building." : "Signed in. Progress saved to your account.");
-    if (view !== "match") { const open = !!$("over").innerHTML; render(); if (!S.made) profileSheet(true); else if (open) profileSheet(false); }
-    Net.push();
-  },
-  signedOut() { Net.uid = null; Net.email = ""; Net.ready = false; Net.me = {}; if (view !== "match") { render(); if ($("over").innerHTML) profileSheet(!S.made); } },
-  async sendCode(email) { const { error } = await Net.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: Net.home() } }); return error; },
-  async verifyCode(email, token) { const { error } = await Net.sb.auth.verifyOtp({ email, token, type: "email" }); return error; },
-  google() { return Net.sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: Net.home() } }); },
-  signOut() { return Net.sb.auth.signOut(); },
-  async pull(force) {
-    if (!Net.kind || (!force && Date.now() - Net.last < 20000)) return; Net.last = Date.now();
-    try {
-      if (Net.kind === "sb") { const { data, error } = await Net.sb.from("players").select(COLS).order("t", { ascending: false }).limit(500); if (!error && data) { Net.rows = data; Net.me = data.find(r => r.id === Net.uid) || Net.me; } }
-      else if (Net.ready) { const q = await Net.db.collection("players").limit(500).get(); Net.rows = q.docs.map(d => Object.assign({ id: d.id }, d.data())); }
-    } catch (e) { }
-  },
-  async push() {
-    if (!Net.ready || Net.readonly || !S.made) return; if (Net.busy) { Net.again = true; return; } Net.busy = true;
-    const row = { n: S.name.slice(0, 18), c: S.club, d: S.div, w: weekNo(), cg: cwNow().gf, cp: cwNow().pts, s: S.season, p: S.week.pts, pl: S.week.pl, wn: S.week.w, dr: S.week.d, ls: S.week.l, gf: S.week.gf, ga: S.week.ga, xp: S.xp, g: S.g, cu: S.cup.won, t: Date.now() };
-    try {
-      if (Net.kind === "sb") {
-        const a = await Net.sb.from("players").update(row).eq("id", Net.uid); if (a.error) throw a.error;
-        const b = await Net.sb.from("saves").upsert({ id: Net.uid, json: JSON.stringify(S), t: Date.now() }); if (b.error) throw b.error;
-      } else {
-        await Net.db.doc("players/" + Net.uid).set(row);
-        await Net.db.doc("data/users/" + Net.uid + "/save").set({ json: JSON.stringify(S), t: Date.now() });
-      }
-    } catch (e) { if (e && e.code === "invalid_argument") Net.readonly = true; }
-    Net.busy = false; if (Net.again) { Net.again = false; Net.push(); }
-  }
-};
-addEventListener("online", () => Net.push());
 
 /* ============ founder & founding members ============
    f = Founder (one account, set by hand in Supabase). m = member number from sign-up order; 2–100 are Founding Members.
@@ -273,7 +267,9 @@ function makeScoped(type, r, tier, sc) {
     if (!pool.length) return null; const i = pickR(pool, r), order = BD.xi[i][6].map((p, k) => k).sort((a, b) => BD.xi[i][6][b][2] - BD.xi[i][6][a][2]), idx = shuffle(order.slice(0, [5, 7, 9, 11][tier]), r).slice(0, 3); return { type, i, blanks: idx, target: 2 };
   }
   if (type === "mates") {
-    if (club) { const thr = [5, 4.5, 4, 3.5][tier], base = clubPl[C].filter(i => PL[i][6].length && fame(i) >= thr); if (base.length < 6) return null;
+    if (club) { let thr = [5, 4.5, 4, 3.5][tier], base = clubPl[C].filter(i => PL[i][6].length && fame(i) >= thr);
+      while (base.length < 10 && thr > 2.4) { thr -= .3; base = clubPl[C].filter(i => PL[i][6].length && fame(i) >= thr); }
+      if (base.length < 6) return null;
       for (let g = 0; g < 14; g++) { const a = pickR(base, r), b = pickR(base, r); if (a === b) continue; let n = 0; for (let i = 0; i < PL.length && n < 3; i++) if (i !== a && i !== b && PL[i][6].length && overlaps(i, a) && overlaps(i, b)) n++; if (n >= 3) return { type, ab: [a, b] }; } return null; }
     const n = [150, 300, 500, 700][tier], pool = BD.pairs.map((p, i) => i).slice(0, n).filter(i => isPLp(BD.pairs[i][0]) && isPLp(BD.pairs[i][1])); if (!pool.length) return null; return { type, i: pickR(pool, r) };
   }
@@ -291,7 +287,8 @@ function makeScoped(type, r, tier, sc) {
     return { type, c, y: pickR(ys, r), target: [3, 3, 4, 5][tier] };
   }
   if (type === "odd") {
-    const thr = club ? [5, 4.6, 4.2, 3.8][tier] : [5.6, 5.2, 4.8, 4.4][tier], sets = [];
+    let thr = club ? [5, 4.6, 4.2, 3.8][tier] : [5.6, 5.2, 4.8, 4.4][tier]; const sets = [];
+    if (club) while (clubPl[C].filter(i => fame(i) >= thr).length < 12 && thr > 3) thr -= .3;
     let ins, outs, q;
     if (club) {
       ins = clubPl[C].filter(i => fame(i) >= thr); const lg = PLC.has(C) ? 1 : (PL[clubPl[C][0]][7] & 31) || 1;
@@ -449,7 +446,7 @@ let M = null, ctx = null, raf = 0, view = "home", leagueTab = "table";
 const sfx = (() => { let ac = null; const tone = (f, d, v = .04, type = "triangle", w = 0) => { if (!S.sound) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, ac.currentTime + w); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + w + d); o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + w); o.stop(ac.currentTime + w + d); } catch (e) { } }; return { tick: () => tone(740, .07), no: () => tone(150, .18, .05, "sawtooth"), goal: () => { tone(523, .12, .06); tone(784, .22, .06, "triangle", .1); }, whistle: () => { tone(2100, .5, .02, "sine"); tone(2140, .5, .02, "sine"); } }; })();
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; $("toasts").appendChild(d); setTimeout(() => d.remove(), 3300); }
 function msg(t, cls) { const m = $("msg"); if (m) { m.textContent = t; m.className = "msg " + (cls || ""); } }
-const QV = "v2|";   // question-generator version: ghosts only replay matches built by this version
+const QV = "v3|";   // question-generator version: ghosts only replay matches built by this version
 function startLeagueMatch() {
   settleSeason(); const opp = nextOpponent(), tier = tierOf(S.div);
   let seed = QV + S.season + "-" + S.div + "-" + S.week.pl + "-" + S.salt, ghost = null;
@@ -494,7 +491,7 @@ function cupFullTime() {
   else { S.cup.l++; S.cup.best = Math.max(S.cup.best, S.cup.rd); S.cup.rd = 0; S.cup.runs++; lines.push(["Cup run", 10]); head = "Knocked out"; sub = "Out in the " + rdName.toLowerCase() + ". A new run starts from the round of 16."; }
   const tot = lines.reduce((s, l) => s + l[1], 0); addXp(tot); S.st.goals += a; S.st.deep += M.deep; M.picks.forEach(() => { }); save(true); sfx.whistle();
   const lv = levelOf(S.xp), l0 = levelAt(lv - 1), l1 = levelAt(lv); view = "ft";
-  SHARE = `BOFFIN CLUB CUP · ${S.club} · ${rdName}\n${S.name || "Me"} ${a}–${b} ${M.opp.name}${pens ? " (pens)" : ""}\n${pips(M.my)}\n${head === "Cup winners" ? "🏆 CUP WINNERS. Biggest " + S.club + " brain going." : head === "Through" ? "Through to the " + CUPR[S.cup.rd].toLowerCase() + " ✅" : "Knocked out ❌"}\nThink you know ${S.club} better? ${shareUrl()}`;
+  SHARE = `BOFFIN CLUB CUP · ${S.club} · ${rdName}\n${S.name || "Me"} ${a}–${b} ${M.opp.name}${pens ? " (pens)" : ""}\n${pips(M.my)}\n${head === "Cup winners" ? "🏆 CUP WINNERS. Biggest " + S.club + " brain going." : head === "Through" ? "Through to the " + CUPR[S.cup.rd].toLowerCase() + " ✅" : "Knocked out ❌"}\nThink you know ${S.club} better? ${SHARE_URL}`;
   $("main").innerHTML = `<div class="panel ft"><span class="eyebrow">Club Cup · ${esc(S.club)} · ${esc(rdName)}</span><div class="res ${win ? "W" : "L"}">${esc(head)}</div><p class="note">${a}–${b}${pens ? " after penalties" : ""}${coin ? ", settled on a coin toss" : ""}. ${esc(sub)}</p></div>
   <div class="vidi" id="vidi"></div>
   <div class="panel pad"><div class="lines">${lines.map(l => `<div><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`).join("")}<div class="tot"><span>XP</span><b>+${tot}</b></div></div><div style="margin-top:10px"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(l1 - S.xp)}</b> XP to level ${lv + 1}</span></div><div class="bar" style="margin-top:6px"><i id="xpb"></i></div></div></div>
@@ -568,7 +565,6 @@ function endChance() {
   save(); window.scrollTo(0, 0);
 }
 let SHARE = "";
-const shareUrl = () => CFG.shareUrl || (/^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? Net.home() : "https://claude.ai/artifact/CMDWQKJMC8Cj6GzL9AUvM4");
 const pips = arr => arr.map(x => x ? "🟩" : "⬛").join("");
 function shareBtns() { return `<div class="row"><button class="btn line" data-act="share">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(SHARE)}" target="_blank" rel="noopener">WhatsApp</a></div>`; }
 function doShare() {
@@ -591,7 +587,7 @@ function fullTime() {
   const after = myPos(leagueTable()), divName = DIVS[S.div], pl = w.pl, pts = w.pts, ended = settleSeason(); save(true); sfx.whistle();
   const sp = n => n >= 4 ? ` (${WORDS[n]})` : "", lv = levelOf(S.xp), l0 = levelAt(lv - 1), l1 = levelAt(lv);
   view = "ft";
-  SHARE = `BOFFIN MATCHDAY · ${divName}\n${S.name || "Me"} ${a}–${b} ${M.opp.name} ${res === "W" ? "✅" : res === "D" ? "🤝" : "❌"}\n${pips(M.my)}\nLevel ${levelOf(S.xp)} · ${S.club} fan\nDo you know ball? ${shareUrl()}`;
+  SHARE = `BOFFIN MATCHDAY · ${divName}\n${S.name || "Me"} ${a}–${b} ${M.opp.name} ${res === "W" ? "✅" : res === "D" ? "🤝" : "❌"}\n${pips(M.my)}\nLevel ${levelOf(S.xp)} · ${S.club} fan\nDo you know ball? ${SHARE_URL}`;
   $("main").innerHTML = `<div class="panel ft"><span class="eyebrow">Full time · ${esc(divName)}</span><div class="res ${res}">${res === "W" ? "Won" : res === "D" ? "Drew" : "Lost"} ${a}–${b}</div><p class="note">${esc(pickR(SAY[res]))}</p></div>
   <div class="vidi" id="vidi"></div>
   <div class="panel pad"><div class="lines">${lines.map(l => `<div><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`).join("")}<div class="tot"><span>XP</span><b>+${tot}</b></div></div><div style="margin-top:10px"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(l1 - S.xp)}</b> XP to level ${lv + 1}</span></div><div class="bar" style="margin-top:6px"><i id="xpb"></i></div></div></div>
@@ -742,7 +738,7 @@ function accountHTML() {
   <p class="msg" id="amsg"></p></div>`;
 }
 function profileSheet(first) {
-  const clubs = BD.gridClubs.map(c => CLUB[c]).sort();
+  const clubs = CLUBS_PICK.map(c => CLUB[c]).sort();
   $("over").innerHTML = `<div class="sheet"><form class="box" id="pf"><span class="eyebrow">${first ? "Welcome to matchday" : "Profile"}</span><h1>${first ? "Sign on" : esc(S.name)}</h1>
   ${first ? `<ol class="steps"><li><i>01</i><span><b>Play fixtures, not quizzes.</b> Five chances each. Out-score the other lot.</span></li><li><i>02</i><span><b>Type names, don't pick them.</b> Real squads, line-ups and transfers. No multiple choice.</span></li><li><i>03</i><span><b>Win points, go up.</b> Nineteen-match seasons. Four up, four down.</span></li></ol>` : `<div class="panel pad"><div class="statline"><span>Matches <b>${S.st.m}</b></span><span>Wins <b>${S.st.w}</b></span><span>Goals <b>${S.st.goals}</b></span><span>Deep cuts <b>${S.st.deep}</b></span></div></div>`}
   ${first ? "" : founderCard()}<label class="field" for="nm">Name on the teamsheet<input id="nm" maxlength="16" autocomplete="off" value="${esc(S.name)}" placeholder="e.g. Big Dave"></label>
@@ -809,7 +805,5 @@ document.addEventListener("click", e => {
   else if (act === "reset") confirmSheet("Reset everything?", "Level, division, album and form all go back to nothing. This can't be undone.", "Reset", () => { const salt = S.salt; S = fresh(); S.salt = salt; try { localStorage.removeItem(KEY); } catch (err) { } view = "home"; render(); profileSheet(true); })
   else if (act === "closeover") $("over").innerHTML = "";
 });
-render(); if (!S.made) profileSheet(true);
-Net.init();
 let wasWide = wide();
 addEventListener("resize", () => { const w = wide(); if (w === wasWide) return; wasWide = w; if (view !== "match" && view !== "ft") render(); else chrome(); });
