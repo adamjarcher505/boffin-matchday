@@ -1,0 +1,53 @@
+# Weekly question bank refresh. Runs Tuesdays 06:00 UTC (after openfootball's 05:00 refresh), rebuilds the bank from
+# open data, validates it and opens (or updates) a pull request for Adam to review. It never pushes to main.
+# Needs: Settings > Actions > General > Workflow permissions > "Allow GitHub Actions to create and approve pull requests".
+name: Question bank (weekly)
+on:
+  schedule:
+    - cron: "0 6 * * 2"
+  workflow_dispatch: {}
+permissions:
+  contents: write        # to push the bot branch (never main)
+  pull-requests: write   # to open the PR
+concurrency:
+  group: question-bank
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Keep the download cache between runs so Wikidata and FPL are asked as little as possible.
+      - uses: actions/cache@v4
+        with:
+          path: data-pipeline/cache
+          key: qbank-cache-${{ github.run_id }}
+          restore-keys: qbank-cache-
+      - name: Fetch, build, generate
+        working-directory: data-pipeline
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}   # optional; unused until the paid-API hook is built
+        run: node --no-warnings run.mjs
+      - name: Bump the offline cache version
+        run: node tools/bump-sw.js
+      - name: Tests (the bank must pass before a PR is opened)
+        working-directory: tests
+        run: node --test unit/*.test.js
+      - name: Open or update the pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/question-bank
+          base: main
+          delete-branch: true
+          add-paths: |
+            questions.js
+            sw.js
+            data-pipeline/reports/**
+          commit-message: "Question bank: weekly refresh"
+          title: "Question bank: weekly refresh"
+          body-path: data-pipeline/reports/validation.md
+          labels: question-bank
