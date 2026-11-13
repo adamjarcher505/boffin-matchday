@@ -863,6 +863,8 @@ function cellSheet(k) {
   <div class="entry"><input id="q" type="text" placeholder="Type a player's name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><button type="button" class="clr" id="clr" data-act="clrq" aria-label="Clear" hidden>×</button><div class="sug" id="sug" hidden></div></div><p class="msg" id="msg"></p></div></div>`;
   const q = $("q"); try { q.focus(); } catch (e) { }
 }
+/* Safari, after passing a sign-in back to the game on the home screen (Net.giveHandoff) */
+function handedSheet() { $("over").innerHTML = `<div class="sheet"><div class="box"><span class="eyebrow">Signed in</span><h1>Back to the app</h1><p class="note">You're in. Go back to Boffin on your home screen and it'll sign you in by itself in a few seconds. You can close this Safari tab.</p><div class="row"><button class="btn line" data-act="closeover">Close</button></div></div></div>`; }
 function confirmSheet(title, text, yes, fn) { $("over").innerHTML = `<div class="sheet"><div class="box"><h1>${esc(title)}</h1><p class="note">${esc(text)}</p><div class="row"><button class="btn line" data-act="closeover">Cancel</button><button class="btn" id="yes">${esc(yes)}</button></div></div></div>`; $("yes").addEventListener("click", () => { $("over").innerHTML = ""; fn(); }); }
 function abandonMatch() { if (M && M.mode === "league") { if (M.ghost) S.played = S.played.concat(M.seed).slice(-60); S.ab = { f: M.fx, n: ((S.ab && S.ab.f === M.fx ? S.ab.n : 0) | 0) + 1 }; } quitMatch(); }
 function quitMatch() { cancelAnimationFrame(raf); if (M) M.live = false; M = null; view = "home"; save(true); render(); }
@@ -876,7 +878,9 @@ async function acctAct(act) {
       const em = ($("em").value || "").trim(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { am("That doesn't look like an email address."); return; }
       if (!navigator.onLine) { am("You're offline. Sign in when you've got signal."); return; }
       am("Sending…"); const err = await Net.sendCode(em); if (err) { am(/fetch|network/i.test(err.message || "") ? "Couldn't reach the server. Check your signal and try again." : /rate|seconds/i.test(err.message || "") ? "Hang on a minute before asking for another code." : "Couldn't send it: " + err.message); return; }
-      Net.pending = em; $("codebox").hidden = false; am("Sent to " + em + ". Open the email on this device and tap Sign in (check junk too). If it shows a 6-digit code, type it below."); try { $("otp").focus(); } catch (e) { }
+      Net.pending = em; $("codebox").hidden = false;
+      if (Net.handoffOK()) am("Sent to " + em + ". Tap Sign in in the email (check junk too). It opens Safari, that's fine: then come back here and you'll be signed in within a few seconds.");
+      else { am("Sent to " + em + ". Open the email on this device and tap Sign in (check junk too). If it shows a 6-digit code, type it below."); try { $("otp").focus(); } catch (e) { } }
     }
     else if (act === "verify") { const code = ($("otp").value || "").replace(/\D/g, ""); if (code.length < 6) { am("The code is 6 digits."); return; } am("Checking…"); const err = await Net.verifyCode(Net.pending, code); if (err) am("That code didn't work. Check it or send a new one."); else Net.pending = ""; }
     else if (act === "delacct") { confirmSheet("Delete your account?", "Your account, your saved progress online and your place in the shared tables go for good, badges included. This can't be undone. Progress on this device stays unless you also reset it.", "Delete it", async () => { try { toast("Deleting…"); await Net.deleteAccount(); S.owner = ""; save(); Net.signedOut(); toast("Account deleted. Gone, like a free transfer."); } catch (e) { toast(/not find|does not exist|PGRST/i.test((e && e.message) || "") ? "Deleting accounts isn't switched on yet. Try again soon." : "Couldn't delete it just now. Check your signal and try again."); } }); }

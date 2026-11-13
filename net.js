@@ -76,15 +76,30 @@ const SYNC_KEY = "boffin-sync";
 const syncStamp = () => { try { const o = JSON.parse(localStorage.getItem(SYNC_KEY) || "null"); return o && o.u === Net.uid ? o.t : null; } catch (e) { return null; } };
 const setSyncStamp = t => { try { localStorage.setItem(SYNC_KEY, JSON.stringify({ u: Net.uid, t })); } catch (e) { } };
 
+/* iPhone hand-off. A sign-in link in an email always opens in Safari, and Safari doesn't share its login with the game
+   installed on the home screen. So the installed game puts a long random id in the link (?h=). Safari, signed in by
+   the link, files the session under that id (handoff_put, supabase/003_handoff.sql), forgets it without signing out
+   (signing out would end the session for the app too) and reloads. The installed game polls handoff_take and picks
+   it up. Safari never refreshes the session, so the app ends up its only holder. Needs 003_handoff.sql; without it
+   the link just signs Safari in, as before. */
+const HANDOFF_KEY = "boffin-handoff", HANDOFF_MS = 15 * 60 * 1000;
+const handoffNow = () => { try { const h = JSON.parse(localStorage.getItem(HANDOFF_KEY) || "null"); return h && h.id && Date.now() - h.t < HANDOFF_MS ? h : null; } catch (e) { return null; } };
+const clearHandoff = () => { try { localStorage.removeItem(HANDOFF_KEY); } catch (e) { } };
+const newHandoff = () => { const b = new Uint8Array(32); crypto.getRandomValues(b); const id = Array.from(b, x => x.toString(16).padStart(2, "0")).join(""); try { localStorage.setItem(HANDOFF_KEY, JSON.stringify({ id, t: Date.now() })); } catch (e) { } return id; };
+
 const Net = {
   kind: "local", b: Backends.local, uid: null, email: "", ready: false, readonly: false, rows: [], last: 0, busy: false, again: false, checked: false, me: {}, pending: "",
   wars: null, warsAt: 0,
+  hid: (location.search.match(/[?&]h=([0-9a-f]{64})(?:&|$)/) || [])[1] || "", handed: /[?&]handed=1(?:&|$)/.test(location.search), polling: 0, taking: false,
+  handoffOK: () => navigator.standalone === true && typeof crypto !== "undefined" && !!crypto.getRandomValues,
   canSignIn: () => Net.kind === "supabase",
   home: () => location.origin + location.pathname,
   async init() {
     try { await Net._init(); } catch (e) { } Net.checked = true; if (view === "home" || view === "stats") render();
     // the welcome/profile sheet was drawn before we knew sign-in was available: redraw it with the sign-in box, keeping what was typed
     if (Net.canSignIn() && $("pf") && !document.querySelector(".acct")) { const nm = $("nm") ? $("nm").value : "", cl = $("cl") ? $("cl").value : ""; profileSheet(!S.made); if ($("nm") && nm) $("nm").value = nm; if ($("cl") && cl) $("cl").value = cl; }
+    if (Net.handed) { Net.handed = false; try { history.replaceState(null, "", Net.home()); } catch (e) { } handedSheet(); }
+    Net.pollHandoff();
   },
   async _init() {
     if (/[?&]offline\b/.test(location.search)) return;   // ?offline: play fully local (testing without touching the live database)
@@ -101,7 +116,8 @@ const Net = {
     await Promise.race([new Promise(done => {
       sb.auth.onAuthStateChange((ev, session) => {
         setTimeout(async () => {   // supabase-js: don't await other calls inside this callback
-          if (session && session.user.id !== Net.uid) await Net.signedIn(session.user, ev === "SIGNED_IN");
+          if (session && Net.hid && !Net.uid) { const id = Net.hid; Net.hid = ""; if (await Net.giveHandoff(id, session)) return; await Net.signedIn(session.user, true); }
+          else if (session && session.user.id !== Net.uid) await Net.signedIn(session.user, ev === "SIGNED_IN");
           else if (!session && Net.uid) Net.signedOut();
           if (ev === "INITIAL_SESSION") done();
         }, 0);
@@ -119,7 +135,45 @@ const Net = {
     if (view !== "match") { const open = !!$("over").innerHTML; render(); if (!S.made) profileSheet(true); else if (open) profileSheet(false); }
   },
   signedOut() { Net.uid = Net.b.uid = null; Net.email = ""; Net.ready = false; Net.me = {}; if (view !== "match") { render(); if ($("over").innerHTML) profileSheet(!S.made); } },
-  async sendCode(email) { const { error } = await Net.b.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: Net.home() } }); return error; },
+  async sendCode(email) {
+    const hand = Net.handoffOK(), to = Net.home() + (hand ? "?h=" + newHandoff() : "");
+    const { error } = await Net.b.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: to } });
+    if (error && hand) clearHandoff(); else if (hand) Net.pollHandoff();
+    return error;
+  },
+  /* Safari side: file the session for the installed game, then forget it here without signing out. false = couldn't, sign in here instead */
+  async giveHandoff(id, session) {
+    const sb = Net.b.sb;
+    try {
+      const { error } = await sb.rpc("handoff_put", { p_id: id, p_access: session.access_token, p_refresh: session.refresh_token });
+      if (error) return false;
+      try { sb.auth.stopAutoRefresh(); } catch (e) { }
+      try { Object.keys(localStorage).filter(k => /^sb-.+-auth-token/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) { }
+      location.replace(Net.home() + "?handed=1");
+      return true;
+    } catch (e) { return false; }
+  },
+  /* installed-game side: every 3 seconds while a link is out and the game is on screen, see if Safari has filed the session */
+  pollHandoff() {
+    clearTimeout(Net.polling);
+    const h = handoffNow(); if (!h) { clearHandoff(); return; }
+    if (Net.uid || Net.kind !== "supabase") return;
+    if (document.visibilityState === "visible") Net.takeHandoff(h.id);
+    Net.polling = setTimeout(Net.pollHandoff, 3000);
+  },
+  async takeHandoff(id) {
+    if (Net.taking) return; Net.taking = true;
+    try {
+      const { data, error } = await Net.b.sb.rpc("handoff_take", { p_id: id });
+      if (error) { if (notThere(error)) clearHandoff(); return; }
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row && row.r) {
+        clearHandoff(); clearTimeout(Net.polling);
+        const { error: e2 } = await Net.b.sb.auth.setSession({ access_token: row.a, refresh_token: row.r });
+        if (e2) toast("Couldn't finish signing in. Send yourself a new link.");
+      }
+    } catch (e) { } finally { Net.taking = false; }
+  },
   async verifyCode(email, token) { const { error } = await Net.b.sb.auth.verifyOtp({ email, token, type: "email" }); return error; },
   google() { return Net.b.sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: Net.home() } }); },
   signOut() { return Net.b.sb.auth.signOut(); },
@@ -156,4 +210,4 @@ const Net = {
   async stats(minN) { try { return await Net.b.questionStats(minN); } catch (e) { return null; } }
 };
 addEventListener("online", () => Net.push());
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") Net.push(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { Net.push(); Net.pollHandoff(); } });

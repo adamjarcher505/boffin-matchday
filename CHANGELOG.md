@@ -1,5 +1,8 @@
 # Changelog
 
+## 13/11/2026 (evening): iPhone sign-in that lands in the app
+- **Signing in from the home-screen app on an iPhone now works.** The sign-in link always opens Safari, which doesn't share its login with the installed game, and Supabase won't put the 6-digit code in its emails without a custom email server. Now the app puts a one-off id in the link; Safari, once signed in, hands the login to the app (and forgets it itself), and the app picks it up within a few seconds of you switching back. Needs `supabase/003_handoff.sql` and the `/**` redirect URL (HANDOVER.md). Elsewhere (laptop, Android, Safari tabs) sign-in is unchanged.
+
 ## 13/11/2026: club shirts on stickers, smarter search, grid hints
 - **Stickers wear the club's shirt from his time there.** 79 home kits drawn in the club's colours and patterns (stripes, hoops, halves, Ajax's band, PSG's Hechter, Monaco's diagonal), with era shirts where they changed: Henry, Bergkamp and Pires sign off in the 2005/06 redcurrant, Cardiff go red for 2012–15, Bayern have their mid-90s stripes, Bournemouth plain red for 2004–06. Colours sourced from each club's Wikipedia article. No badges or sponsors.
 - **Player search is easier.** Best-known players come first ("henry" gives Thierry first, not whoever's first in the data), spelling slips are forgiven ("aguro", "ibrahimovich", "ronaldiho"), spaces don't matter ("vanpersie"). The letters you've typed are lit up, each row shows position and birth year, near misses are tagged "close", players you've already used on today's grid are greyed out, there's a clear button, and arrow keys work on a keyboard.

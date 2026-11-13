@@ -66,3 +66,4 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - `supabase/schema.sql`: no bugs found, so untouched. Everything new is in `002_additions.sql`.
 - Founder perks: unchanged and cosmetic only.
 - `push.bat`: untracked, never staged, never deleted.
+- **iPhone sign-in via hand-off, not the emailed code (13/11/2026).** Supabase now requires custom SMTP to edit email templates, so `{{ .Token }}` can't be added. The installed iPhone app asks for a link with a 256-bit random `?h=` id; Safari files the fresh session with `handoff_put` and drops it locally *without* calling signOut (even `scope: local` revokes the session server-side), and the app polls `handoff_take` (one-time, 15-minute expiry, table unreadable directly). Safari never refreshes, so refresh-token rotation stays with the app. Only used when `navigator.standalone` (iPhone home screen); Chrome and Android installs share storage with the browser already.

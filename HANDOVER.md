@@ -21,8 +21,11 @@ Open https://adamjarcher505.github.io/boffin-matchday/.
 4. **Authentication → URL Configuration**:
    - Site URL: `https://adamjarcher505.github.io/boffin-matchday/`
    - Redirect URLs: add that same address, and `http://localhost:8080/`
-5. **Authentication → Emails → Templates**: in **both** "Magic Link" and "Confirm signup", add this line to the message
-   (keep everything else): `<p>Your code: <b>{{ .Token }}</b></p>`
+5. **SQL Editor** → paste all of `supabase/003_handoff.sql` → **Run**. This lets the sign-in link (which opens Safari on an
+   iPhone) pass the login back to the game on the home screen. Supabase no longer lets you edit the email templates
+   without your own email server, so the 6-digit code isn't in the emails; the hand-off replaces it.
+6. **Authentication → URL Configuration → Redirect URLs**: also add `https://adamjarcher505.github.io/boffin-matchday/**`
+   (the hand-off link carries `?h=…`).
 
 ## 3. Connect the game (5 minutes)
 1. Supabase → **Project Settings → API**: copy the **Project URL** and the **anon public** key. Never the service_role or secret key.

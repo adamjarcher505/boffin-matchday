@@ -41,7 +41,7 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 | `net.js` | Everything online, behind one interface (Supabase, Claude artifact db, or local) |
 | `boot.js` | Starts the game; service worker and update toast |
 | `sw.js` | Offline cache |
-| `supabase/` | `schema.sql` (run first), `002_additions.sql` (run second), `make-founder.sql` |
+| `supabase/` | `schema.sql` (run first), `002_additions.sql` (run second), `003_handoff.sql` (third: iPhone sign-in hand-off), `make-founder.sql` |
 | `tools/` | Icons, coverage report, sticker pages, theme support, service worker version |
 | `tests/` | Dev-only. Never shipped or cached |
 
