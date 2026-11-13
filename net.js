@@ -26,7 +26,7 @@ const Backends = {
     name: "local",
     async start() { return true; },
     async players() { return []; }, async pushPlayer() { }, async stampSave() { return null; }, async loadSave() { return null; }, async writeSave() { },
-    async clubWars() { return null; }, async logMatch() { }, async questionStats() { return null; }, async deleteAccount() { }
+    async clubWars() { return null; }, async logMatch() { }, async questionStats() { return null; }, async deleteAccount() { }, async reportQuestion() { }
   },
 
   /* claude.ai artifact runtime: a small document db and a user id. Limits worth knowing: collection reads are capped
@@ -46,6 +46,7 @@ const Backends = {
     async writeSave(json, t) { await this.db.doc("data/users/" + this.uid + "/save").set({ json, t }); },
     async clubWars() { return null; },
     async logMatch(rec) { await this.db.doc("qlog/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).set(rec); },
+    async reportQuestion(rec) { await this.db.doc("qreport/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).set(rec); },
     async questionStats() { return null; },
     async deleteAccount() { const gone = { n: "", c: "", t: 0, gone: 1 }; await this.db.doc("players/" + this.uid).set(gone); await this.db.doc("data/users/" + this.uid + "/save").set({ json: "", t: 0 }); }
   },
@@ -65,6 +66,7 @@ const Backends = {
     async writeSave(json, t) { const { error } = await this.sb.from("saves").upsert({ id: this.uid, json, t }); if (error) throw error; },
     // the three below need supabase/002_additions.sql; until it has been run they quietly report "not available"
     async clubWars(week) { if (this.miss.wars) return null; const { data, error } = await this.sb.rpc("club_wars", { wk: week }); if (error) { if (notThere(error)) this.miss.wars = true; return null; } return data || []; },
+    async reportQuestion(rec) { if (this.miss.rep) return; const { error } = await this.sb.from("question_reports").insert(rec); if (error && notThere(error)) this.miss.rep = true; },
     async logMatch(rec) { if (this.miss.log) return; const { error } = await this.sb.from("question_log").insert({ d: rec.d, v: rec.v, q: rec.q }); if (error && notThere(error)) this.miss.log = true; },
     async questionStats(minN) { if (this.miss.stats) return null; const { data, error } = await this.sb.rpc("question_stats", { min_n: minN }); if (error) { if (notThere(error)) this.miss.stats = true; return null; } return data || []; },
     async deleteAccount() { const { error } = await this.sb.rpc("delete_my_account"); if (error) throw error; try { await this.sb.auth.signOut(); } catch (e) { } }
@@ -207,6 +209,12 @@ const Net = {
     Net.busy = false; if (Net.again && !(M && M.live)) { Net.again = false; Net.push(); }
   },
   async log(rec) { try { await Net.b.logMatch(rec); } catch (e) { } },
+  /* "Report this question": the question id, bank version and its source ids. Anonymous; kept on the device too (last 50). */
+  async report(rec) {
+    const row = { q: String(rec.id).slice(0, 16), bank: String(rec.bank).slice(0, 12), src: (rec.src || []).slice(0, 6).map(x => String(x).slice(0, 80)), d: rec.d | 0 };
+    try { const a = JSON.parse(localStorage.getItem("boffin-qreports") || "[]").concat([Object.assign({ t: Date.now() }, row)]).slice(-50); localStorage.setItem("boffin-qreports", JSON.stringify(a)); } catch (e) { }
+    try { if (Net.b.reportQuestion) await Net.b.reportQuestion(row); } catch (e) { }
+  },
   async stats(minN) { try { return await Net.b.questionStats(minN); } catch (e) { return null; } }
 };
 addEventListener("online", () => Net.push());

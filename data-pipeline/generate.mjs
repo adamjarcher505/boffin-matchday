@@ -162,7 +162,7 @@ for (const p of plPlayers) {
   // nationality: Wikidata (country for sport) must match data.js
   if (p.nat && p.bd_nat) {
     if (natKey(p.nat) !== natKey(p.bd_nat)) { natDis++; toReview("nationality", p.q, "Wikidata and data.js disagree", { player: p.name, wikidata: p.nat, datajs: p.bd_nat }); }
-    else { const pool = natList.filter(n => natKey(n) !== natKey(p.bd_nat)); const top = pool.slice(0, 30); Q({ t: "nationality", cat: "club", clubs, d: d + (["England", "France", "Spain", "Brazil"].includes(p.bd_nat) ? 0 : 1), q: `What nationality is ${p.name}?`, sub: `${POSNAME[p.bd_pos]}, born ${p.birth_year}`, a: p.bd_nat, o: shuffle(top, r).slice(0, 3), src, tags: ["player"], key: "nat|" + p.q }); }
+    else { const pool = natList.filter(n => natKey(n) !== natKey(p.bd_nat)); const top = pool.slice(0, 30); Q({ t: "nationality", cat: "club", clubs, d: d + (["England", "France", "Spain", "Brazil"].includes(p.bd_nat) ? 0 : 1), q: `What nationality is ${p.name}?`, sub: p.pos && p.pos === p.bd_pos ? `${POSNAME[p.pos]}, born ${p.birth_year}` : `Born ${p.birth_year}`, a: p.bd_nat, o: shuffle(top, r).slice(0, 3), src, tags: ["player"], key: "nat|" + p.q }); }
   }
   // position: Wikidata must match data.js
   if (p.pos && p.bd_pos) {

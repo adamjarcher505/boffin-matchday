@@ -158,17 +158,19 @@ const involves = (sp, c) => {
   if (t === "odd") return sp.q.indexOf(" " + nm + ".") >= 0;
   if (t === "champ") return sp.qs.some(q => q.c === c || BD.tables[q.t][3].some(r => r[0] === nm));
   if (t === "season") return BD.tables[sp.i][3].some(r => r[0] === nm);
+  if (t === "quiz") return quizQs(sp).some(x => x.k.includes(nm));
   return false;
 };
 const listUnit = i => BD.lists[i][1];
+const quizQs = sp => (sp.qs || []).map(q => QB.by[q.id]).filter(Boolean), quizTag = (sp, t) => quizQs(sp).some(x => x.tags & QB.tag(t));
 /* Derby names and pairings checked against each derby's Wikipedia article on 12/11/2026 (see DATA_SOURCES.md). */
 const DERBIES = [["North London derby", "Arsenal", "Tottenham"], ["Merseyside derby", "Liverpool", "Everton"], ["Manchester derby", "Manchester United", "Manchester City"], ["Tyne–Wear derby", "Newcastle", "Sunderland"], ["Northwest derby", "Liverpool", "Manchester United"], ["Second City derby", "Aston Villa", "Birmingham"], ["M23 derby", "Brighton", "Crystal Palace"], ["El Clásico", "Real Madrid", "Barcelona"], ["Derby della Madonnina", "AC Milan", "Inter"], ["Der Klassiker", "Bayern Munich", "Dortmund"]];
 const THEMES = {
   boot: { n: "Golden Boot", d: "Goals, goals, goals. Scorer lists and 15-goal seasons pay extra.", m: sp => (sp.type === "top" && listUnit(sp.i) === "goals") || (sp.type === "race" && sp.pairs.some(p => listUnit(p[0]) === "goals")) || (sp.type === "cell" && (sp.a.t === "g" || sp.b.t === "g")) },
-  deadline: { n: "Deadline Day", d: "Transfer fees pay extra. Sky Sports yellow not included.", m: sp => sp.type === "hl" || (sp.type === "top" && listUnit(sp.i) === "€m") || (sp.type === "race" && sp.pairs.some(p => listUnit(p[0]) === "€m")) },
-  invincibles: { n: "Invincibles", d: "Arsenal, 2003–04. Anything from that season pays extra.", m: sp => (sp.type === "season" && BD.tables[sp.i][0] === "Premier League" && BD.tables[sp.i][1] === 2003) || (sp.type === "champ" && sp.qs.some(q => BD.tables[q.t][0] === "Premier League" && BD.tables[q.t][1] === 2003)) || (sp.type === "xi" && (BD.xi[sp.i][0] === "Arsenal" || BD.xi[sp.i][1] === "Arsenal") && BD.xi[sp.i][3] >= "2003-08-01" && BD.xi[sp.i][3] <= "2004-05-31") },
+  deadline: { n: "Deadline Day", d: "Transfer fees pay extra. Sky Sports yellow not included.", m: sp => sp.type === "hl" || (sp.type === "quiz" && quizTag(sp, "transfer")) || (sp.type === "top" && listUnit(sp.i) === "€m") || (sp.type === "race" && sp.pairs.some(p => listUnit(p[0]) === "€m")) },
+  invincibles: { n: "Invincibles", d: "Arsenal, 2003–04. Anything from that season pays extra.", m: sp => (sp.type === "quiz" && quizQs(sp).some(x => x.y === 2003 && x.k.includes("Arsenal"))) || (sp.type === "season" && BD.tables[sp.i][0] === "Premier League" && BD.tables[sp.i][1] === 2003) || (sp.type === "champ" && sp.qs.some(q => BD.tables[q.t][0] === "Premier League" && BD.tables[q.t][1] === 2003)) || (sp.type === "xi" && (BD.xi[sp.i][0] === "Arsenal" || BD.xi[sp.i][1] === "Arsenal") && BD.xi[sp.i][3] >= "2003-08-01" && BD.xi[sp.i][3] <= "2004-05-31") },
   cult: { n: "Cult Heroes", d: "Score with a deep cut and the chance pays extra.", m: (sp, res) => !!(res && res.deep) , late: true },
-  title: { n: "Title Race", d: "Final tables pay extra: who finished where, and when.", m: sp => sp.type === "champ" || sp.type === "season" },
+  title: { n: "Title Race", d: "Final tables pay extra: who finished where, and when.", m: sp => sp.type === "champ" || sp.type === "season" || (sp.type === "quiz" && quizTag(sp, "title")) },
   sheet: { n: "Teamsheet Day", d: "Line-ups and squad sheets pay extra.", m: sp => sp.type === "xi" || sp.type === "squad" },
   caps: { n: "International Break", d: "Any Grid square with a nationality pays extra.", m: sp => sp.type === "cell" && (sp.a.t === "n" || sp.b.t === "n") },
   road: { n: "Journeymen", d: "Career paths and shared dressing rooms pay extra.", m: sp => sp.type === "career" || sp.type === "mates" }
