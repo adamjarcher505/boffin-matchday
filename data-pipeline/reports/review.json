@@ -1,0 +1,1272 @@
+{
+ "asOf": "2026-11-13",
+ "note": "Facts the pipeline would not publish: sources disagree, or only one source has them. Nothing here ships.",
+ "count": 122,
+ "items": [
+  {
+   "template": "score",
+   "key": "pl-2022-2022-08-27-liverpool-bournemouth",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "9-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2022-08-31-man-city-nottm-forest",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "6-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2022-10-02-man-city-man-utd",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "6-3",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2022-10-30-arsenal-nottm-forest",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "5-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2023-03-05-liverpool-man-utd",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "7-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2023-04-17-leeds-liverpool",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "1-6",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2023-04-23-newcastle-tottenham",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "6-1",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2023-04-29-brighton-wolves",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "6-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2022-2023-05-28-arsenal-wolves",
+   "reason": "openfootball and engsoccerdata disagree",
+   "detail": {
+    "openfootball": "5-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2025-2025-08-23-arsenal-leeds",
+   "reason": "only one source has this season (engsoccerdata stops at 2024/25)",
+   "detail": {
+    "openfootball": "5-0",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2025-2025-12-02-fulham-man-city",
+   "reason": "only one source has this season (engsoccerdata stops at 2024/25)",
+   "detail": {
+    "openfootball": "4-5",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "score",
+   "key": "pl-2025-2026-04-24-sunderland-nottm-forest",
+   "reason": "only one source has this season (engsoccerdata stops at 2024/25)",
+   "detail": {
+    "openfootball": "0-5",
+    "engsoccerdata": []
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1027452",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Neil Ruddock",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q10668",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Fitz Hall",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1077649",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Chris Perry",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1091355",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Paul Stewart",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1181147",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Dean Windass",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q125538",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Titus Bramble",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1328702",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Michael Brown",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1345656",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Nathan Ellington",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1435000",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jamie Clapham",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1438500",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Ian Taylor",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1607076",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Vinny Samways",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1722877",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Paul Warhurst",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q17659996",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Mahmoud Dahoud",
+    "wikidata": "Germany",
+    "datajs": "Syria"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1803797",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Steve Harkness",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q182685",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Maarten Stekelenburg",
+    "wikidata": "Kingdom of the Netherlands",
+    "datajs": "Netherlands"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q188144",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jean-Claude Darcheville",
+    "wikidata": "France",
+    "datajs": "French Guiana"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q1981754",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Dean Richards",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q22694710",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Pablo Maffeo",
+    "wikidata": "Spain",
+    "datajs": "Argentina"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2262185",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Sean Gregan",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2287704",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Michael Duberry",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2351991",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "David Prutton",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2458070",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Lee Hughes",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q246651",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Ian Pearce",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2440897",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jon Harley",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2703910",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Brian Deane",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q275710",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Steve Sidwell",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2756563",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Ruel Fox",
+    "wikidata": "United Kingdom",
+    "datajs": "Montserrat"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2964791",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Chris Makin",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q294806",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "César Azpilicueta",
+    "wikidata": "Euskal-Erria",
+    "datajs": "Spain"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q296416",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jermaine Pennant",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q299450",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Bebé",
+    "wikidata": "Portugal",
+    "datajs": "Cape Verde"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3098290",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Gareth Ainsworth",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q312039",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Curtis Davies",
+    "wikidata": "England",
+    "datajs": "Sierra Leone"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q312042",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "David Dunn",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q315291",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Julien Faubert",
+    "wikidata": "France",
+    "datajs": "Martinique"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q315294",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Danny Simpson",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3189086",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Julian Dicks",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3206955",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Michael Ricketts",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3430389",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Riccardo Scimeca",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q334619",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Matthew Etherington",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q340077",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "David Unsworth",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q342303",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Grant Holt",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3379996",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Darren Peacock",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3380736",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Gavin Peacock",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q356480",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jason Roberts",
+    "wikidata": "Granada",
+    "datajs": "Grenada"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q362281",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Dave Kitson",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q372619",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "John Curtis",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3675448",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Chris Armstrong",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q375510",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Richard Wright",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q380140",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Frédéric Piquionne",
+    "wikidata": "France",
+    "datajs": "Martinique"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3952856",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Scott Minto",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q3877698",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Noel Whelan",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q441708",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Carlo Nash",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q467034",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Marcus Bent",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q472373",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Colin Cooper",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q4760446",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Andy Booth",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q4760848",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Andy Impey",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q4808571",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Stephen Clemence",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q516974",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Edwin Zoetebier",
+    "wikidata": "Kingdom of the Netherlands",
+    "datajs": "Netherlands"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q5220397",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Danny Granville",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q5224898",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Darren Eadie",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q524722",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Steve Simonsen",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q533957",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Geoff Horsfield",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q541603",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "David Wetherall",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q542287",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "David Burrows",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q5524127",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Garry Flitcroft",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q5525857",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Gary Rowett",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q561081",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "DJ Campbell",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q562007",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Michael Turner",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q574121",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "David May",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q600732",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Marcus Stewart",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q6142882",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "James Scowcroft",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q62869",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Mounir El Hamdaoui",
+    "wikidata": "Kingdom of the Netherlands",
+    "datajs": "Morocco"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q6307291",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Julian Joachim",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q6514603",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Lee Morris",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q6789192",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Matt Piper",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q6848804",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Mike Sheron",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q7153285",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Paul Robinson",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q718242",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Marc-Antoine Fortuné",
+    "wikidata": "France",
+    "datajs": "French Guiana"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q726046",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Gonzalo Sorondo",
+    "wikidata": "Brazil",
+    "datajs": "Uruguay"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q731412",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jobi McAnuff",
+    "wikidata": "United Kingdom",
+    "datajs": "Jamaica"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q7326866",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Richard Jobson",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q7519467",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Simon Osborn",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q769110",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Andy Todd",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q7822475",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Tony Grant",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q869477",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Craig Short",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q887542",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Seth Johnson",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q8991466",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Paul Butler",
+    "wikidata": "United Kingdom",
+    "datajs": "Rep. of Ireland"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q932072",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Neil Emblen",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q93391",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Glenn Murray",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q944426",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Slaviša Jokanović",
+    "wikidata": "Yugoslavia",
+    "datajs": "Serbia"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q982625",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jason Euell",
+    "wikidata": "United Kingdom",
+    "datajs": "Jamaica"
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q19871581",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Tyler Adams",
+    "fpl": "Bournemouth",
+    "wikidata": [
+     "bournemouth",
+     "leeds"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q62269289",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Keane Lewis-Potter",
+    "fpl": "Brentford",
+    "wikidata": [
+     "hull",
+     "brentford",
+     "Q896965"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q45034698",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Mikkel Damsgaard",
+    "fpl": "Brentford",
+    "wikidata": [
+     "brentford",
+     "Q210025"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q26212017",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Vitaly Janelt",
+    "fpl": "Brentford",
+    "wikidata": [
+     "brentford",
+     "Q702455"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q23887767",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Axel Disasi",
+    "fpl": "Crystal Palace",
+    "wikidata": [
+     "chelsea",
+     "crystal-palace"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q16056053",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Jack Grealish",
+    "fpl": "Everton",
+    "wikidata": [
+     "everton",
+     "man-city"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q2476368",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Harry Wilson",
+    "fpl": "Leeds United",
+    "wikidata": [
+     "leeds",
+     "liverpool"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q60194671",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Leif Davis",
+    "fpl": "Ipswich Town",
+    "wikidata": [
+     "ipswich",
+     "leeds"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q17505056",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Matthew Clarke",
+    "fpl": "Ipswich Town",
+    "wikidata": [
+     "ipswich",
+     "portsmouth"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q28065104",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Omar Marmoush",
+    "fpl": "Tottenham",
+    "wikidata": [
+     "tottenham",
+     "man-city"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q106625792",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Nicolás González Iglesias",
+    "fpl": "Newcastle United",
+    "wikidata": [
+     "newcastle",
+     "Q249643"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q20730338",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Ola Aina",
+    "fpl": "Nottingham Forest",
+    "wikidata": [
+     "Q2768",
+     "chelsea",
+     "hull",
+     "nottm-forest"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q28868192",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Kevin Danso",
+    "fpl": "Sunderland",
+    "wikidata": [
+     "sunderland",
+     "tottenham"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q108106700",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Mathys Tel",
+    "fpl": "Tottenham",
+    "wikidata": [
+     "Q15789",
+     "tottenham"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q57456997",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Brian Brobbey",
+    "fpl": "Sunderland",
+    "wikidata": [
+     "sunderland",
+     "Q81888"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q113515002",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Mike Penders",
+    "fpl": "Chelsea",
+    "wikidata": [
+     "chelsea",
+     "Q216032"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q56332606",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Ronald Araújo",
+    "fpl": "Liverpool",
+    "wikidata": [
+     "Q7156",
+     "liverpool"
+    ]
+   }
+  },
+  {
+   "template": "current-club",
+   "key": "Q50137347",
+   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
+   "detail": {
+    "player": "Aaron Wan-Bissaka",
+    "fpl": "Aston Villa",
+    "wikidata": [
+     "aston-villa",
+     "west-ham"
+    ]
+   }
+  }
+ ]
+}
