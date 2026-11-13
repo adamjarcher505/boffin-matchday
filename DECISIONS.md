@@ -36,7 +36,7 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - **Who can be offered:** players with a nationality, a birth year and at least one club with a year. 12,899 of 15,337; 2,438 have no nationality on file. One-club players are allowed (a one-club trail is still a clue), otherwise Saka, Gerrard and Scholes could never appear.
 - **Page order: fame + 0.25 per year at the club (up to 8 years).** Pure fame put loanees and late arrivals on top (Arsenal's three Icons were Sterling, Aubameyang and Lacazette, with no Henry, Bergkamp or Vieira). Stays of a year or less are left out. The data's fame score still leans to the 2010s, so some legends sit low or miss out (Gerrard isn't on Liverpool's page). **Adam can hand-edit `sticker-pages.js` before launch.** Once players have stickers the pages are frozen (`--add` only adds clubs).
 - **Stickers show "Joined 2017", not a range.** The data's club trails miss some moves (Lacazette's 2022 return to Lyon, Cazorla's 2018 move to Villarreal), so departure years worked out from the next recorded club can be wrong.
-- **Club colours aren't shown yet.** The band uses the tier's colour. Real club colours are facts and none were sourced this run; `CLUB_COLOURS` in stickers.js is ready for a sourced list.
+- **Club colours aren't shown yet.** (12/11) Superseded 13/11: the shirt on each sticker now carries sourced club colours (kits.js); the band stays the tier's colour.
 - **Misses never reveal the player,** so a sticker stays a mystery until you name him.
 - **Leaving mid-attempt, or closing the app, counts as a miss,** otherwise anyone could look at the clues and back out.
 - **One offer waits at a time.** A better offer replaces a waiting worse one; a worse one never replaces a better one.
@@ -48,7 +48,17 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - **Sticker facts are computed from data.js at display time**, never stored or written by hand. Title squads need both the squad record and the final table; line-ups are only used for names that appear once in the data, so a shared name can't pick up someone else's caps. The front only claims a title won with that page's club (a test checks every sticker).
 - **Shiny is a cosmetic rarity on top of winning**: 4% of wins, and duplicates can roll it, which gives swaps a purpose. It never changes how hard a sticker is to get.
 
+## Shirts, search and grid hints (13/11/2026)
+- **Shirts, not photos.** Adam asked for the actual players if possible. Not done: see BLOCKED.md. Each sticker draws the club's home shirt instead: plain SVG in the club's colours, no badge, sponsor or maker's mark.
+- **Kit colours are sourced** from each club's English Wikipedia article (infobox kit and the colours section), read 13/11/2026. Four layouts come from the club's well-known look where the article gives colours only (Monaco's diagonal, Southampton's stripes, Burnley's blue sleeves, and QPR/Reading hoops from "the Hoops" and the club's kit page); they're marked in kits.js.
+- **Which shirt:** the one worn in the middle of his spell, with eras where the article dates a change. A famous one-off ("sig", only Arsenal's 2005/06 redcurrant so far) goes to players whose spell ended in it or the season after, so Henry, Bergkamp and Pires get it and Fàbregas and Van Persie don't. With no next club in the data, a spell is taken to run to age 36 (shirt choice only).
+- **The sticker band keeps the tier colour.** Adam likes the look, and the shirt now carries the club colours.
+- **Search ranking:** every typed word must start a word of the name or be one slip away (4+ letters; two slips at 8+), then whole surname > surname start > first-name start > near miss, then fame. Near misses only show when they run a proper match close, so "kane" doesn't offer Mané. In surname-only questions, Enter never swaps what you typed for a near miss.
+- **Suggestions show position and birth year,** never club or nationality, since those are what the grid and sticker clues ask.
+- **Grid hints point at one real answer** (the best-known fit not already on the grid) and are fixed once given, so reopening a square doesn't reroll them. A hint on a square you never fill costs nothing, because that square already scores 0. Costs are `TUNING.gridHint` ([2, 3]%) and `gridHintXp` (5 XP).
+
 ## Testing
+- **13/11/2026: the no-scroll pass now also runs in headless Playwright** (pre-installed in the cloud session). It found the question drawing overflowing by 24px on every question screen, now fixed.
 - **Browser checks ran in the app's built-in browser, not Playwright.** Installing Playwright means a large browser download. `tests/browser/qa.js` drives the real game in-page and reports any screen that scrolls. All question types, both grid and sign-in sheets, all three sticker tiers: no scrolling at 375×667, 390×844 or 375×400. Screenshots from that pass were checked by eye, not saved to the repo.
 - **Short-screen sheets.** At keyboard height (≤520px tall) the profile and sign-on sheets hide the welcome steps, the founder card and the privacy line, so the fields fit.
 

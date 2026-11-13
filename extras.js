@@ -17,7 +17,8 @@ function shareCup(o) {
 }
 function shareGrid() {
   const g = gridState(), got = g.c.filter(x => x).length, obs = got ? Math.round(g.r.reduce((s, x) => s + x, 0) / got) : 0;
-  return `BOFFIN GRID No. ${gridNo()}\n${[0, 1, 2].map(r => [0, 1, 2].map(c => g.c[r * 3 + c] ? "🟩" : "⬛").join("")).join("\n")}\n${got}/9 · Obscurity ${obs}%\n${shareTail()}`;
+  const nh = gridHints(g);   // green: clean, yellow: needed a hint, black: missed
+  return `BOFFIN GRID No. ${gridNo()}\n${[0, 1, 2].map(r => [0, 1, 2].map(c => { const k = r * 3 + c; return g.c[k] ? (g.h && g.h[k] ? "🟨" : "🟩") : "⬛"; }).join("")).join("\n")}\nScore ${gridScore(g)}% · ${got}/9${nh ? " · " + nh + (nh === 1 ? " hint" : " hints") : ""} · Obscurity ${obs}%\n${shareTail()}`;
 }
 function shareSeason(n) {
   const out = n.to > n.from ? "PROMOTED to " + DIVS[n.to] + " ⬆️" : n.to < n.from ? "Relegated to " + DIVS[n.to] + " ⬇️" : "Staying in " + DIVS[n.to];

@@ -1,5 +1,11 @@
 # Changelog
 
+## 13/11/2026: club shirts on stickers, smarter search, grid hints
+- **Stickers wear the club's shirt from his time there.** 79 home kits drawn in the club's colours and patterns (stripes, hoops, halves, Ajax's band, PSG's Hechter, Monaco's diagonal), with era shirts where they changed: Henry, Bergkamp and Pires sign off in the 2005/06 redcurrant, Cardiff go red for 2012–15, Bayern have their mid-90s stripes, Bournemouth plain red for 2004–06. Colours sourced from each club's Wikipedia article. No badges or sponsors.
+- **Player search is easier.** Best-known players come first ("henry" gives Thierry first, not whoever's first in the data), spelling slips are forgiven ("aguro", "ibrahimovich", "ronaldiho"), spaces don't matter ("vanpersie"). The letters you've typed are lit up, each row shows position and birth year, near misses are tagged "close", players you've already used on today's grid are greyed out, there's a clear button, and arrow keys work on a keyboard.
+- **Grid hints.** Stuck on a square? Take a hint: position, birth decade and nationality (2% off), then initials and surname length (another 3%). The grid now has a score: all nine with no hints is 100%, all nine with one hint is 98%. Hinted squares show yellow on the grid and in the share card, and earn 5 XP less per hint.
+- **Fix:** the faint drawing on question screens hung off the bottom and right edges, so the page could scroll by 24px and wobble sideways. It's pinned inside the screen now.
+
 ## 12/11/2026 (evening): bigger question screens, stickers worth having
 - **Question screens use the whole screen** when the keyboard is down: bigger answer cards and category boxes, a bigger pitch for Missing XI, a faint drawing for each question type, and a chance strip under the scoreboard. While the keyboard is up you get the compact layout as before, so the answer box and what you're answering stay above it.
 - **Each chance opens with a title card**: the question type's badge, name and a one-line description.

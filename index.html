@@ -133,6 +133,17 @@ tr.cut td{border-bottom:1px dashed var(--mute)}
 .sug button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:11px 14px;border-top:1px solid var(--line);font-size:16px;font-weight:500}
 .sug button:first-child{border-top:0}
 .sug button span{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.sug button{text-align:left;transition:background .12s}
+.sug button.on{background:rgba(255,190,60,.09);box-shadow:inset 3px 0 0 var(--amber)}
+.sug button mark{background:none;color:var(--amber);font-weight:700}
+.sug button span{flex:none;white-space:nowrap}
+.sug button span.nm{flex:1;min-width:0;font:inherit;color:inherit;overflow:hidden;text-overflow:ellipsis}
+.sug button span i{font-style:normal;margin-right:6px;padding:1px 5px;border:1px solid currentColor;border-radius:3px;font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+.sug button.fz span i{color:var(--amber)}
+.sug button.used{opacity:.5}
+.entry .clr{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;font-size:22px;line-height:1;color:var(--mute);z-index:2}
+.entry .clr:hover{color:#fff}
+.entry:has(.clr:not([hidden])) input{padding-right:44px}
 .tries{display:flex;gap:5px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mute)}
 .tries i{width:9px;height:9px;border-radius:50%;border:1px solid var(--mute)}.tries i.x{background:var(--bad);border-color:var(--bad)}
 .msg{min-height:20px;font-size:13.5px;color:var(--mute);margin:0}
@@ -450,6 +461,9 @@ h2{letter-spacing:2.2px}
 .stkb{display:block;width:100%;padding:0;border:0;background:none;text-align:inherit;min-width:0}
 .stkr .shirt{position:absolute;left:50%;top:44%;width:62%;transform:translate(-50%,-50%);z-index:-1;fill:currentColor;opacity:.09}
 .stkr.got.gold .shirt{opacity:.14}
+.stkr .shirt.kit{top:33%;width:46%;opacity:1;z-index:0;filter:drop-shadow(0 3px 4px rgba(0,0,0,.28))}
+.stkr.big .shirt.kit{top:36%;width:56%}
+.stkr.got.gold .shirt.kit,.stkr.got .shirt.kit{opacity:1}
 .stkr .stars{position:absolute;left:5px;top:21px;font-size:9px;letter-spacing:1px;line-height:1;opacity:.75}
 .stkr .x{top:auto;bottom:5px;left:5px}
 .stkr .hi{margin-top:3px;max-width:100%;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.3px;line-height:1.15;text-transform:uppercase;padding:2px 5px;border-radius:3px;background:rgba(0,0,0,.12);overflow-wrap:anywhere}
@@ -525,7 +539,7 @@ h2{letter-spacing:2.2px}
   /* typed questions: keep what you are answering right under the answer box, just bigger */
   .q:not(.kb) main:has(.entry) #rbody{justify-content:flex-start;padding-top:1vh}
   .q:not(.kb) main:has(.entry) .cat{min-height:clamp(110px,20vh,190px)}.q:not(.kb) main:has(.entry) .cat b{font-size:28px}
-  .q:not(.kb) .qart{display:block;position:absolute;right:-30px;bottom:-24px;width:min(62vw,280px);color:var(--amber);opacity:.032;z-index:-1;pointer-events:none}
+  .q:not(.kb) .qart{display:block;position:absolute;right:0;bottom:0;width:min(62vw,280px);color:var(--amber);opacity:.032;z-index:-1;pointer-events:none}
   .q:not(.kb) .qart svg{display:block;width:100%;height:auto}
   .q:not(.kb) .chance h3{font-size:26px}
   .q:not(.kb) .rule.qq{font-size:17px}
@@ -580,6 +594,16 @@ h2{letter-spacing:2.2px}
 /* keyboard open (short viewport): sheets drop the extras so the fields stay on screen */
 @media (max-height:520px){.sheet .box{padding-top:12px;gap:9px;max-height:100%}.sheet .steps,.sheet .fcard,.sheet .box > .panel.pad:not(.acct),.acct > .note:not(.priv),.acct .priv{display:none}.sheet h1{font-size:22px}.field input,.field select{height:40px}.sheet .btn{min-height:42px;padding:8px 14px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.hdb{margin-left:auto;margin-right:14px}
+.hintb i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--amber);margin-left:4px}
+.hintln{margin:8px 0 2px;padding:7px 10px;border-left:3px solid var(--amber);background:rgba(255,190,60,.07);border-radius:4px;font-size:13px;line-height:1.35;color:#d9dde2}
+.hintln b{font-family:var(--mono);letter-spacing:.08em;color:var(--amber)}
+.gc.hinted{position:relative}
+.gc.done.hinted{background:#24210f;border-color:#57481c}
+.gc .hintdot{position:absolute;top:4px;right:5px;font-style:normal;font-family:var(--mono);font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);opacity:.85}
+.gscore .gsc{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:10px;text-align:center}
+.gscore .gsc .led{font-family:var(--mono);font-size:44px;line-height:1;color:var(--amber);text-shadow:0 0 18px rgba(255,190,60,.35)}
 </style>
 </head>
 <body>
@@ -593,6 +617,7 @@ h2{letter-spacing:2.2px}
 <script src="config.js"></script>
 <script src="data.js"></script>
 <script src="sticker-pages.js"></script>
+<script src="kits.js"></script>
 <script src="app.js"></script>
 <script src="extras.js"></script>
 <script src="stickers.js"></script>

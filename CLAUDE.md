@@ -12,10 +12,11 @@ Moved here from a claude.ai artifact (https://claude.ai/code/artifact/5be71bbb-8
 
 ## Files
 Full map and data model in README.md. Judgment calls in DECISIONS.md; what's blocked in BLOCKED.md; Adam's to-do in HANDOVER.md.
-- `index.html`: markup and all CSS. Script order: config, data, sticker-pages, app, extras, stickers, net, boot.
+- `index.html`: markup and all CSS. Script order: config, data, sticker-pages, kits, app, extras, stickers, net, boot.
 - `app.js`: the game. `TUNING` and `STICKER_RULES` (all balance numbers) at the top; save format `SAVE_V` + `MIGRATIONS` + `hydrate` + `mergeSaves`; `TYPES`; generators (`makeMatch`, `makeRound`, `makeScoped`, `makeCupMatch`) seeded with `rngOf(hash(...))`; `QV` = question-generator version (bump whenever a seed's questions change); league (`leagueTable`, `settleSeason`), cup, grid, screens. `CLUBS_PICK` = pickable clubs.
 - `extras.js`: share cards, season stakes and Final Day, "around you" lines, training XP cap, Club Wars (top 10 ÷ 10), question log, theme of the day (`THEMES`, `THEME_ROTA` from `tools/theme-support.js`), haptics.
 - `stickers.js`: sticker album (`S.stk`), offers after matches, the "name the man on the sticker" attempt, pages, swaps, tokens. Separate from the Names log (`S.album`).
+- `kits.js`: `BOFFIN_KITS`, home shirts for the sticker clubs (sourced, see header); `kitFor`/`kitSVG` in stickers.js pick the era and draw it.
 - `sticker-pages.js`: FROZEN album pages. Never regenerate once players have stickers; `node tools/make-sticker-pages.js --add` only adds clubs.
 - `net.js`: `Net` over three backends (supabase / claude artifact db / local). Sync is pull-merge-push. Features needing `supabase/002_additions.sql` fail soft.
 - `boot.js`: start-up, service worker, "New version ready" toast.

@@ -76,7 +76,57 @@ const dayKey = (d = new Date()) => d.getFullYear() + "-" + pad(d.getMonth() + 1)
 const weekNo = () => Math.floor((Date.now() / 864e5 + 3) / 7);
 const daysIn = () => (Date.now() / 864e5 + 3) % 7;
 const seasonLabel = y => y + "–" + String(y + 1).slice(2);
-function search(q) { q = norm(q); if (q.length < 2) return []; const qt = q.split(" "), out = []; for (let i = 0; i < PL.length && out.length < 4; i++) { const t = NTOK[i]; let ok = true; for (const a of qt) { let f = false; for (const b of t) if (b.startsWith(a)) { f = true; break; } if (!f) { ok = false; break; } } if (ok) out.push(i); } return out; }
+/* ---------- player search: best-known first, forgiving of typos ----------
+   Every word typed has to start a word of the name ("thi hen", "van per"), or be a near miss of one ("ronaldiho",
+   "ibrahimovich", "aguro"): one slip in a word of 4+ letters, two in 8+. Spaces don't matter ("vanpersie").
+   Ranked by how well it matches (a whole surname beats a first-name start beats a near miss), then by fame.
+   A near miss comes back with .fz set so the list can say so. */
+const NSUF = NTOK.map(t => t.map((_, k) => t.slice(k).join("")));   // "robinvanpersie", "vanpersie", "persie"
+function lev(a, b, max) {   // edit distance, giving up once it can't come in at or under max
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, k) => k);
+  for (let x = 1; x <= a.length; x++) {
+    const cur = [x]; let best = x;
+    for (let y = 1; y <= b.length; y++) { cur[y] = Math.min(prev[y] + 1, cur[y - 1] + 1, prev[y - 1] + (a[x - 1] === b[y - 1] ? 0 : 1)); if (cur[y] < best) best = cur[y]; }
+    if (best > max) return max + 1; prev = cur;
+  }
+  return prev[b.length];
+}
+function wordScore(a, t) {   // how well one typed word fits a name's words: 4 whole surname, 3 whole word / surname start, 2 word start, 1.5 one slip, .5 two slips, 0 no
+  let best = 0;
+  for (let k = 0; k < t.length; k++) { const b = t[k], last = k === t.length - 1; if (b.startsWith(a)) best = Math.max(best, (b === a ? 3 : 2) + (last ? 1 : 0)); }
+  if (best || a.length < 4) return best;
+  const lim = a.length >= 8 ? 2 : 1;
+  for (const b of t) {
+    if (b[0] !== a[0] && b[1] !== a[1]) continue;   // typos rarely hit the first two letters both
+    const d = Math.min(lev(a, b, lim), a.length >= 5 && b.length > a.length ? lev(a, b.slice(0, a.length), lim) : lim + 1);
+    if (d <= lim) best = Math.max(best, d === 1 ? 1.5 : .5);
+  }
+  return best;
+}
+function search(q, n = 4) {
+  q = norm(q); if (q.length < 2) return [];
+  const qt = q.split(" "), qj = qt.join(""), hits = [];
+  for (let i = 0; i < PL.length; i++) {
+    const t = NTOK[i]; let sc = 0, fz = false;
+    for (const a of qt) { const w = wordScore(a, t); if (!w) { sc = 0; break; } if (w < 2) fz = true; sc += w; }
+    if (!sc && qj.length >= 4 && NSUF[i].some(x => x.startsWith(qj))) { sc = 2 * qt.length + 1; fz = false; }
+    if (sc) hits.push({ i, s: sc * 3 / qt.length + fame(i), fz });
+  }
+  hits.sort((a, b) => b.s - a.s);
+  const top = hits.find(h => !h.fz);   // with a proper match on the board, only keep near misses that run it close ("mesi" still offers Messi)
+  return hits.filter(h => !h.fz || !top || h.s >= top.s - 3).slice(0, n).map(h => h.fz ? Object.assign(new Number(h.i), { fz: 1 }) : h.i);
+}
+/* the name with the typed part lit up */
+function sugName(i, q) {
+  const qt = norm(q).split(" ").filter(Boolean);
+  return PL[i][0].split(" ").map(w => {
+    const nw = norm(w).replace(/ /g, ""), a = qt.filter(x => nw.startsWith(x)).sort((x, y) => y.length - x.length)[0];
+    if (!a) return esc(w);
+    let k = 0; while (k < w.length && norm(w.slice(0, k + 1)).replace(/ /g, "").length <= a.length) k++;
+    return "<mark>" + esc(w.slice(0, k)) + "</mark>" + esc(w.slice(k));
+  }).join(" ");
+}
 const hasClub = (i, c) => { const a = PL[i][5]; for (let k = 0; k < a.length; k += 2) if (a[k] === c) return true; return false; };
 const clubsOf = i => { const a = PL[i][5], out = []; for (let k = 0; k < a.length; k += 2) if (!out.includes(a[k])) out.push(a[k]); return out; };
 const fits = (i, c) => c.t === "c" ? hasClub(i, c.v) : c.t === "n" ? PL[i][1] === c.v : c.t === "l" ? !!(PL[i][7] & (1 << c.v)) : !!(PL[i][7] & 32);
@@ -113,6 +163,8 @@ const TUNING = {
   themeBonus: .5,                        // theme of the day: +50% XP on matching chances only
   finalDay: 3,                           // the last N fixtures of a season get the Final Day treatment
   warsTop: 10,                           // Club Wars: a club's score is its top N fans' weekly goals divided by N
+  gridHint: [2, 3],                      // daily grid: % off a square's share of the score for the first and second hint (one hint on a full grid = 98%)
+  gridHintXp: 5,                         // ...and XP off that square per hint taken
   logMinSample: 30                       // question log: aggregates only come back once a question has this many answers
 };
 const STICKER_RULES = {
@@ -562,7 +614,7 @@ function takeChance() {
   $("main").innerHTML = `<div class="board">${scoreHTML()}<div class="clock"><i id="clk"></i></div>${chanceStrip()}</div>
   <div class="chance"><h3>${esc(T.n)}</h3><span class="eyebrow">${chLbl(false)}</span></div>
   <p class="rule qq">${esc(run.rule || T.rule)}${run.hint ? `<span>${esc(run.hint)}</span>` : ""}</p>
-  ${T.typed ? `<div class="entry"><input id="q" type="text" placeholder="${spec.type === "xi" ? "Type a surname" : "Type a player's name"}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><div class="sug" id="sug" hidden></div></div>` : ""}
+  ${T.typed ? `<div class="entry"><input id="q" type="text" placeholder="${spec.type === "xi" ? "Type a surname" : "Type a player's name"}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><button type="button" class="clr" id="clr" data-act="clrq" aria-label="Clear" hidden>×</button><div class="sug" id="sug" hidden></div></div>` : ""}
   <p class="msg" id="msg"></p><div id="rbody"></div><div class="qart">${qart(spec.type)}</div>`;
   document.getElementById("app").classList.add("q");
   ctx = { paint: () => { const b = $("rbody"); if (b) b.innerHTML = run.body(false); }, done: () => endChance() };
@@ -649,22 +701,42 @@ function dailyGrid() {
   return { rows: [0, 1, 2].map(k => ({ t: "c", v: BD.gridClubs[k] })), cols: [3, 4, 5].map(k => ({ t: "c", v: BD.gridClubs[k] })) };
 }
 let GRID = null, gridCell = -1;
-const gridState = () => { const k = dayKey(); if (!S.grid[k]) { S.grid = { [k]: { c: [null, null, null, null, null, null, null, null, null], left: 9, r: [0, 0, 0, 0, 0, 0, 0, 0, 0], xp: 0 } }; } return S.grid[k]; };
+const gridState = () => { const k = dayKey(); if (!S.grid[k]) { S.grid = { [k]: { c: [null, null, null, null, null, null, null, null, null], left: 9, r: [0, 0, 0, 0, 0, 0, 0, 0, 0], xp: 0 } }; }
+  const g = S.grid[k]; if (!g.h) g.h = [0, 0, 0, 0, 0, 0, 0, 0, 0]; if (!g.ht) g.ht = [null, null, null, null, null, null, null, null, null]; return g; };
+/* grid score: each filled square is worth a ninth of 100%, less what its hints cost. Hints on a square you never fill cost nothing (it's already 0). */
+const hintCost = n => TUNING.gridHint.slice(0, n).reduce((a, b) => a + b, 0);
+const gridScore = g => Math.max(0, Math.round(g.c.reduce((t, v, k) => t + (v ? 100 / 9 - hintCost((g.h || [])[k] || 0) : 0), 0)));
+const gridHints = g => (g.h || []).reduce((t, n, k) => t + (g.c[k] ? n : 0), 0);
+/* the hint is about one real answer: the best-known player who fits and isn't already on today's grid. Fixed once given. */
+function gridHintTarget(k) {
+  const g = gridState(); if (g.ht[k] && KEY2IDX[g.ht[k]] !== undefined) return KEY2IDX[g.ht[k]];
+  const a = GRID.rows[Math.floor(k / 3)], b = GRID.cols[k % 3], v = validSet(a, b).filter(i => !g.c.includes(pkey(i)) && PL[i][3] > 0).sort((x, y) => fame(y) - fame(x));
+  if (!v.length) return -1; g.ht[k] = pkey(v[0]); return v[0];
+}
+function gridHintText(k) {
+  const g = gridState(), n = g.h[k], i = n ? gridHintTarget(k) : -1; if (i < 0) return "";
+  const a = GRID.rows[Math.floor(k / 3)], b = GRID.cols[k % 3], p = PL[i], bits = [POSN[p[2]], "born in the " + (Math.floor(p[3] / 10) * 10 + 1900) + "s"];
+  if (p[1] >= 0 && a.t !== "n" && b.t !== "n") bits.push(NAT[p[1]]);
+  else { const other = clubsOf(i).find(c => !(a.t === "c" && a.v === c) && !(b.t === "c" && b.v === c)); if (other !== undefined) bits.push("also played for " + CLUB[other]); }
+  let h = bits.join(" · ");
+  if (n >= 2) { const w = p[0].split(" "), sn = w[w.length - 1]; h += `<br><b>${esc(w.length > 1 ? w[0][0] + ". " : "")}${esc([sn[0]].concat(Array(Math.max(0, sn.length - 1)).fill("_")).join(" "))}</b> (${sn.length} letters)`; }
+  return h;
+}
 function gridPick(i) {
   const g = gridState(), a = GRID.rows[Math.floor(gridCell / 3)], b = GRID.cols[gridCell % 3], v = validSet(a, b);
   if (g.c.includes(pkey(i))) { msg("Already used him today.", ""); return; }
   if (PL[i][1] < 0 && (b.t === "n") && fits(i, a)) { msg("No nationality on file for " + PL[i][0] + ". Try someone else.", ""); return; }
   g.left--;
-  if (v.includes(i)) { g.c[gridCell] = pkey(i); g.r[gridCell] = Math.round(rarity(v, i) * 100); addAlbum(i); const x = 20 + Math.round(g.r[gridCell] * .3); g.xp += x; addXp(x); sfx.goal(); $("over").innerHTML = ""; if (g.c.every(x => x) || g.left <= 0) { S.st.grids++; } save(true); render(); toast(PL[i][0] + (g.r[gridCell] >= 70 ? ". Deep cut." : ". In.")); }
+  if (v.includes(i)) { g.c[gridCell] = pkey(i); g.r[gridCell] = Math.round(rarity(v, i) * 100); addAlbum(i); const x = Math.max(10, 20 + Math.round(g.r[gridCell] * .3) - TUNING.gridHintXp * g.h[gridCell]); g.xp += x; addXp(x); sfx.goal(); $("over").innerHTML = ""; if (g.c.every(x => x) || g.left <= 0) { S.st.grids++; } save(true); render(); toast(PL[i][0] + (g.r[gridCell] >= 70 ? ". Deep cut." : ". In.")); }
   else { sfx.no(); save(); if (g.left <= 0) { S.st.grids++; $("over").innerHTML = ""; render(); } else { msg(PL[i][0] + "? " + pickR(SAY.no) + " " + g.left + " guesses left.", "bad"); const q = $("q"); if (q) { q.value = ""; $("sug").hidden = true; } } }
 }
 function renderGrid() {
   GRID = GRID && GRID.day === dayKey() ? GRID : Object.assign(dailyGrid(), { day: dayKey() });
   const g = gridState(), done = g.left <= 0 || g.c.every(x => x), got = g.c.filter(x => x).length, obs = got ? Math.round(g.r.reduce((s, x) => s + x, 0) / got) : 0;
   let h = `<div class="hd"><h2>Daily Grid No. ${gridNo()}</h2><span class="eyebrow">${done ? "Finished" : g.left + " guesses left"}</span></div><div class="grid"><div></div>${GRID.cols.map(c => `<div class="gh">${esc(catLabel(c))}</div>`).join("")}`;
-  GRID.rows.forEach((a, ri) => { h += `<div class="gh">${esc(catLabel(a))}</div>`; GRID.cols.forEach((b, ci) => { const k = ri * 3 + ci, v = g.c[k]; h += v ? `<div class="gc done"><b>${esc(v.split("|")[0])}</b><span>${g.r[k]}% obscure</span></div>` : done ? `<div class="gc"><span style="color:var(--mute)">${esc((x => x.length ? PL[x[0]][0] : "")(validSet(a, b)))}</span></div>` : `<button class="gc open" data-act="cell" data-v="${k}" aria-label="${esc(catLabel(a))} and ${esc(catLabel(b))}"><span class="plus">+</span></button>`; }); });
-  h += `</div><p class="note">One player per square, nine guesses, nobody twice. Clubs count from 1992 where the records reach; the more obscure the answer, the better the score.</p>`;
-  if (done) h += `<div class="panel pad"><div class="statline"><span><b>${got}</b> of 9</span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span></div></div><div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the answer most people would have given. A new grid lands at midnight.</p>`;
+  GRID.rows.forEach((a, ri) => { h += `<div class="gh">${esc(catLabel(a))}</div>`; GRID.cols.forEach((b, ci) => { const k = ri * 3 + ci, v = g.c[k]; h += v ? `<div class="gc done${g.h[k] ? " hinted" : ""}"><b>${esc(v.split("|")[0])}</b><span>${g.r[k]}% obscure</span>${g.h[k] ? `<i class="hintdot" title="${g.h[k]} hint${g.h[k] > 1 ? "s" : ""}">${g.h[k] > 1 ? "2 hints" : "hint"}</i>` : ""}</div>` : done ? `<div class="gc"><span style="color:var(--mute)">${esc((x => x.length ? PL[x[0]][0] : "")(validSet(a, b)))}</span></div>` : `<button class="gc open" data-act="cell" data-v="${k}" aria-label="${esc(catLabel(a))} and ${esc(catLabel(b))}"><span class="plus">+</span></button>`; }); });
+  h += `</div><p class="note">One player per square, nine guesses, nobody twice. Clubs count from 1992 where the records reach; the more obscure the answer, the better.${done ? "" : ` Stuck on a square? Tap it and take a hint, but it costs you: a full grid with no hints is <b>100%</b>, one hint knocks off ${TUNING.gridHint[0]}%.`}</p>`;
+  if (done) { const sc = gridScore(g), nh = gridHints(g); h += `<div class="panel pad gscore"><div class="gsc"><span class="eyebrow">Grid score</span><b class="led">${sc}%</b><span class="note">${sc === 100 ? "Perfect. Nine from nine, no help." : got === 9 ? `All nine, with ${nh} hint${nh === 1 ? "" : "s"}.` : nh ? `${got} of 9, ${nh} hint${nh === 1 ? "" : "s"} used.` : `${got} of 9, no hints.`}</span></div><div class="statline"><span><b>${got}</b> of 9</span><span>Hints <b>${nh}</b></span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span></div></div>`; h += `<div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the answer most people would have given. A new grid lands at midnight.</p>`; }
   $("main").innerHTML = h;
 }
 
@@ -692,7 +764,7 @@ function renderHome() {
    <div class="statline"><span class="form">${S.form.length ? S.form.map(f => `<i class="${f}">${f}</i>`).join("") : "<span>No form yet</span>"}</span><span><b>${zone}</b></span></div></div>`;
   const pOff = Net.checked && Net.canSignIn() && !Net.uid ? `<div class="panel pad"><p class="note"><b>Not signed in.</b> Your progress only lives on this device. Sign in to keep it safe, play on any device and count in the shared tables.</p><button class="btn line sm" style="margin-top:10px" data-act="profile">Sign in</button></div>`
     : Net.checked && !Net.ready ? `<div class="panel pad"><p class="note"><b>Playing offline.</b> Your progress saves on this device, but your results won't show in your mates' tables and your opponents are house sides. Share your result after a match to show off.</p></div>` : "";
-  const pGrid = `<button class="panel li" data-act="go" data-v="grid" style="border-radius:6px"><span class="k">${gridNo()}</span><span class="tx"><b>Daily Grid</b><span>${gdone ? "Done for today. " + g.c.filter(x => x).length + " of 9." : g ? g.left + " guesses left. Finish the job." : "Nine squares, nine guesses. Same grid for everyone."}</span></span><span class="go">›</span></button>`;
+  const pGrid = `<button class="panel li" data-act="go" data-v="grid" style="border-radius:6px"><span class="k">${gridNo()}</span><span class="tx"><b>Daily Grid</b><span>${gdone ? "Done for today. " + g.c.filter(x => x).length + " of 9, scored " + gridScore(g) + "%." : g ? g.left + " guesses left. Finish the job." : "Nine squares, nine guesses. Same grid for everyone."}</span></span><span class="go">›</span></button>`;
   const pTrain = `<div class="hd"><h2>Training ground</h2><span class="eyebrow">No table, small XP</span></div>
   <div class="panel list">${Object.keys(TYPES).map((k, i) => `<button class="li" data-act="train" data-v="${k}"><span class="k">${pad(i + 1)}</span><span class="tx"><b>${TYPES[k].n}</b><span>${QDESC[k]}</span></span><span class="go">›</span></button>`).join("")}</div>`;
   const pLevel = `<div class="panel pad"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(S.xp)}</b> XP · ${fmt(l1 - S.xp)} to level ${lv + 1}</span></div><div class="bar" style="margin-top:8px"><i style="width:${Math.max(2, (S.xp - l0) / (l1 - l0) * 100).toFixed(1)}%"></i></div></div>`;
@@ -783,10 +855,12 @@ function profileSheet(first) {
   ${first ? "" : `<div class="row"><button type="button" class="btn line sm" data-act="sound">Sound ${S.sound ? "on" : "off"}</button>${navigator.vibrate ? `<button type="button" class="btn line sm" data-act="hap">Buzz ${S.hap !== false ? "on" : "off"}</button>` : ""}${badgeOf(meB()) === "fd" ? `<button type="button" class="btn line sm" data-act="kit">Founder's kit ${S.kit !== false ? "on" : "off"}</button>` : ""}<button type="button" class="btn line sm" data-act="closeover">Close</button></div><button type="button" class="linkb" data-act="reset">Reset everything</button>`}</form></div>`;
   $("pf").addEventListener("submit", e => { e.preventDefault(); const ae = document.activeElement && document.activeElement.id; if (ae === "em") { acctAct("sendcode"); return; } if (ae === "otp") { acctAct("verify"); return; } const n = $("nm").value.trim().slice(0, 16); S.name = n || "Unnamed Trialist"; S.club = $("cl").value; S.made = true; $("over").innerHTML = ""; save(true); render(); });
 }
+const hintBtn = k => { const n = gridState().h[k]; return n >= TUNING.gridHint.length ? "" : `<button class="linkb hintb" data-act="ghint">${n ? "Another hint" : "Hint"} <i>−${TUNING.gridHint[n]}%</i></button>`; };
 function cellSheet(k) {
   gridCell = k; const a = GRID.rows[Math.floor(k / 3)], b = GRID.cols[k % 3], g = gridState();
-  $("over").innerHTML = `<div class="sheet topdock"><div class="box"><div class="hd"><span class="eyebrow">${g.left} guesses left</span><button class="linkb" data-act="closeover">Close</button></div><div class="cats"><div class="cat"><span>${catSub(a)}</span><b>${esc(catLabel(a))}</b></div><div class="amp">+</div><div class="cat"><span>${catSub(b)}</span><b>${esc(catLabel(b))}</b></div></div>
-  <div class="entry"><input id="q" type="text" placeholder="Type a player's name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><div class="sug" id="sug" hidden></div></div><p class="msg" id="msg"></p></div></div>`;
+  $("over").innerHTML = `<div class="sheet topdock"><div class="box"><div class="hd"><span class="eyebrow">${g.left} guesses left</span><span class="hdb" id="hintb">${hintBtn(k)}</span><button class="linkb" data-act="closeover">Close</button></div><div class="cats"><div class="cat"><span>${catSub(a)}</span><b>${esc(catLabel(a))}</b></div><div class="amp">+</div><div class="cat"><span>${catSub(b)}</span><b>${esc(catLabel(b))}</b></div></div>
+  ${g.h[k] ? `<p class="hintln" id="hintln">${gridHintText(k)}</p>` : `<p class="hintln" id="hintln" hidden></p>`}
+  <div class="entry"><input id="q" type="text" placeholder="Type a player's name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><button type="button" class="clr" id="clr" data-act="clrq" aria-label="Clear" hidden>×</button><div class="sug" id="sug" hidden></div></div><p class="msg" id="msg"></p></div></div>`;
   const q = $("q"); try { q.focus(); } catch (e) { }
 }
 function confirmSheet(title, text, yes, fn) { $("over").innerHTML = `<div class="sheet"><div class="box"><h1>${esc(title)}</h1><p class="note">${esc(text)}</p><div class="row"><button class="btn line" data-act="closeover">Cancel</button><button class="btn" id="yes">${esc(yes)}</button></div></div></div>`; $("yes").addEventListener("click", () => { $("over").innerHTML = ""; fn(); }); }
@@ -809,14 +883,30 @@ async function acctAct(act) {
     else if (act === "signout") { await Net.signOut(); toast("Signed out. Progress stays on this device."); }
   } catch (e) { am("Something went wrong. Check your connection and try again."); }
 }
-function submitPick(i, raw) { const q = $("q"); if (q) { q.value = ""; } const s = $("sug"); if (s) s.hidden = true; if (view === "grid") { if (i >= 0) gridPick(i); } else if (M && M.live && M.run && M.run.onPick) M.run.onPick(i, raw || ""); if (q && q.isConnected) { try { q.focus(); } catch (e) { } } }
+function submitPick(i, raw) { const q = $("q"); if (q) { q.value = ""; } const s = $("sug"); if (s) s.hidden = true; const c = $("clr"); if (c) c.hidden = true; if (view === "grid") { if (i >= 0) gridPick(i); } else if (M && M.live && M.run && M.run.onPick) M.run.onPick(i, raw || ""); if (q && q.isConnected) { try { q.focus(); } catch (e) { } } }
 document.addEventListener("input", e => {
   const t = e.target;
-  if (t.id === "q") { const r = search(t.value), s = $("sug"); if (!s) return; s.hidden = !r.length; s.innerHTML = r.map(i => `<button type="button" data-act="sugg" data-v="${i}">${esc(PL[i][0])}<span>${PL[i][3] > 0 ? "b. " + (1900 + PL[i][3]) : ""}</span></button>`).join(""); }
+  if (t.id === "q") showSugg(t.value);
   else if (t.id === "sl" && M && M.run && M.run.onInput) M.run.onInput(t.value);
 });
 document.addEventListener("change", e => { if (e.target.id === "ac") { albumClub = e.target.value; renderAlbum(); } });
-document.addEventListener("keydown", e => { if (e.key !== "Enter" || e.target.id !== "q") return; e.preventDefault(); const s = $("sug"), first = s && !s.hidden && s.querySelector("button"); if (first) submitPick(+first.dataset.v); else if (M && M.run && M.run.raw && e.target.value.trim()) submitPick(-1, e.target.value); });
+/* the suggestion list under (or over) the name box */
+function showSugg(val) {
+  const s = $("sug"), c = $("clr"); if (c) c.hidden = !val; if (!s) return;
+  const r = search(val), used = view === "grid" && GRID ? gridState().c : [];
+  s.hidden = !r.length;
+  s.innerHTML = r.map((i, k) => { const u = used.includes(pkey(+i)); return `<button type="button" class="${k === 0 ? "on" : ""}${i.fz ? " fz" : ""}${u ? " used" : ""}" data-act="sugg" data-v="${+i}"><span class="nm">${sugName(+i, val)}</span><span>${i.fz ? "<i>close</i>" : ""}${u ? "<i>used</i>" : ""}${POSN[PL[+i][2]]}${PL[+i][3] > 0 ? " · b. " + (1900 + PL[+i][3]) : ""}</span></button>`; }).join("");
+}
+document.addEventListener("keydown", e => {
+  if (e.target.id !== "q") return;
+  const s = $("sug"), rows = s && !s.hidden ? [...s.querySelectorAll("button")] : [], on = rows.findIndex(b => b.classList.contains("on"));
+  if ((e.key === "ArrowDown" || e.key === "ArrowUp") && rows.length) { e.preventDefault(); let n = on + (e.key === "ArrowDown" ? 1 : -1); n = (n + rows.length) % rows.length; rows.forEach((b, k) => b.classList.toggle("on", k === n)); return; }
+  if (e.key === "Escape" && rows.length) { s.hidden = true; return; }
+  if (e.key !== "Enter") return; e.preventDefault();
+  const pick = rows[on >= 0 ? on : 0], raw = M && M.run && M.run.raw && e.target.value.trim();
+  if (pick && !(raw && pick.classList.contains("fz"))) submitPick(+pick.dataset.v);   // a near miss never overrides what was typed in a surname-only question
+  else if (raw) submitPick(-1, e.target.value);
+});
 document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".sug")) e.preventDefault(); });
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b) return; const act = b.dataset.act, v = b.dataset.v;
@@ -830,6 +920,8 @@ document.addEventListener("click", e => {
   else if (act === "cup") { if (!S.made) { profileSheet(true); return; } startCupMatch(); }
   else if (act === "take") takeChance();
   else if (act === "sugg") submitPick(+v);
+  else if (act === "ghint") { const g = gridState(), k = gridCell; if (k < 0 || g.c[k] || g.h[k] >= TUNING.gridHint.length) return; if (gridHintTarget(k) < 0) { msg("No hint for this one, sorry.", ""); return; } g.h[k]++; save(); sfx.tick(); const l = $("hintln"); if (l) { l.hidden = false; l.innerHTML = gridHintText(k); } const hb = $("hintb"); if (hb) hb.innerHTML = hintBtn(k); const q = $("q"); if (q) try { q.focus(); } catch (e) { } }
+  else if (act === "clrq") { const q = $("q"); if (q) { q.value = ""; showSugg(""); try { q.focus(); } catch (e) { } } }
   else if (act === "tap") { if (M && M.live && M.run && M.run.onTap) M.run.onTap(v); }
   else if (act === "cont") { if (!M) return; if (M.mode === "league" && M.i >= 5) fullTime(); else if (M.mode === "cup" && M.i >= M.rounds.length) cupContinue(); else chanceCover(); }
   else if (act === "quit") { if (!M) return; if (M.mode === "cup" && !(M.i === 0 && !M.live)) { confirmSheet("Walk off?", "Walk off a cup tie and you're knocked out.", "Walk off", () => { S.cup.l++; S.cup.best = Math.max(S.cup.best, S.cup.rd); S.cup.rd = 0; S.cup.runs++; save(true); quitMatch(); }); return; } if (M.mode === "train" || M.i === 0 && !M.live) quitMatch(); else confirmSheet("Walk off?", "An abandoned match doesn't count in the table. You keep nothing from it, and the rematch is five new questions.", "Abandon", abandonMatch); }

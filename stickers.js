@@ -4,8 +4,8 @@
    Pages are frozen in sticker-pages.js so a page never reshuffles. */
 const SR = STICKER_RULES;
 const TIER_N = { paper: "Paper", foil: "Foil", gold: "Gold Icon" }, TIER_RANK = { paper: 0, foil: 1, gold: 2 };
-/* A sourced list of club colours can go here later ({ "Arsenal": "#hex" }); until then the band takes the sticker tier's colour.
-   Real club colours are facts and this project doesn't write those from memory. */
+/* Band colour override per club ({ "Arsenal": "#hex" }). Empty on purpose: the band keeps the tier's colour and the
+   shirt (kits.js, sourced) carries the club colours. */
 const CLUB_COLOURS = {};
 
 /* a player can only be offered if every clue has data behind it: nationality, birth year and at least one club with a year */
@@ -121,7 +121,7 @@ function stkStart() {
   STKA = { slot, rt, gold: rt === "gold", shown: SR.clues[rt], tries: SR.tries[rt], max: SR.tries[rt], t0: Date.now(), limit: 30000, lastShown: 0 };
   M = { mode: "stk", live: true, run: { onPick: stkPick } };
   stkScreen(`${stkBar(TIER_N[slot.tier].toUpperCase().split(" ")[0])}<div class="chance"><h3>Name the man on the sticker</h3><span class="eyebrow">${TIER_N[slot.tier]} · ${esc(slot.club)}</span></div>
-  <div class="entry"><input id="q" type="text" placeholder="Type a player's name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><div class="sug" id="sug" hidden></div></div>
+  <div class="entry"><input id="q" type="text" placeholder="Type a player's name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><button type="button" class="clr" id="clr" data-act="clrq" aria-label="Clear" hidden>×</button><div class="sug" id="sug" hidden></div></div>
   <p class="msg" id="msg"></p><div id="rbody">${stkCluesHTML()}</div>`, true);
   const q = $("q"); if (q) { try { q.focus({ preventScroll: true }); } catch (e) { try { q.focus(); } catch (e2) { } } }
   cancelAnimationFrame(stkRaf); stkRaf = requestAnimationFrame(stkTick);
@@ -183,10 +183,52 @@ function stkHighlight(i, c) {
 const STARS = { paper: "★", foil: "★★", gold: "★★★" };
 const CONDN = ["", "Good", "Near mint", "Mint"];
 const stkMeta = k => (S.stk.meta || {})[k] || {};
-const SHIRT = '<svg class="shirt" viewBox="0 0 64 64" aria-hidden="true"><path d="M22 8 8 16l6 12 6-3v31h24V25l6 3 6-12-14-8c-2 5-6 7-10 7s-8-2-10-7z"/></svg>';
+/* ---------- the shirt: the club's home kit from his time there (kits.js) ---------- */
+const KITS = window.BOFFIN_KITS || {};
+/* the seasons he was on the books: first arrival to the next recorded club (or, with none, to the season he turned 36: a guess, used only to pick a shirt) */
+function stkSeasons(i, c) {
+  const y = stkYears(i, c); if (!y) return null;
+  const end = y.to !== null ? Math.max(y.from, y.to - 1) : Math.max(y.from, Math.min(2025, PL[i][3] > 0 ? 1900 + PL[i][3] + 36 : 2025));
+  return { from: y.from, to: end };
+}
+/* which shirt: a famous one-off ("sig") if his time at the club ended in it (Henry, Pires and Bergkamp in the redcurrant), otherwise whatever was worn in the middle of his spell */
+function kitFor(club, i, c) {
+  const k = KITS[club]; if (!k) return null;
+  const ss = stkSeasons(i, c); if (!ss) return k;
+  const eras = k.e || [], sig = eras.find(e => e[3] && ss.from <= e[0] && ss.to >= e[0] && ss.to <= e[1] + 1);   // he signed off in it: his spell ended in that season or the next
+  if (sig) return Object.assign({}, k, { s: undefined, p: undefined }, sig[2], { yr: sig[0] });
+  const mid = Math.floor((ss.from + ss.to) / 2), era = eras.find(e => !e[3] && e[0] <= mid && e[1] >= mid);
+  return era ? Object.assign({}, k, { s: undefined, p: undefined }, era[2], { yr: mid }) : k;
+}
+/* darken a #hex for shading and default trim */
+const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16), ch = s => Math.round(((n >> s) & 255) * f); return "#" + ((1 << 24) + (ch(16) << 16) + (ch(8) << 8) + ch(0)).toString(16).slice(1); };
+let kitN = 0;
+const W_ = "#f4f4f1";
+const SH_BODY = "M34 14 L43 11 Q50 19 57 11 L66 14 L68 40 L70 90 Q50 94 30 90 L32 40 Z";
+const SH_LS = "M34 14 L20 21 L10 38 L22 45 L32 34 Z", SH_RS = "M66 14 L80 21 L90 38 L78 45 L68 34 Z";
+function kitSVG(k) {
+  if (!k) return '<svg class="shirt plain" viewBox="0 0 100 100" aria-hidden="true"><path d="' + SH_BODY + " " + SH_LS + " " + SH_RS + '"/></svg>';
+  const id = "kt" + (++kitN), b = k.b, c = k.c || W_, t = k.t || shade(b, .72), sl = k.s, pats = [];
+  if (k.p === "stripes") for (let x = 6; x < 100; x += 14) pats.push(`<rect x="${x}" y="0" width="7" height="100" fill="${c}"/>`);
+  else if (k.p === "hoops") for (let y = 22; y < 100; y += 14) pats.push(`<rect x="0" y="${y}" width="100" height="7" fill="${c}"/>`);
+  else if (k.p === "halves") pats.push(`<rect x="0" y="0" width="50" height="100" fill="${c}"/>`);
+  else if (k.p === "band") pats.push(`<rect x="38" y="0" width="24" height="100" fill="${c}"/>`);
+  else if (k.p === "hechter") pats.push(`<rect x="38" y="0" width="24" height="100" fill="${W_}"/><rect x="41.5" y="0" width="17" height="100" fill="${c}"/>`);
+  else if (k.p === "pin2") pats.push(`<rect x="44" y="0" width="4" height="100" fill="${c}"/><rect x="52" y="0" width="4" height="100" fill="${k.c2 || c}"/>`);
+  else if (k.p === "diag") pats.push(`<path d="M0 100 L100 0 L100 100 Z" fill="${c}"/>`);
+  const all = SH_BODY + " " + SH_LS + " " + SH_RS;
+  return `<svg class="shirt kit" viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="${id}c"><path d="${all}"/></clipPath><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>
+<g clip-path="url(#${id}c)"><rect width="100" height="100" fill="${b}"/>${pats.join("")}${sl ? `<path d="${SH_LS} ${SH_RS}" fill="${sl}"/>` : ""}
+<path d="M22 45 L10 38" stroke="${t}" stroke-width="4"/><path d="M78 45 L90 38" stroke="${t}" stroke-width="4"/>
+<path d="M32 34 L32 40 M68 34 L68 40" stroke="#000" stroke-opacity=".18" stroke-width="1"/><path d="M40 60 Q44 75 41 88 M60 58 Q57 72 60 88" stroke="#000" stroke-opacity=".07" stroke-width="2" fill="none"/>
+<rect width="100" height="100" fill="url(#${id}g)"/></g>
+<path d="M43 11 Q50 19 57 11" stroke="${t}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+<path d="${all}" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1" stroke-linejoin="round"/></svg>`;
+}
+const stkShirt = slot => kitSVG(kitFor(slot.club, slot.i, slot.c));
 function stkCard(slot, n, cls) {
   const p = PL[slot.i], nm = p[0].split(" "), sn = nm[nm.length - 1], fn = nm.slice(0, -1).join(" "), col = CLUB_COLOURS[slot.club], mt = stkMeta(slot.key), hi = stkHighlight(slot.i, slot.c);
-  return `<div class="stkr ${slot.tier} got${mt.sh ? " shiny" : ""} ${cls || ""}"><span class="band"${col ? ` style="background:${col}"` : ""}>${esc(slot.club)}</span>${SHIRT}<span class="stars">${STARS[slot.tier]}</span><span class="fn">${esc(fn)}</span><b class="sn">${esc(sn)}</b><span class="meta">${POSN[p[2]]} · ${esc(NAT[p[1]])}</span>${hi ? `<span class="hi">${esc(hi)}</span>` : ""}<i class="no">${slot.n + 1}</i>${n > 1 ? `<em class="x">×${n}</em>` : ""}${mt.sh ? '<em class="shtag">✦ Shiny</em>' : mt.c === 3 ? '<em class="mint">Mint</em>' : ""}</div>`;
+  return `<div class="stkr ${slot.tier} got${mt.sh ? " shiny" : ""} ${cls || ""}"><span class="band"${col ? ` style="background:${col}"` : ""}>${esc(slot.club)}</span>${stkShirt(slot)}<span class="stars">${STARS[slot.tier]}</span><span class="fn">${esc(fn)}</span><b class="sn">${esc(sn)}</b><span class="meta">${POSN[p[2]]} · ${esc(NAT[p[1]])}</span>${hi ? `<span class="hi">${esc(hi)}</span>` : ""}<i class="no">${slot.n + 1}</i>${n > 1 ? `<em class="x">×${n}</em>` : ""}${mt.sh ? '<em class="shtag">✦ Shiny</em>' : mt.c === 3 ? '<em class="mint">Mint</em>' : ""}</div>`;
 }
 /* the back: everything the data knows about him */
 function stkBack(slot) {
