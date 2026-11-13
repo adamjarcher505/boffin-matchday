@@ -2,7 +2,9 @@
 
 | What | Why | What would unblock it |
 |---|---|---|
-| **Bigger Premier League question bank (new data)** | There's no build script or list of sources for data.js in the repo or the notes. The only clue is CLAUDE.md saying 2022–23 onwards came from Fantasy Premier League data. The brief rules out hand-editing data.js or filling gaps from memory. | The original build scripts or source list from the chat that made data.js. With those, add top tens, line-ups, final tables (all 20 places, not just the top four) and transfers for the thinnest clubs first (COVERAGE.md), then bump `QV`. |
+| **Bigger Premier League question bank** | Unblocked 13/11/2026: `data-pipeline/` builds `questions.js` from open data (SOURCES.md). data.js itself still has no build script and stays as it is. | — |
+| **Scorer questions before 2025/26** | openfootball only has Premier League goalscorers for 2025/26, and no second source covers them yet. | A second scorer source (the paid-API hook, or openfootball adding scorers to older seasons). |
+| **2022/23 and 2025/26 scores** | engsoccerdata (the score check) has no 2022/23 and stops at 2024/25, so big wins and derbies from those seasons are held in review. Tables for both seasons do ship (checked against Wikipedia). | football-data.co.uk as a verification source (max two downloads a week), or engsoccerdata updating. |
 | **Spot-check of 20 new data items** | No new items were added. | Comes with the data expansion. |
 | **Player photos on stickers** | Real photos need image rights from the players and the photographers (Panini pays for a licence). Free Wikimedia photos still carry personality rights and attribution, and would bloat the offline download. | A licence. Until then each sticker shows the club shirt from his era (kits.js). |
 | **Connecting Supabase** | `SUPABASE_URL` and `SUPABASE_ANON_KEY` were blank in the brief. | Adam creates the project (HANDOVER.md), then config.js gets the URL and anon key. |

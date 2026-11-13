@@ -36,6 +36,7 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 | `sticker-pages.js` | Frozen sticker album pages, made by `tools/make-sticker-pages.js` |
 | `app.js` | The game: tuning constants, save format, question generators, matches, league, cup, grid, screens |
 | `extras.js` | Share cards, season stakes, Club Wars, question log, theme of the day, haptics |
+| `questions.js` | GENERATED question bank (Pub Quiz). Built by `data-pipeline/`; never hand-edit. Format in data-pipeline/README.md |
 | `kits.js` | Home shirts for the 79 sticker clubs, with era shirts; sourced from Wikipedia (see the header) |
 | `stickers.js` | The sticker album: offers, the "name the man on the sticker" attempt, pages, swaps, tokens |
 | `net.js` | Everything online, behind one interface (Supabase, Claude artifact db, or local) |

@@ -149,7 +149,10 @@ const fameD = f => f >= 5.6 ? 1 : f >= 4.8 ? 2 : f >= 4 ? 3 : 4;
 const clubKey = s => fold(s).replace(/\b(f ?c|a ?f ?c|c ?f|s ?c|a ?c|s ?s|s ?v|club|football|calcio|de|futbol|cf|fk|sk|the)\b/g, " ").replace(/\s+/g, " ").trim();
 const sameClub = (a, b) => { const x = clubKey(a), y = clubKey(b); return !!x && !!y && (x === y || x.startsWith(y + " ") || y.startsWith(x + " ")); };
 const nameOfClub = (label, cid) => cid ? cname(cid) : label.replace(/\s+(F\.C\.|A\.F\.C\.|FC|AFC|C\.F\.|CF)$/, "").replace(/^(FC|AFC|AC|AS|SS|SV|RC|CF|SC|SL|FK|SK)\s+/, "").trim();
-const BIG_CLUBS = ["Real Madrid", "Barcelona", "Bayern Munich", "Juventus", "AC Milan", "Inter", "PSG", "Atlético Madrid", "Dortmund", "Ajax", "Porto", "Benfica", "Lyon", "Marseille", "Roma", "Napoli", "Valencia", "Sevilla", "Celtic", "Rangers"];
+// clubs outside the Premier League that PL players really moved to, by year: realistic wrong answers for transfers abroad
+const DEST = {};
+for (const p of players) { const bs = JSON.parse(p.bd_spells); bs.forEach(([c, y], j) => { if (j && !CLUBS.some(k => k.of.length && sameClub(c, k.bd || k.name))) (DEST[y] = DEST[y] || new Set()).add(c); }); }
+const destNear = y => [...new Set([y - 1, y, y + 1].flatMap(k => [...(DEST[k] || [])]))];
 const plPlayers = players.filter(p => plSpells.all(p.q).length);
 const natPool = {};   // nationality -> how many PL players, for realistic distractors
 for (const p of plPlayers) if (p.bd_nat) natPool[p.bd_nat] = (natPool[p.bd_nat] || 0) + 1;
@@ -179,7 +182,7 @@ for (const p of plPlayers) {
     if (!from.club_id && !to.club_id) continue;   // keep it about the Premier League
     const ans = to.club_id ? cname(to.club_id) : bs[bi][0], fromN = from.club_id ? cname(from.club_id) : bs[bi - 1][0];   // data.js names are the short ones the game already uses
     const career = new Set([...ws.map(s => clubKey(nameOfClub(s.club_label, s.club_id))), ...bs.map(s => clubKey(s[0]))]);
-    const pool = to.club_id ? ST["pl-" + yr] ? ST["pl-" + yr].map(x => cname(x.club_id)) : CLUBS.filter(c => c.of.length).map(c => c.name) : BIG_CLUBS;
+    const pool = to.club_id ? ST["pl-" + yr] ? ST["pl-" + yr].map(x => cname(x.club_id)) : CLUBS.filter(c => c.of.length).map(c => c.name) : destNear(yr).filter(c => c.length <= LIMITS.opt);
     const dis = shuffle(pool.filter(c => !career.has(clubKey(c)) && clubKey(c) !== clubKey(ans)), r).slice(0, 3);
     if (dis.length < 3) continue;
     Q({ t: "transfer", cat: "club", clubs: [from.club_id, to.club_id].filter(Boolean), season: yr, d: Math.min(4, d + 1), q: `Which club did ${p.name} join from ${fromN}?`, sub: `In ${yr}`, a: ans, o: dis, src: ["wikidata:" + p.q + "#P54", "data.js:" + p.bd_idx], tags: ["player", "transfer"], key: "tr|" + p.q + "|" + yr });
@@ -238,6 +241,7 @@ ${rows.join(",\n")}
 `);
 writeJSON(path.join(REPORTS, "review.json"), { asOf: ASOF, note: "Facts the pipeline would not publish: sources disagree, or only one source has them. Nothing here ships.", count: review.length, items: review });
 writeReport();
+writeSample();
 console.log("[generate] questions", out.length, "review items", review.length, "rejects", Object.values(rejects).reduce((s, x) => s + x.length, 0));
 
 function writeReport() {
@@ -289,4 +293,20 @@ ${Object.keys(rejects).length ? Object.entries(rejects).map(([k, v]) => `- **${k
 Question ${LIMITS.q} characters, subtitle ${LIMITS.sub}, each answer ${LIMITS.opt}.
 `;
   fs.writeFileSync(path.join(REPORTS, "validation.md"), md);
+}
+
+/* 30 questions for a human to read: about 7-8 per difficulty, spread across templates, Arsenal well represented */
+function writeSample() {
+  const r = rng("sample-" + ASOF), pick = [];
+  for (let d = 1; d <= 4; d++) {
+    const pool = shuffle(out.filter(q => q.d === d), r), byT = {};
+    pool.forEach(q => { (byT[q.t] = byT[q.t] || []).push(q); });
+    const ts = shuffle(Object.keys(byT), r); let k = 0, want = d <= 2 ? 7 : 8;
+    while (want > 0 && ts.length) { const t = ts[k % ts.length], q = byT[t].shift(); if (q) { pick.push(q); want--; } if (!byT[t].length) ts.splice(k % ts.length, 1); else k++; }
+  }
+  const ars = out.filter(q => q.k.includes("Arsenal") && !pick.includes(q));
+  while (pick.filter(q => q.k.includes("Arsenal")).length < 5 && ars.length) pick[pick.length - 1 - pick.filter(q => q.k.includes("Arsenal")).length] = ars.splice(Math.floor(r() * ars.length), 1)[0];
+  const md = `# Sample: 30 questions from bank ${BANK_V}\n\nPicked at random across difficulties (1 easiest, 4 hardest) and templates. The first option is the right answer here; the game shuffles them.\n\n| # | d | Template | Question | Right answer | Wrong answers | Sources |\n|---:|---:|---|---|---|---|---|\n` +
+    pick.sort((a, b) => a.d - b.d || a.t.localeCompare(b.t)).map((q, i) => `| ${i + 1} | ${q.d} | ${q.t} | ${q.q}${q.sub ? " *(" + q.sub + ")*" : ""} | **${q.a}** | ${q.o.join(" · ")} | ${q.src.join("; ")} |`).join("\n") + "\n";
+  fs.writeFileSync(path.join(REPORTS, "sample.md"), md);
 }

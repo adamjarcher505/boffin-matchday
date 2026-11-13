@@ -57,7 +57,37 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - **Suggestions show position and birth year,** never club or nationality, since those are what the grid and sticker clues ask.
 - **Grid hints point at one real answer** (the best-known fit not already on the grid) and are fixed once given, so reopening a square doesn't reroll them. A hint on a square you never fill costs nothing, because that square already scores 0. Costs are `TUNING.gridHint` ([2, 3]%) and `gridHintXp` (5 XP).
 
+## Question bank (13/11/2026)
+- **There was no question bank to slot into.** Every question in the game is generated on the fly from `data.js`
+  tables by the type generators. So the new questions needed a new chance type, not a new file format: **Pub Quiz**
+  reuses the Final Standings layout (three questions, four tappable answers, two to score). Gameplay, scoring, league
+  mode and the UI are otherwise unchanged. `data.js` is untouched and backwards compatible.
+- **What changes in league mode:** Pub Quiz joins the pool the five chances are drawn from (12 types instead of 11),
+  so each existing type turns up slightly less often. `QV` now includes the bank version (`v4.20261113|`), so ghosts
+  only replay matches built from the same bank; an old save simply has no matching ghosts for a week.
+- **Difficulty by division:** Sunday League and Non-League get difficulty 1–2 (there are only ~80 d1 questions),
+  then up to d3 and d4 as you climb. Club Cup uses only questions tagged with your club (any difficulty for small clubs).
+- **Node, not Python,** for the pipeline: the repo's tools and tests are Node, and Node 22's built-in `node:sqlite`
+  means no dependencies to install locally or on GitHub Actions. Downloads go through `curl` because it honours proxies everywhere.
+- **Second sources:** engsoccerdata and Wikipedia season tables are verification-only. Adam's notes listed
+  engsoccerdata as non-commercial; its DESCRIPTION file says GPL (≥ 2). Either way it's never shipped or committed.
+  Wikipedia wasn't on Adam's list; it's used the same way because it's the only source with every final table and
+  every points deduction (Middlesbrough 1996/97, Portsmouth 2009/10, Everton and Forest 2023/24).
+- **The game's own `data.js` is a second source** for player facts (it already ships). Where it disagrees with
+  Wikidata, nothing is published. It lists many defensive midfielders as defenders (Vieira, Kanté, Rice, Carrick,
+  Makélélé, Xhaka): 35 well-known players disagree on position, so those position questions are skipped and subtitles
+  only show a position both sources agree on.
+- **FPL has no birth dates,** so FPL ↔ Wikidata is matched on name + current club (both must agree on the club anyway).
+  321 of 672 FPL players linked; the rest just don't get current-squad questions yet.
+- **Transfers** use the year both sources give for the move, and the club names `data.js` uses (short). Wrong answers
+  for moves abroad come from clubs other players really moved to that year, not a list of giants.
+- **Shipped format is compact** (1.4 MB, ~310 KB gzipped): one array per question, one question per line, so a weekly
+  PR diff is readable. Source ids are shortened (`of:`, `wd:`, `wp:`, `es:`, `bd:`, `fpl:`).
+- **Report** keeps the last 50 reports on the phone and inserts into `question_reports` (`003_question_reports.sql`),
+  failing soft until that's run. No user id is stored.
+
 ## Testing
+- **Pub Quiz passes the no-scroll check** at 375×667, 390×844 and 375×400 (18 screens), including the longest question and answers in the bank.
 - **13/11/2026: the no-scroll pass now also runs in headless Playwright** (pre-installed in the cloud session). It found the question drawing overflowing by 24px on every question screen, now fixed.
 - **Browser checks ran in the app's built-in browser, not Playwright.** Installing Playwright means a large browser download. `tests/browser/qa.js` drives the real game in-page and reports any screen that scrolls. All question types, both grid and sign-in sheets, all three sticker tiers: no scrolling at 375×667, 390×844 or 375×400. Screenshots from that pass were checked by eye, not saved to the repo.
 - **Short-screen sheets.** At keyboard height (≤520px tall) the profile and sign-on sheets hide the welcome steps, the founder card and the privacy line, so the fields fit.

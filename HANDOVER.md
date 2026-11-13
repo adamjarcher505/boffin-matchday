@@ -50,5 +50,11 @@ Work through `TESTING-CHECKLIST.md`: sign-in on iPhone and Android, two-device s
 Supabase's built-in email sender allows only a few login emails an hour. Connect a free sender such as Resend under
 **Authentication → Emails → SMTP settings** (SETUP.md has the steps).
 
-## 8. Bigger question bank
-Needs the scripts or sources that made `data.js`. If you have them from the old chat, hand them to Claude (BLOCKED.md).
+## 8. Question bank (built 13/11/2026)
+The Pub Quiz chance plays `questions.js` (8,320 questions, Premier League 1992/93 on + Arsenal deep dive), made by
+`data-pipeline/` from open data. Three things to do:
+1. **Supabase → SQL Editor:** run `supabase/003_question_reports.sql` so "Report" taps reach you (they're kept on the
+   phone until then). Read them under Table editor → `question_reports`.
+2. **GitHub → Settings → Actions → General → Workflow permissions:** tick "Allow GitHub Actions to create and approve
+   pull requests". Then the weekly refresh (Tuesdays 06:00 UTC) opens a PR for you to read and merge. It never touches `main` itself.
+3. **Glance at `data-pipeline/reports/review.json`** now and then: facts the sources disagree on. Nothing in it ships.

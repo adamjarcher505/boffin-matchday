@@ -1,5 +1,16 @@
 # Changelog
 
+## 13/11/2026 (evening): a real question bank
+- **Pub Quiz**, a new chance type: three multiple-choice questions, get two right. Shows up in league matches, Club
+  Cup (questions about your club only) and training.
+- **8,320 questions** built from open data: every Premier League champion, finishing position, relegation, points and
+  defeats since 1992/93; big wins, derby scores and head-to-heads; player nationality, position, transfers, "which of
+  these never played for…", and who's at which club this season. Arsenal alone has over 500.
+- **Every question is checked against two independent sources** before it ships. Tables rebuilt from results match
+  Wikipedia's final tables for all 34 finished seasons. Anything the sources disagree on is held back for review.
+- **Report** button on each Pub Quiz answer, so dodgy questions can be flagged with their sources.
+- A weekly refresh (Tuesday mornings) rebuilds the bank and opens a pull request; nothing goes live without a merge.
+
 ## 13/11/2026 (evening): iPhone sign-in that lands in the app
 - **Signing in from the home-screen app on an iPhone now works.** The sign-in link always opens Safari, which doesn't share its login with the installed game, and Supabase won't put the 6-digit code in its emails without a custom email server. Now the app puts a one-off id in the link; Safari, once signed in, hands the login to the app (and forgets it itself), and the app picks it up within a few seconds of you switching back. Needs `supabase/003_handoff.sql` and the `/**` redirect URL (HANDOVER.md). Elsewhere (laptop, Android, Safari tabs) sign-in is unchanged.
 
