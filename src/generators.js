@@ -67,7 +67,66 @@ function makeRound(type, r, tier, sc, any) {
   }
   return x;
 }
+/* ---------- fair for the division (14/11/2026) ----------
+   The name-a-player rounds are only as fair as their best-known answers. These limits were set against
+   `node tools/difficulty.js`, which builds league matches from seeds and counts them. Index = tier
+   (0 Sunday League/Non-League, 1 League Two/One, 2 Championship/Top Flight, 3 European Nights/Knows Ball).
+   "Known" is fame 4.5+, "famous" is 5.0+. Club Cup rounds are exempt: a small club's data can't always meet them. */
+const EASE = {
+  linkValid: [8, 6, 4, 3], // The Link: at least this many right answers...
+  linkFamous: [3, 2, 1, 0], // ...of which this many are famous
+  squadSpare: [3, 2, 0, 0], // Squad Sheet: known players in the squad beyond the number you have to name
+  topSpare: [2, 1, 0, 0], // Top Ten: known names in the list beyond the number you have to name
+  xiFloor: [40, 30, 20, 1], // Missing XI: the least-known hidden player's line-up score (0 = not in the records)
+  careerFame: [5.6, 5.1, 4.4, 3.9], // Career Path: the player's fame
+  careerFameClub: [4.6, 4.2, 3.8, 3.4]
+};
+const knownN = (v, t) => v.filter(i => fame(i) >= t).length;
+function fairEnough(x, tier) {
+  const t = x.type;
+  if (t === "mates") {
+    const [a, b] = x.ab || BD.pairs[x.i],
+      v = ALLIDX.filter(i => i !== a && i !== b && PL[i][6].length && overlaps(i, a) && overlaps(i, b));
+    return v.length >= EASE.linkValid[tier] && knownN(v, 5) >= EASE.linkFamous[tier];
+  }
+  if (t === "squad") return knownN(squadOf(x.c, x.y), 4.5) >= x.target + EASE.squadSpare[tier];
+  if (t === "top") return knownN(BD.lists[x.i][3].map(it => it[0]), 4.5) >= x.target + EASE.topSpare[tier];
+  if (t === "xi") return Math.min(...x.blanks.map(k => BD.xi[x.i][6][k][2])) >= EASE.xiFloor[tier];
+  return true;
+}
+/* The Link's pairs for a tier (pl = both players played in the Premier League), keeping only pairs with enough
+   right answers and enough famous ones. Worked out once per tier and kept. */
+const PAIRSTAT = {},
+  FAIRPAIRS = {};
+function pairStat(i) {
+  if (!PAIRSTAT[i]) {
+    const [a, b] = BD.pairs[i],
+      v = ALLIDX.filter(k => k !== a && k !== b && PL[k][6].length && overlaps(k, a) && overlaps(k, b));
+    PAIRSTAT[i] = [v.length, knownN(v, 5)];
+  }
+  return PAIRSTAT[i];
+}
+function fairPairs(tier, pl) {
+  const key = tier + (pl ? "p" : "a");
+  if (!FAIRPAIRS[key]) {
+    const n = Math.min([150, 300, 500, 700][tier], BD.pairs.length),
+      base = BD.pairs.map((p, i) => i).slice(0, n).filter(i => !pl || (isPLp(BD.pairs[i][0]) && isPLp(BD.pairs[i][1]))),
+      fair = base.filter(i => pairStat(i)[0] >= EASE.linkValid[tier] && pairStat(i)[1] >= EASE.linkFamous[tier]);
+    FAIRPAIRS[key] = fair.length >= 12 ? fair : base;
+  }
+  return FAIRPAIRS[key];
+}
+/* one round: up to ten seeded attempts to find one that's fair for the division, then take what comes */
 function makeRound0(type, r, tier, sc) {
+  let x = null;
+  const club = sc && sc.club !== undefined;
+  for (let k = 0; k < 10; k++) {
+    x = makeRaw(type, r, tier, sc);
+    if (!x || club || fairEnough(x, tier)) return x;
+  }
+  return x;
+}
+function makeRaw(type, r, tier, sc) {
   if (sc && (sc.pl || sc.club !== undefined)) {
     const x = makeScoped(type, r, tier, sc);
     if (x) return x;
@@ -88,11 +147,11 @@ function makeRound0(type, r, tier, sc) {
     return { type, i, blanks: idx, target: 2 };
   }
   if (type === "mates") {
-    const n = [150, 300, 500, 700][tier];
-    return { type, i: Math.floor(r() * Math.min(n, BD.pairs.length)) };
+    const pool = fairPairs(tier, false);
+    return { type, i: pickR(pool, r) };
   }
   if (type === "career") {
-    const thr = [5.4, 4.9, 4.4, 3.9][tier],
+    const thr = EASE.careerFame[tier],
       pool = CAREERS.filter(i => fame(i) >= thr);
     return { type, p: pickR(pool, r) };
   }
@@ -203,16 +262,12 @@ function makeScoped(type, r, tier, sc) {
       }
       return null;
     }
-    const n = [150, 300, 500, 700][tier],
-      pool = BD.pairs
-        .map((p, i) => i)
-        .slice(0, n)
-        .filter(i => isPLp(BD.pairs[i][0]) && isPLp(BD.pairs[i][1]));
+    const pool = fairPairs(tier, true);
     if (!pool.length) return null;
     return { type, i: pickR(pool, r) };
   }
   if (type === "career") {
-    const thr = club ? [4.6, 4.2, 3.8, 3.4][tier] : [5.4, 4.9, 4.4, 3.9][tier],
+    const thr = club ? EASE.careerFameClub[tier] : EASE.careerFame[tier],
       pool = CAREERS.filter(i => fame(i) >= thr && (club ? hasClub(i, C) : isPLp(i)));
     if (!pool.length) return null;
     return { type, p: pickR(pool, r) };

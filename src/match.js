@@ -21,7 +21,7 @@ function msg(t, cls) {
     m.className = "msg " + (cls || "");
   }
 }
-const QV = "v4." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
+const QV = "v5." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
 function startLeagueMatch() {
   settleSeason();
   const opp = nextOpponent(),

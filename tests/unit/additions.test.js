@@ -63,3 +63,54 @@ test("grid hints point at a real answer and stay the same once given", () => {
   const share = g.run(`(() => { const st = gridState(); st.c = st.c.map(() => "x|1"); st.h[0] = 1; return shareGrid(); })()`);
   assert.match(share, /🟨🟩🟩/); assert.match(share, /Score 98%/); assert.match(share, /1 hint/);
 });
+
+/* ---- 14/11/2026: fair-for-the-division limits, save v3, career layer ---- */
+test("The Link in the lower divisions always has enough right answers, some of them famous", () => {
+  const g = load();
+  const bad = JSON.parse(g.run(`(() => { const bad = []; for (let tier = 0; tier < 2; tier++) for (let k = 0; k < 120; k++) makeMatch(QV + "f-" + tier + "-" + k + "-31", tier).forEach(sp => { if (sp.type !== "mates") return; const [a, b] = BD.pairs[sp.i], v = ALLIDX.filter(i => i !== a && i !== b && PL[i][6].length && overlaps(i, a) && overlaps(i, b)); if (v.length < EASE.linkValid[tier] || v.filter(i => fame(i) >= 5).length < EASE.linkFamous[tier]) bad.push([tier, PL[a][0], PL[b][0], v.length]); }); return JSON.stringify(bad); })()`));
+  assert.deepStrictEqual(bad, []);
+});
+
+test("Missing XI never hides a player the records don't know (line-up score 0)", () => {
+  const g = load();
+  const bad = JSON.parse(g.run(`(() => { let bad = 0, n = 0; for (let tier = 0; tier < 4; tier++) for (let k = 0; k < 120; k++) makeMatch(QV + "x-" + tier + "-" + k + "-31", tier).forEach(sp => { if (sp.type !== "xi") return; n++; if (sp.blanks.some(b => BD.xi[sp.i][6][b][2] <= 0)) bad++; }); return JSON.stringify([bad, n]); })()`));
+  assert.ok(bad[1] > 50); assert.ok(bad[0] / bad[1] < 0.02, "at most a stray one after ten tries: " + bad);
+});
+
+test("save v3: a v2 save gains the career fields and loses nothing", () => {
+  const g = load();
+  const s = JSON.parse(g.run(`JSON.stringify(hydrate({ v: 2, made: true, name: "Old Hand", club: "Arsenal", xp: 999, div: 2, season: 3, salt: 5, week: { pl: 4, w: 2, d: 1, l: 1, gf: 9, ga: 6, pts: 7 }, st: { m: 40, w: 22, goals: 120, deep: 12, bestDiv: 2, grids: 3 }, album: { "A|1": 1 } }))`));
+  assert.strictEqual(s.v, 3); assert.strictEqual(s.xp, 999); assert.strictEqual(s.week.pts, 7); assert.strictEqual(s.st.w, 22);
+  assert.deepStrictEqual(s.sk, { d: "", n: 0, best: 0 }); assert.deepStrictEqual(s.md, {}); assert.deepStrictEqual(s.ct, {}); assert.ok(s.ob && s.sn);
+});
+
+test("merge: medals keep the earliest date, counters and best streak take the higher value", () => {
+  const g = load();
+  const m = JSON.parse(g.run(`JSON.stringify(mergeSaves(hydrate({ v: 3, made: true, t: 2, md: { first: "2026-11-14", w10: "2026-11-20" }, ct: { five: 2 }, sk: { d: "2026-11-20", n: 2, best: 4 } }), hydrate({ v: 3, made: true, t: 1, md: { first: "2026-11-12", cs: "2026-11-13" }, ct: { five: 5, cs: 1 }, sk: { d: "2026-11-13", n: 9, best: 9 } })))`));
+  assert.deepStrictEqual(m.md, { first: "2026-11-12", cs: "2026-11-13", w10: "2026-11-20" });
+  assert.deepStrictEqual(m.ct, { five: 5, cs: 1 }); assert.strictEqual(m.sk.best, 9); assert.strictEqual(m.sk.n, 2);
+});
+
+test("streak: one tick a day, a missed day resets it", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { const out = []; S = hydrate({ made: true }); out.push(streakTick()); out.push(streakTick()); S.sk.d = dayBefore(dayKey()); out.push(streakTick()); S.sk.d = dayBefore(dayBefore(dayKey())); out.push(streakTick()); out.push(S.sk.best); return JSON.stringify(out); })()`));
+  assert.deepStrictEqual(r, [1, 0, 2, 1, 2]);
+});
+
+test("objectives: three a day from different groups, the same for everyone, and each pays once", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { const days = []; for (let d = 1; d <= 28; d++) { const ids = objToday("2026-12-" + String(d).padStart(2, "0")); days.push(ids.length === 3 && new Set(ids.map(i => OBJ[i].g)).size === 3); } S = hydrate({ made: true }); const ids = objToday(); let xp = 0; for (let k = 0; k < 6; k++) [{ k: "match", mode: "league", res: "W", a: 5, b: 0, my: [1,1,1,1,1], types: ["cell","top","xi","hl","odd"], deep: 1, newN: 5 }, { k: "match", mode: "cup", res: "W", a: 5, b: 0, my: [1,1,1,1,1], types: ["race","champ","quiz","season","squad"], deep: 1, newN: 5 }, { k: "grid" }, { k: "train", goal: true }].forEach(e => objEvent(e).forEach(l => xp += l[1])); return JSON.stringify({ days, xp, want: ids.reduce((s, i) => s + OBJ[i].xp, 0) + CAREER.fullSetXp, all: S.ob.all }); })()`));
+  assert.ok(r.days.every(Boolean)); assert.strictEqual(r.xp, r.want); assert.strictEqual(r.all, true);
+});
+
+test("medals: every medal has a unique id and a working test; a fresh save has none; start-up check is silent", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { S = hydrate({ made: true }); const ids = MEDALS.map(m => m.id), fresh = medalCheck().length; S.st.w = 12; S.st.bestDiv = 2; const silent = medalCheck(true).length, got = Object.keys(S.md).sort(); return JSON.stringify({ uniq: new Set(ids).size === ids.length, n: ids.length, fresh, silent, got }); })()`));
+  assert.ok(r.uniq); assert.ok(r.n >= 30); assert.strictEqual(r.fresh, 0); assert.strictEqual(r.silent, 0); assert.deepStrictEqual(r.got, ["first", "fl", "w10"]);
+});
+
+test("league table: house form is recorded from the same results, and the table one match back needs a snapshot", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { S = hydrate({ made: true, salt: 9, week: { pl: 6, w: 3, d: 1, l: 2, gf: 12, ga: 9, pts: 10 } }); const rows = leagueTable(), h = rows.find(x => x.house), none = leagueTable(true); S.wp = { pl: 5, w: 2, d: 1, l: 2, gf: 9, ga: 9, pts: 7 }; const back = leagueTable(true); return JSON.stringify({ form: h.form, wdl: h.w + h.d + h.l, none, backPl: back.find(x => x.house).pl, mePts: back.find(x => x.me).pts }); })()`));
+  assert.strictEqual(r.form.length, 5); assert.ok(r.form.every(f => "WDL".includes(f))); assert.strictEqual(r.wdl, 6); assert.strictEqual(r.none, null); assert.strictEqual(r.backPl, 5); assert.strictEqual(r.mePts, 7);
+});
