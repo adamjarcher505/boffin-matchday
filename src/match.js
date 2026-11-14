@@ -21,7 +21,7 @@ function msg(t, cls) {
     m.className = "msg " + (cls || "");
   }
 }
-const QV = "v5." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
+const QV = "v6." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
 function startLeagueMatch() {
   settleSeason();
   const opp = nextOpponent(),
@@ -83,16 +83,24 @@ function makeCupMatch(seed, c, tier) {
   const r = rngOf(hash("cup" + seed)),
     out = [],
     used = new Set();
-  const order = shuffle(["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season", "quiz"], r);
-  for (const t of order) {
-    if (out.length >= 5) break;
-    if ((t === "season" && used.has("champ")) || (t === "champ" && used.has("season"))) continue;
-    const x = makeRound(t, r, tier, { club: c });
-    if (x) {
-      out.push(x);
-      used.add(t);
+  const order = shuffle(["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season", "quiz"], r),
+    fam = new Set(),
+    failed = new Set();
+  // same rules as league matches (pickTypes): one per family, and 2-3 typed / 2-3 tap. Small clubs can't always
+  // build enough of one kind, so a second pass drops the typed/tap rule rather than padding with repeat Grids.
+  for (const strict of [true, false])
+    for (const t of order) {
+      if (out.length >= 5) break;
+      if (used.has(t) || failed.has(t) || (FAMILY[t] && fam.has(FAMILY[t]))) continue;
+      const typed = out.filter(x => isTyped(x.type)).length;
+      if (strict && (isTyped(t) ? typed >= 3 : out.length - typed >= 3)) continue;
+      const x = makeRound(t, r, tier, { club: c });
+      if (x) {
+        out.push(x);
+        used.add(t);
+        if (FAMILY[t]) fam.add(FAMILY[t]);
+      } else failed.add(t);
     }
-  }
   while (out.length < 5) out.push(makeRound("cell", r, tier, { club: c }) || makeCell(r, tier));
   return out;
 }

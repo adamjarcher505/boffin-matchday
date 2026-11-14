@@ -66,7 +66,7 @@ test("report hook stores the question id, bank version and sources (on the devic
 test("ghosts: the question version carries the bank version, and fits the question log's 12 characters", () => {
   const g = load();
   const qv = g.run("QV");
-  assert.match(qv, /^v5\.\d{8}\|$/);
+  assert.match(qv, /^v\d+\.\d{8}\|$/);
   assert.ok(qv.replace("|", "").length <= 12);
 });
 
