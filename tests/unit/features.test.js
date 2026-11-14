@@ -119,16 +119,17 @@ test("stickers: offers, the attempt, winning, losing and duplicates", () => {
   // onboarding freebie: first win only, a household name from your club
   assert.strictEqual(g.run("S.stk.offer = null; S.stk.free = false; stkAfterMatch({ mode: 'league', goals: 2, won: true }); S.stk.offer.free"), true);
   g.run("stkGo()"); assert.strictEqual(g.run("STK.all[S.stk.offer.key].club"), "Arsenal"); assert.strictEqual(g.run("STK.all[S.stk.offer.key].tier"), "gold");
-  // win it: free shot plays by paper rules (3 clues, 2 tries)
-  g.run("stkStart()"); assert.strictEqual(g.run("STKA.shown"), 3); assert.strictEqual(g.run("STKA.tries"), 2);
+  // win it: free shot plays by paper rules (3 clues, 3 tries since 14/11)
+  g.run("stkStart()"); assert.strictEqual(g.run("STKA.shown"), 3); assert.strictEqual(g.run("STKA.tries"), 3);
   const key = g.run("S.stk.offer.key"), xp0 = g.run("S.xp");
-  g.run("stkPick(STKA.slot.i === 0 ? 1 : 0)"); assert.strictEqual(g.run("STKA.tries"), 1, "a wrong guess costs a try");
+  g.run("stkPick(STKA.slot.i === 0 ? 1 : 0)"); assert.strictEqual(g.run("STKA.tries"), 2, "a wrong guess costs a try");
+  assert.ok(g.run("stkCluesHTML()").includes("<span>Initials</span>"), "and unlocks the next clue (the fourth: initials)");
   g.run("stkPick(STKA.slot.i)"); assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(key)}]`), 1); assert.strictEqual(g.run("S.stk.offer"), null);
   assert.ok(g.run("S.xp") > xp0); assert.ok(g.els.main.innerHTML.includes("Stuck in"));
-  // lose one: gone, and the answer is not revealed
-  g.run("S.stk.offer = { tier: 'foil', why: 'x' }; stkGo(); stkStart();"); assert.strictEqual(g.run("STKA.tries"), 1); assert.strictEqual(g.run("STKA.shown"), 2);
-  const who = g.run("PL[STKA.slot.i][0]"); g.run("stkPick(STKA.slot.i === 0 ? 1 : 0)");
-  assert.strictEqual(g.run("S.stk.offer"), null); assert.ok(g.els.main.innerHTML.includes("Not him")); assert.ok(!g.els.main.innerHTML.includes(who), "never shows who it was");
+  // lose one: gone, and since 14/11 the miss tells you who it was
+  g.run("S.stk.offer = { tier: 'foil', why: 'x' }; stkGo(); stkStart();"); assert.strictEqual(g.run("STKA.tries"), 2); assert.strictEqual(g.run("STKA.shown"), 2);
+  const who = g.run("PL[STKA.slot.i][0]"); g.run("stkPick(STKA.slot.i === 0 ? 1 : 0)"); g.run("stkPick(STKA.slot.i === 0 ? 1 : 0)");
+  assert.strictEqual(g.run("S.stk.offer"), null); assert.ok(g.els.main.innerHTML.includes("Not him")); assert.ok(g.els.main.innerHTML.includes(g.run("esc(" + JSON.stringify(who) + ")")), "a miss reveals who it was");
   // duplicates: three make a token, and a token picks the next shot's player
   g.run(`for (let k = 0; k < 3; k++) { S.stk.offer = { tier: 'gold', free: true }; S.stk.offer.key = ${JSON.stringify(key)}; stkStart(); stkPick(STKA.slot.i); }`);
   assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(key)}]`), 4); assert.strictEqual(g.run("S.stk.tok"), 1);

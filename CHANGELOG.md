@@ -1,5 +1,16 @@
 # Changelog
 
+## 14/11/2026 (afternoon): fairer sticker attempts, Names becomes club knowledge
+**Naming the man on the sticker** was too hard. Now:
+- His clubs show from the start on every tier (the best clue), then position and country, born, and a new last clue, his initials.
+- Every wrong guess unlocks the next clue. Guesses up from 2/1/1 to 3/2/2 (Paper/Foil/Gold), clock up from 30 to 45 seconds.
+- Miss and you're told who it was, so you know him next time.
+Earning a sticker chance is exactly as hard as before.
+
+**Names tab is now Knowledge.** Every player you've ever named counts towards every club he played for. Your own club
+gets a rank (Day Tripper → Regular → Season Ticket → Anorak → Boffin → Club Historian) with XP for each new rank,
+scaled so fans of clubs with a small pool can reach the top. Plus your best-known other clubs, and the old list below.
+
 ## 14/11/2026 (morning): eight new question types, Chain Reaction, Grid cover fix
 **Grid fix.** The card before The Grid used to show both clubs, so you could think it through before the clock started.
 Now it says "Two categories, one player" and the clubs appear when you tap Take it. Same fix for The Link (the two

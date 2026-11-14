@@ -2,6 +2,10 @@
 
 Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and why.
 
+## 14/11/2026 afternoon: stickers and knowledge
+- **The difficulty of stickers lives in earning the chance, not the guess.** Adam wants stickers hard to get, so offers are untouched; the naming is fairer (see the superseded line under Stickers).
+- **Club knowledge counts anyone you've named who has a record at the club** (clubsOf), not just people named in that club's questions. Ranks are absolute counts (10/25/50/100/200) capped at a share of the club's pool in the data (5/12/25/45/70%), so small clubs can reach Club Historian. XP for a new rank is paid once per rank (S.kr), only for your own club.
+
 ## 14/11/2026 morning: new types and Chain Reaction
 - **League matches now draw five types from twenty** (The Grid is still always in). More variety per match; each old type turns up less often. `QV` bumped to v6, so ghosts from before today aren't replayed.
 - **"Team-mates" means the season squad records** (same club, same season, top-five leagues, 2010 on) for Six Degrees, Ever Team-mates? and Chain Reaction, the same rule The Link uses. Older team-mates won't count; the rule is shown on screen.
@@ -47,7 +51,7 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - **Page order: fame + 0.25 per year at the club (up to 8 years).** Pure fame put loanees and late arrivals on top (Arsenal's three Icons were Sterling, Aubameyang and Lacazette, with no Henry, Bergkamp or Vieira). Stays of a year or less are left out. The data's fame score still leans to the 2010s, so some legends sit low or miss out (Gerrard isn't on Liverpool's page). **Adam can hand-edit `sticker-pages.js` before launch.** Once players have stickers the pages are frozen (`--add` only adds clubs).
 - **Stickers show "Joined 2017", not a range.** The data's club trails miss some moves (Lacazette's 2022 return to Lyon, Cazorla's 2018 move to Villarreal), so departure years worked out from the next recorded club can be wrong.
 - **Club colours aren't shown yet.** (12/11) Superseded 13/11: the shirt on each sticker now carries sourced club colours (kits.js); the band stays the tier's colour.
-- **Misses never reveal the player,** so a sticker stays a mystery until you name him.
+- **Misses never reveal the player,** so a sticker stays a mystery until you name him. *Superseded 14/11: Adam found naming too hard. A miss now tells you who it was, clubs always show first, each wrong guess unlocks a clue, guesses 3/2/2, 45 seconds.*
 - **Leaving mid-attempt, or closing the app, counts as a miss,** otherwise anyone could look at the clues and back out.
 - **One offer waits at a time.** A better offer replaces a waiting worse one; a worse one never replaces a better one.
 - **The free first sticker** (after your first win) is a Gold Icon from your own club, a household name, played on Paper rules (3 clues, 2 guesses).
