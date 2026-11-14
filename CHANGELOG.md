@@ -1,5 +1,40 @@
 # Changelog
 
+## 14/11/2026 (overnight): match feel, a livelier home screen, streaks and medals
+**In a match**
+- **Goals feel like goals.** The verdict slams in with a crowd roar, then the other side's chance lands a beat later
+  ("They score" / "They miss") and the scoreboard catches up. A commentary line after every chance, read off the real score.
+- **Sound**, all made in code (no audio files): crowd, whistle at kick-off, three blasts at full time, a tick for the
+  last five seconds. Sound on/off is in the profile, as before.
+- **The card before each chance** shows the state of play ("You lead 2–1 · Second half", "Last chance. Must score").
+- **Full time** is a sequence: crests and an LED score, the table around you sliding into place, XP counting up.
+- Three goals in a row lights up the scoreboard.
+
+**Around the match**
+- **Home screen** rebuilt: one big fixture card with crests and a "a win takes you to 3rd" line; Club Cup and Daily
+  Grid as tiles; training as a grid of icons. Roughly half the scrolling it was.
+- **League table**: a crest for every side, last-five form, and up/down arrows since your last match. Real players are
+  tagged REAL; everyone else is a house side.
+- **Tabs have icons**, and a thin XP rail runs under the header.
+- **Matchday streak**: play a league or cup match on consecutive days. Pays 10 XP a day of streak, up to 70.
+- **Three objectives a day**, the same for everyone. Each pays XP; all three pays a bonus.
+- **38 medals** (Album → Medals). Existing players get the ones they've already earned, quietly.
+- **Season awards** on the season card: biggest win, your banker round, your bogey round.
+- **Stats on the phone** (Album → Stats). It was desktop only.
+- **New players go straight into their first match** after signing on.
+
+**Fairer questions**
+- The Link, Squad Sheet, Top Ten, Missing XI and Career Path now have limits per division, so Sunday League doesn't get
+  a Link with three possible answers or a line-up of players nobody's heard of. `tools/difficulty.js` measures it.
+- Fixed: Pub Quiz had no description on the training list. Fixed: eight Name the Season tables with long relegated
+  lists scrolled on short screens.
+
+**Under the bonnet**
+- `app.js` split into nine files in `src/`; the CSS moved out of `index.html`. No build step, same load order.
+- `tests/browser/run.js` plays a full league match and cup tie in a headless browser at three phone sizes.
+- Save format v3 (adds the streak, objectives, medals and counters; nothing removed). `QV` is now v5.
+- League scoring, promotion, relegation, the cup and sticker rules are unchanged.
+
 ## 13/11/2026 (evening): a real question bank
 - **Pub Quiz**, a new chance type: three multiple-choice questions, get two right. Shows up in league matches, Club
   Cup (questions about your club only) and training.

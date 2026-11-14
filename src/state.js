@@ -264,7 +264,10 @@ function addXp(n) {
   const a = levelOf(S.xp);
   S.xp += Math.round(n);
   const b = levelOf(S.xp);
-  if (b > a) toast("Level " + b + ". The knowledge grows.");
+  if (b > a) {
+    toast("Level " + b + ". The knowledge grows.");
+    setTimeout(() => sfx.level(), 500);
+  }
 }
 function addAlbum(i) {
   const k = pkey(i);

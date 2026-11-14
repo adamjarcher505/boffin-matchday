@@ -97,3 +97,33 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - Founder perks: unchanged and cosmetic only.
 - `push.bat`: untracked, never staged, never deleted.
 - **iPhone sign-in via hand-off, not the emailed code (13/11/2026).** Supabase now requires custom SMTP to edit email templates, so `{{ .Token }}` can't be added. The installed iPhone app asks for a link with a 256-bit random `?h=` id; Safari files the fresh session with `handoff_put` and drops it locally *without* calling signOut (even `scope: local` revokes the session server-side), and the app polls `handoff_take` (one-time, 15-minute expiry, table unreadable directly). Safari never refreshes, so refresh-token rotation stays with the app. Only used when `navigator.standalone` (iPhone home screen); Chrome and Android installs share storage with the browser already.
+
+## Overnight run (14/11/2026)
+- **League rules untouched.** Scoring, the 19-match season, four up and four down, house sides, ghosts and opponent
+  results are exactly as they were. Everything added is feel (sound, animation, commentary) or XP (streak, objectives,
+  medals). A test still checks a seed builds the same match every time.
+- **The opponent's chance is revealed a beat after yours.** Their result was always decided before kick-off; it's
+  only shown later. Tapping "Next chance" early skips the wait and nothing is lost.
+- **Commentary never invents a fact.** Lines are picked from the real score before and after the chance (took the
+  lead, equalised, still behind). No scorers, no minutes beyond the fixed five.
+- **Crests are drawn in code** from a side's name: a shield, two colours, initials. Your own uses your club's home
+  colours from kits.js. They aren't any real club's badge.
+- **Sound is synthesised** (Web Audio noise and tones), so nothing is downloaded or cached. It was already on by
+  default with a toggle in the profile; that hasn't changed. iPhones stay silent with the ringer switch off.
+- **House-side form** is recorded from the same simulated results the table already used, so it can't disagree with
+  the table. Movement arrows compare with the table one match back; real players have no history here, so no arrow.
+- **HOUSE tags went, REAL tags came in.** Nineteen HOUSE tags was noise. The note under the table still says what a
+  house side is, and real players are the ones marked.
+- **Fair-for-the-division limits** (`EASE` in src/generators.js) were set from `node tools/difficulty.js`. "Known" is
+  fame 4.5+, "famous" 5.0+. Club Cup rounds are exempt because a small club's data can't always meet them. A round
+  gets ten seeded tries to meet the limit, then takes what comes, so a seed always builds something.
+- **QV v5.** The limits change what a seed builds, so ghosts recorded on v4 won't be replayed. Opponents fall back to
+  house-style results until players have v5 matches behind them (about a week).
+- **Objectives are the same for everyone each day** (seeded by the date), so mates can compare. Three from different
+  groups, so you never get "win a match" twice. "Keep a clean sheet" was left out: it depends on the other side's luck.
+- **Medals for existing players are awarded silently at start-up** (no XP, no fanfare) so nobody opens the game to
+  thirty toasts. New ones earned from here pay XP: bronze 25, silver 60, gold 150.
+- **Streak XP is capped at seven days** (70 XP) so a long streak is a badge of honour, not an XP farm.
+- **Save v3** adds S.sk, S.ob, S.md, S.ct, S.sn and S.wp. Old versions of the game keep fields they don't know, so a
+  phone still on the old build doesn't wipe them when it syncs.
+- **Stats on phones** lives under Album → Stats to avoid a fifth tab.

@@ -31,6 +31,10 @@ function renderHome() {
             : "Level on points with 4th"
           : "Top division";
   const zc = S.div < DIVS.length - 1 && pos <= 4 ? "ok" : S.div > 0 && pos >= 17 ? "bad" : "";
+  // what a win would do, as the table stands (everyone else plays too, so it's a guide, not a promise)
+  const ifWin = rows.map(r => (r.me ? Object.assign({}, r, { pts: r.pts + 3, gf: r.gf + 1 }) : r)).sort((a, b) => b.pts - a.pts || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf),
+    winPos = myPos(ifWin),
+    winLine = winPos < pos ? `A win takes you ${winPos <= 4 && pos > 4 && S.div < DIVS.length - 1 ? "into the promotion places" : S.div > 0 && pos >= 17 && winPos <= 16 ? "out of the drop zone" : "up to " + ord(winPos)}, as it stands` : pos === 1 ? "Top of the table. Stay there" : "Three points to close the gap";
   const pNote = `${
     S.note
       ? `<div class="panel pad" style="border-color:var(--amber)"><span class="eyebrow" style="color:var(--amber)">Last season</span><p class="note" style="margin-top:6px">${noteText()}</p><button class="linkb" data-act="clearnote">Dismiss</button></div>`
@@ -41,6 +45,7 @@ function renderHome() {
    <div class="tie"><div class="side">${myCrest()}<b>${esc(S.name || "You")}</b><small>${ord(pos)} · ${S.week.pts} pts</small></div><span class="v">v</span><div class="side">${crest(opp.name)}<b>${esc(opp.name)}</b><small>${ord(oppPos)} · ${opp.pts} pts${opp.real ? " · real player" : ""}</small></div></div>
    <button class="btn kick" data-act="kick">Kick off<small>Five chances each. About 90 seconds.</small></button>
    <div class="statline"><span class="form">${S.form.length ? S.form.map(f => `<i class="${f}">${f}</i>`).join("") : "<span>No form yet</span>"}</span><span class="zone ${zc}"><b>${zone}</b></span></div>
+   <p class="ifwin">${winLine}</p>
    <div class="prog" aria-hidden="true">${Array.from({ length: SEASON }, (_, k) => `<i class="${k < S.week.pl ? "on" : k === S.week.pl ? "cur" : ""}"></i>`).join("")}</div></div>`;
   const pYou = `<div class="you">${streakChip() || `<div class="streak">${FLAME}<b>0</b><span>days · play a match to start a streak</span></div>`}<span class="lvl">Level <b>${lv}</b> · ${fmt(l1 - S.xp)} XP to ${lv + 1}</span></div>`;
   const pOff =

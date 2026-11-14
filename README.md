@@ -16,10 +16,13 @@ Open http://localhost:8080/?offline (`?offline` keeps test sessions off the live
 cd tests
 node --test unit/*.test.js       # saves, merging, determinism, features, service worker list
 node sim/stickers.js             # sticker pacing over 1,000 matches per skill level (writes tests/out/sticker-sim.txt)
+node ../tools/difficulty.js      # how many well-known answers each division's questions have (add --worst for examples)
 ```
-Browser check (no scrolling on question screens): serve the folder, open it at phone size, then in the console run
+Browser checks, headless: `node tests/browser/run.js` from the project root. It starts its own server and, at
+375×667, 390×844 and 375×400 (keyboard open), checks the game loads clean, runs the no-scroll pass on every question
+screen, and plays a whole league match and cup tie. Add `--shots <folder>` for screenshots. Needs Playwright.
+By hand instead: serve the folder, open it at phone size, and in the console run
 `await import("/tests/browser/qa.js"); (await QA.run()).bad` (an empty list means every screen fits).
-Do it at 375×667, 390×844 and about 375×400 (keyboard open).
 
 ## Deploy
 1. `node tools/bump-sw.js`: sets the service worker VERSION from the files and checks the precache list. **Every deploy.**
@@ -30,17 +33,28 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 ## Files
 | File | What it is |
 |---|---|
-| `index.html` | Markup and all CSS |
+| `index.html` | Markup and the script order. No CSS or game code in it |
 | `config.js` | Supabase URL and anon key, Google toggle, share link. Empty = solo play |
 | `data.js` | ~1.5 MB of real football data. Don't hand-edit; no build script exists for it yet (BLOCKED.md) |
 | `sticker-pages.js` | Frozen sticker album pages, made by `tools/make-sticker-pages.js` |
-| `app.js` | The game: tuning constants, save format, question generators, matches, league, cup, grid, screens |
-| `extras.js` | Share cards, season stakes, Club Wars, question log, theme of the day, haptics |
+| `src/styles.css` | All the CSS. The newest sections are at the bottom, dated |
+| `src/core.js` | Data lookups, constants, helpers, the player search |
+| `src/state.js` | `TUNING`, `STICKER_RULES`, the save format (`SAVE_V`, `MIGRATIONS`, `hydrate`, `mergeSaves`), XP, founder badges |
+| `src/fx.js` | Sound (all synthesised), crests, commentary lines, animation helpers. Changes nothing about results |
+| `src/career.js` | Matchday streak, daily objectives, medals, season awards (`CAREER`, `OBJ`, `MEDALS`). XP only |
+| `src/league.js` | League table, house sides, season settle |
+| `src/generators.js` | Question makers, seeded. `EASE` = the fair-for-the-division limits |
+| `src/rounds.js` | How each question type plays (`RUN`), and the long desktop modes |
+| `src/match.js` | The match engine: league, cup, training; verdict and full-time screens. `QV` lives here |
+| `src/grid.js` | The Daily Grid |
+| `src/screens.js` | Header, tabs, home, league, album, stats, sheets |
+| `src/events.js` | Account actions, the name box, the click handler |
+| `src/extras.js` | Share cards, season stakes, Club Wars, question log, theme of the day, haptics |
 | `questions.js` | GENERATED question bank (Pub Quiz). Built by `data-pipeline/`; never hand-edit. Format in data-pipeline/README.md |
 | `kits.js` | Home shirts for the 79 sticker clubs, with era shirts; sourced from Wikipedia (see the header) |
-| `stickers.js` | The sticker album: offers, the "name the man on the sticker" attempt, pages, swaps, tokens |
-| `net.js` | Everything online, behind one interface (Supabase, Claude artifact db, or local) |
-| `boot.js` | Starts the game; service worker and update toast |
+| `src/stickers.js` | The sticker album: offers, the "name the man on the sticker" attempt, pages, swaps, tokens |
+| `src/net.js` | Everything online, behind one interface (Supabase, Claude artifact db, or local) |
+| `src/boot.js` | Starts the game; service worker and update toast |
 | `sw.js` | Offline cache |
 | `supabase/` | `schema.sql` (run first), `002_additions.sql` (run second), `003_handoff.sql` (third: iPhone sign-in hand-off), `make-founder.sql` |
 | `tools/` | Icons, coverage report, sticker pages, theme support, service worker version |
@@ -48,11 +62,11 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 
 ## Rules that keep the game honest
 - **Determinism.** A league match rebuilds from its seed (`makeMatch`), so a ghost replays the same five chances on
-  another device. Anything that changes what a seed produces (data, generators, difficulty) must bump `QV` in app.js.
+  another device. Anything that changes what a seed produces (data, generators, difficulty) must bump `QV` in src/match.js.
   `tests/unit/determinism.test.js` checks it.
 - **Saves.** The storage key never changes. The format version is `S.v` (`SAVE_V`). To change the format, add a step to
   `MIGRATIONS` and never remove a field. `tests/fixtures/save-v1.json` must always load.
-- **Balance.** Every number lives in `TUNING` and `STICKER_RULES` at the top of app.js.
+- **Balance.** Every number lives in `TUNING` and `STICKER_RULES` in src/state.js; `EASE` in src/generators.js; `CAREER` in src/career.js.
 - **Facts.** Real data only. Nothing from memory. See DATA_SOURCES.md.
 
 ## Data model (Supabase)

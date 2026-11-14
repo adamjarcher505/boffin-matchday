@@ -58,3 +58,10 @@ The Pub Quiz chance plays `questions.js` (8,320 questions, Premier League 1992/9
 2. **GitHub → Settings → Actions → General → Workflow permissions:** tick "Allow GitHub Actions to create and approve
    pull requests". Then the weekly refresh (Tuesdays 06:00 UTC) opens a PR for you to read and merge. It never touches `main` itself.
 3. **Glance at `data-pipeline/reports/review.json`** now and then: facts the sources disagree on. Nothing in it ships.
+
+## 9. Overnight run (14/11/2026): nothing for you to set up
+Everything from the overnight run is live and needs no Supabase or GitHub steps. Three things worth knowing:
+1. **Your phone will show "New version ready, tap to refresh"** the first time you open it. Tap it.
+2. **Ghost opponents reset.** The question generator changed (fairer questions for the lower divisions), so real
+   players' recorded matches from before today aren't replayed. They build back up as people play.
+3. **Try it with the sound on.** On an iPhone the ringer switch has to be on to hear it.
