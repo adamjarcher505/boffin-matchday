@@ -66,7 +66,7 @@ Everything from the overnight run is live and needs no Supabase or GitHub steps.
    players' recorded matches from before today aren't replayed. They build back up as people play.
 3. **Try it with the sound on.** On an iPhone the ringer switch has to be on to hear it.
 
-## 10. Sticker swaps: one SQL script (2 minutes)
+## 10. Sticker swaps: one SQL script (2 minutes). Run it again if you ran it before 14/11 evening
 Swapping stickers with mates goes through your Supabase database, so it needs one more script. Until you run it,
 the swap buttons just say swaps aren't available, and everything else works.
 1. Supabase → **SQL Editor** → **New query**.
@@ -74,6 +74,7 @@ the swap buttons just say swaps aren't available, and everything else works.
 3. Test it: on your phone, tap a double in the album → swap → send the link to yourself, open it on another
    account. Both accounts have to be signed in.
 
-Also worth a look: the three **Legends** for each club are that page's three Gold Icons, except Arsenal, which
-uses Henry, Bergkamp and Vieira. You can hand-pick others in `LEGEND_PICKS` at the top of `src/stickers2.js`
-(players already on that club's page only) before anyone has won a Legend from that club.
+Also worth a look: **STICKER-PAGES.md** lists every club's Gold Icons, Foils and Paper. The Gold Icons are the club
+legends and double as the Legend editions. If you'd change any pick, tell Claude (or edit `tools/sticker-picks.json`
+and run `node tools/rebuild-sticker-pages.js`, then bump `PAGES_V` in `src/stickers2.js`). The lower-league pages are
+the weakest, because the data is thinnest there.

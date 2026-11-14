@@ -2,6 +2,13 @@
 
 Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and why.
 
+## 14/11/2026 evening: pages rebuilt, swaps server-side
+- **Pages were un-frozen once, on Adam's say-so.** The frozen pages put the wrong men in the wrong tiers (Lacazette Gold, Henry Paper) and missed obvious legends (Gerrard, Terry, Giggs, Scholes, Raúl, Xavi). Rebuilt with `tools/rebuild-sticker-pages.js` from hand-picked Gold and Foil tiers. Albums are keyed by player, so most stickers carry over; stickers of players who left their page become one token each (`PAGES_V` in stickers2.js, once per save, `pv` merges by max so it can't pay twice). Pages are frozen again from here: any future reshuffle must bump `PAGES_V`.
+- **Legends are judged for the era the data covers (roughly 1992 on).** Some greats aren't in the data at all or lack the clue data a sticker needs (Tony Adams, Ian Wright, Peter Schmeichel, Paolo Maldini, Ronaldinho, Le Tissier, Southall, Radebe, Juninho at Lyon); the next best-placed legend was used instead. Lower-league pages are limited by thin data and are the weakest; STICKER-PAGES.md lists every page for Adam to correct.
+- **Gold and Foil picks are judgement, checked against published polls where they exist** (Arsenal.com 2008 fan poll, Liverpool's 2026 club poll, United's Inside United poll, Chelsea fan surveys). United's poll put Ronaldo above Scholes, so Ronaldo is Gold.
+- **Paper is filled by fame plus 0.2 per year at the club** from the old page, so long-servers beat one-season loan names (Kolo Touré stays, Sterling goes). Data year errors still let the odd loanee in (John Terry at Forest).
+- **Swaps are done by the server, not the app.** Counts in a save are earned (got) + swapped in (recv) - swapped out (gone); all three only rise, so device merges can't undo a swap. The server checks the save it holds and writes recv/gone into both saves in one transaction. Tested against a real Postgres (offer without a double, double offer, take without a double, cancel). Limit: a save is still the player's own record, so someone editing their own save by hand could fake doubles, as they could fake any sticker; swaps can't be used to take stickers from anyone else.
+
 ## 14/11/2026 late afternoon: sticker overhaul
 - **Back of the shirt, not a face.** No real photos or badges (BLOCKED.md); the surname on the back is drawn text on the sourced kit.
 - **Era by the middle of his time at the club** (before 2000, 2000s, 2010 on), from the same club trail that picks the kit.

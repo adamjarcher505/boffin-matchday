@@ -363,6 +363,7 @@ const Net = {
       if (!S.made) profileSheet(true);
       else if (open && !SWAPIN) profileSheet(false);
     }
+    if (stkMigratePages()) render(); // a save from before the 14/11 page rebuild
     swapBoot(); // a swap link waiting, or swaps to collect
   },
   signedOut() {

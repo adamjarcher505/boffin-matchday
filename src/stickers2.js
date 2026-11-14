@@ -3,14 +3,11 @@
    Legends, Sticker of the Day, tilt-to-shine, peel-and-stick, Best XI, team photo, swaps with mates.
    Loaded after stickers.js and uses its globals (STK, SR, S.stk, stkCard...). Earning a sticker stays as hard as before. */
 
-/* ---------- Legends: a special edition of three stickers on each page ----------
-   The data can't tell an all-time great from a long stay (club trails miss moves; big-match line-ups lean to the 2010s),
-   so by default a club's Legends are its page's three Gold Icons. LEGEND_PICKS overrides that by hand, players on that
-   club's page only. Arsenal's three are the ones Adam named. Change picks before anyone has won a Legend of that club.
+/* ---------- Legends: a special edition of the three Gold Icons on each page ----------
+   Since the 14/11 rebuild the Gold Icons are hand-picked club legends (tools/sticker-picks.json), so they are the Legends.
+   LEGEND_PICKS can still override a club by hand (players on that club's page only).
    Only winning your division (finishing 1st) earns a shot at one. */
-const LEGEND_PICKS = {
-  Arsenal: ["Thierry Henry", "Dennis Bergkamp", "Patrick Vieira"]
-};
+const LEGEND_PICKS = {};
 const LEG = {};
 STK.clubs.forEach(club => {
   const slots = STK.by[club].filter(s => s.i !== undefined),
@@ -224,7 +221,7 @@ const xiState = () => {
   if (!S.stk.xi || !FORMS[S.stk.xi.f]) S.stk.xi = { f: "4-3-3", s: [] };
   return S.stk.xi;
 };
-const xiOK = k => STK.all[k] && STK.all[k].i !== undefined && S.stk.got[k]; // still in your album (a swap can take one away)
+const xiOK = k => STK.all[k] && STK.all[k].i !== undefined && stkN(k); // still in your album (a swap can take one away)
 function xiChip(key, j, role) {
   const sl = key && xiOK(key) ? STK.all[key] : null;
   if (!sl) return `<button class="xis empty" data-act="xislot" data-v="${j}"><b>+</b><span>${role}</span></button>`;
@@ -249,7 +246,7 @@ function xiPicker(j) {
   const X = xiState(),
     role = FORMS[X.f][j][0],
     used = new Set(X.s.filter((k, m) => m !== +j)),
-    mine = Object.keys(S.stk.got)
+    mine = stkKeys()
       .filter(k => xiOK(k) && POSN[PL[STK.all[k].i][2]] === role && !used.has(k))
       .sort((a, b) => (stkIsLeg(b) - stkIsLeg(a)) || TIER_RANK[STK.all[b].tier] - TIER_RANK[STK.all[a].tier] || PL[STK.all[a].i][0].localeCompare(PL[STK.all[b].i][0]));
   $("over").innerHTML = `<div class="sheet"><div class="box"><span class="eyebrow">Best XI · ${role}</span><h1>Pick your ${{ GK: "keeper", DEF: "defender", MID: "midfielder", FWD: "forward" }[role]}</h1>
@@ -273,7 +270,7 @@ function shareXI() {
 /* ---------- team photo: a finished page, laid out like a squad photo ---------- */
 function teamPhoto(club) {
   const slots = STK.by[club];
-  if (!slots || !S.stk.pages[club]) return;
+  if (!slots || !S.stk.pages[club] || !slots.every(s => stkN(s.key))) return;
   const rows = [slots.slice(12), slots.slice(6, 12), slots.slice(0, 6)]; // paper at the back, Icons front and centre
   $("over").innerHTML = `<div class="sheet"><div class="box tphoto"><div class="tpb"><span class="eyebrow">The complete set</span><b>${esc(club)}</b><span>All ${SR.pageSize} named · finished ${S.stk.pages[club].split("-").reverse().join("/")}</span></div>
   ${rows.map((r, n) => `<div class="tpr r${n}">${r.map(s => stkCard(s, 1, "tp")).join("")}</div>`).join("")}
@@ -349,14 +346,20 @@ function swapNeedSignIn(why) {
     Net.canSignIn() ? `<button class="btn" data-act="profile">Sign in</button>` : `<p class="note">Online accounts aren't available here.</p>`
   }<button class="btn line" data-act="closeover">Close</button></div></div>`;
 }
+const bump = (f, k) => {
+  // mirror what the server just did, so the album is right before the next sync
+  S.stk[f] = S.stk[f] || {};
+  S.stk[f][k] = (S.stk[f][k] || 0) + 1;
+};
 async function swapOffer(k) {
-  if ((S.stk.got[k] || 0) < 2) return toast("You need a double of him to swap.");
+  if (stkN(k) < 2) return toast("You need a double of him to swap.");
   if (!Net.canSwap()) return swapNeedSignIn("You and your mate both need to be signed in.");
   if ((S.stk.out || []).length >= 5) return toast("Five swaps on the go already. Cancel one first.");
+  await Net.push(); // the server checks your saved album, so make sure it's up to date
   const code = swapCode(),
     ok = await Net.swap("swap_offer", { p_code: code, p_give: k });
-  if (ok !== true) return toast("Couldn't set up the swap just now. Try again in a bit.");
-  S.stk.got[k]--;
+  if (ok !== true) return toast("Couldn't set up the swap. If you've just won him, give it a minute and try again.");
+  bump("gone", k);
   S.stk.out = (S.stk.out || []).concat({ c: code, k, t: Date.now() });
   save(true);
   render();
@@ -387,7 +390,7 @@ async function swapCancel(code) {
   if (!o) return;
   const ok = await Net.swap("swap_cancel", { p_code: code });
   if (ok === true) {
-    S.stk.got[o.k] = (S.stk.got[o.k] || 0) + 1;
+    bump("recv", o.k);
     S.stk.out = S.stk.out.filter(x => x.c !== code);
     save(true);
     toast(swapName(o.k) + " is back in your swaps.");
@@ -404,8 +407,8 @@ async function swapCollect() {
     const o = S.stk.out.find(x => x.c === r.code);
     S.stk.out = S.stk.out.filter(x => x.c !== r.code);
     if (r.back && STK.all[r.back]) {
-      const fresh = !S.stk.got[r.back];
-      S.stk.got[r.back] = (S.stk.got[r.back] || 0) + 1;
+      const fresh = !stkN(r.back);
+      bump("recv", r.back); // the server has put it in your save already; this matches it
       S.stk.meta = S.stk.meta || {};
       if (fresh) S.stk.meta[r.back] = Object.assign({}, S.stk.meta[r.back] || {}, { d: dayKey() });
       toast(`Swap done: ${o ? swapName(o.k) + " went, " : ""}${swapName(r.back)} came back.`);
@@ -433,27 +436,28 @@ async function swapBoot() {
     SWAPIN = "";
     return toast("Too late: someone's already taken that swap, or it's over 14 days old.");
   }
-  const mine = Object.keys(S.stk.got).filter(k => S.stk.got[k] > 1 && STK.all[k] && STK.all[k].i !== undefined);
+  const mine = stkKeys().filter(k => stkN(k) > 1 && STK.all[k].i !== undefined);
   $("over").innerHTML = `<div class="sheet"><div class="box"><span class="eyebrow">Sticker swap</span><h1>A mate's offering you</h1>
   <div class="stkmys">${stkCard(STK.all[row.give], 1, "big")}</div>
   ${
     mine.length
-      ? `<p class="note">Give one of your doubles back and he's yours${S.stk.got[row.give] ? " (you've got him already, so he'd be a double)" : ""}.</p><div class="xil">${mine
-          .map(k => `<button class="li" data-act="swaptake" data-v="${esc(k)}"><span class="tx"><b>${esc(swapName(k))}</b><span>${esc(STK.all[k].club)} · ${TIER_N[STK.all[k].tier]} · ×${S.stk.got[k] - 1} spare</span></span><span class="go">Give ›</span></button>`)
+      ? `<p class="note">Give one of your doubles back and he's yours${stkN(row.give) ? " (you've got him already, so he'd be a double)" : ""}.</p><div class="xil">${mine
+          .map(k => `<button class="li" data-act="swaptake" data-v="${esc(k)}"><span class="tx"><b>${esc(swapName(k))}</b><span>${esc(STK.all[k].club)} · ${TIER_N[STK.all[k].tier]} · ×${stkN(k) - 1} spare</span></span><span class="go">Give ›</span></button>`)
           .join("")}</div>`
       : `<p class="note">You need a double to give back, and you haven't got any yet. Earn some, then open the link again (it lasts 14 days).</p>`
   }
   <button class="btn line" data-act="closeover">Not now</button></div></div>`;
 }
 async function swapTake(back) {
-  if (!SWAPIN || (S.stk.got[back] || 0) < 2) return;
+  if (!SWAPIN || stkN(back) < 2) return;
+  await Net.push();
   const g = await Net.swap("swap_take", { p_code: SWAPIN, p_back: back });
   SWAPIN = "";
   $("over").innerHTML = "";
   if (!g || !STK.all[g]) return toast("Too late: that swap's gone.");
-  S.stk.got[back]--;
-  const fresh = !S.stk.got[g];
-  S.stk.got[g] = (S.stk.got[g] || 0) + 1;
+  const fresh = !stkN(g);
+  bump("gone", back);
+  bump("recv", g);
   S.stk.meta = S.stk.meta || {};
   if (fresh) S.stk.meta[g] = Object.assign({}, S.stk.meta[g] || {}, { d: dayKey() });
   save(true);
@@ -476,5 +480,47 @@ document.addEventListener("click", e => {
   else if (act === "swapresend") {
     const o = (S.stk.out || []).find(x => x.c === v);
     if (o) swapShareSheet(o.c, o.k);
+  }
+});
+
+/* ---------- the 14/11 page rebuild: a sticker whose player has left his page becomes a token ----------
+   Runs once per save (S.stk.pv). Two devices merge pv by the higher number, so it can't pay out twice. */
+const PAGES_V = 2;
+function stkMigratePages() {
+  if (!S.stk || (S.stk.pv || 1) >= PAGES_V) return 0;
+  const keys = new Set(Object.keys(S.stk.got || {}).concat(Object.keys(S.stk.recv || {})));
+  let n = 0;
+  keys.forEach(k => {
+    if (!STK.all[k] && stkN(k) > 0) n++;
+  });
+  S.stk.tok = (S.stk.tok || 0) + n;
+  S.stk.chase = (S.stk.chase || []).filter(k => STK.all[k]);
+  if (S.stk.pick && !STK.all[S.stk.pick]) S.stk.pick = null;
+  if (S.stk.xi && S.stk.xi.s) S.stk.xi.s = S.stk.xi.s.map(k => (k && STK.all[k] ? k : null));
+  Object.keys(S.stk.leg || {}).forEach(k => {
+    if (!LEG[STK.all[k] ? STK.all[k].club : ""] || !LEG[STK.all[k].club].includes(k)) delete S.stk.leg[k]; // a Legend edition of someone who's no longer a Gold Icon
+  });
+  Object.keys(S.stk.pages || {}).forEach(c => {
+    if (!(STK.by[c] || []).every(s => stkN(s.key))) delete S.stk.pages[c]; // the page has new faces on it now
+  });
+  const o = S.stk.offer;
+  if (o && o.key && !STK.all[o.key]) S.stk.offer = Object.assign({}, o, { key: null });
+  S.stk.pv = PAGES_V;
+  if (n) S.stk.migN = n;
+  save();
+  return n;
+}
+stkMigratePages();
+function stkMigrateNote() {
+  const n = S.stk.migN;
+  if (!n) return "";
+  return `<div class="panel pad migp"><b>The album's been redone.</b><p class="note">Every page now has its real club legends as Gold Icons. ${n} of your stickers were of players who've left their page, so they've been swapped for ${n} ${n === 1 ? "token" : "tokens"}: tap any missing sticker to pick your next shot. Everything else stayed in your album.</p><button class="btn line sm" data-act="mignote">Got it</button></div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-act]");
+  if (b && b.dataset.act === "mignote") {
+    S.stk.migN = 0;
+    save();
+    render();
   }
 });

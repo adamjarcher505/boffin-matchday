@@ -1,5 +1,17 @@
 # Changelog
 
+## 14/11/2026 (evening): proper club legends on every page, swaps locked down
+- **Every sticker page rebuilt.** The first pages ranked players by a fame score that leaned to the 2010s, so Lacazette
+  was an Arsenal Gold Icon and Henry a Paper, and Liverpool had no Gerrard. Now each club's 3 Gold Icons are its legends
+  and the 5 Foils the next tier, all hand-picked (`tools/sticker-picks.json`), checked against the data and spot-checked
+  against club and fan polls. Paper is the best-known, longest-serving of the players already on the page.
+- **Nobody loses out.** Albums are kept by player, so anyone still on his page stays in your album (Henry just moved up to
+  Gold). Stickers of the 257 players who left a page turn into tokens, one each, and a note in the album explains it.
+- **Legend editions are the new Gold Icons** (Arsenal: Henry, Bergkamp, Vieira; Chelsea: Lampard, Terry, Drogba...).
+- **Swaps locked down.** The server now checks each side really has the double in their saved album and moves the
+  stickers itself. Nobody can offer a sticker they haven't got, offer the same double twice, or take a swap without
+  giving a real double back. Needs `supabase/004_swaps.sql` run (again, if you already ran it).
+
 ## 14/11/2026 (late afternoon): the sticker overhaul
 - **New sticker front.** The club's shirt from his time there, seen from the back with his surname across the shoulders.
 - **Three era designs**, picked by when he was at the club: 90s cream Panini with a club-colour strip, 00s diagonal

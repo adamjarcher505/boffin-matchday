@@ -83,34 +83,73 @@ test("team photo only for a finished page", () => {
   assert.ok(g.run('$("over").innerHTML').includes("14/11/2026"));
 });
 
-test("swaps: offering puts the double in escrow, cancelling returns it, collecting adds what came back, taking swaps", async () => {
+test("swaps: offer, cancel, collect and take move stickers through the swap ledger (recv/gone), never by editing got", async () => {
   const g = load({ localStorage: SAVE });
   const [a, b] = JSON.parse(g.run(`JSON.stringify(STK.by["Arsenal"].slice(0, 2).map(s => s.key))`));
+  const n = k => g.run(`stkN(${JSON.stringify(k)})`);
   g.run(`S.stk.got[${JSON.stringify(a)}] = 2; S.stk.got[${JSON.stringify(b)}] = 3`);
-  // fake server
-  g.run(`Net.canSwap = () => true; window.CALLS = []; Net.swap = async (fn, args) => { CALLS.push(fn); if (fn === "swap_offer") return true; if (fn === "swap_cancel") return true; if (fn === "swap_collect") return window.COLLECT || []; if (fn === "swap_peek") return [{ give: ${JSON.stringify(a)}, open: true, mine: false }]; if (fn === "swap_take") return ${JSON.stringify(a)}; return null; }`);
+  g.run(`Net.canSwap = () => true; Net.push = async () => {}; Net.swap = async (fn, args) => { if (fn === "swap_offer") return true; if (fn === "swap_cancel") return true; if (fn === "swap_collect") return window.COLLECT || []; if (fn === "swap_peek") return [{ give: ${JSON.stringify(a)}, open: true, mine: false }]; if (fn === "swap_take") return ${JSON.stringify(a)}; return null; }`);
   await g.run(`swapOffer(${JSON.stringify(a)})`);
-  assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(a)}]`), 1, "double held back");
-  assert.strictEqual(g.run("S.stk.out.length"), 1);
+  assert.strictEqual(n(a), 1, "double held back");
+  assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(a)}]`), 2, "earned count untouched");
   assert.ok(g.run("SHARE").includes("?swap="));
   await g.run(`swapCancel(S.stk.out[0].c)`);
-  assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(a)}]`), 2, "back on cancel");
+  assert.strictEqual(n(a), 2, "back on cancel");
   await g.run(`swapOffer(${JSON.stringify(a)})`);
   g.run(`window.COLLECT = [{ code: S.stk.out[0].c, back: ${JSON.stringify(b)} }]`);
   await g.run("swapCollect()");
-  assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(b)}]`), 4);
+  assert.strictEqual(n(b), 4);
   assert.strictEqual(g.run("S.stk.out.length"), 0);
   // the mate's side
   g.run(`SWAPIN = "abcdefgh23"`);
   await g.run("swapBoot()");
   assert.ok(g.els.over.innerHTML.includes("A mate's offering you"));
   await g.run(`swapTake(${JSON.stringify(b)})`);
-  assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(b)}]`), 3);
-  assert.strictEqual(g.run(`S.stk.got[${JSON.stringify(a)}]`), 2);
+  assert.strictEqual(n(b), 3);
+  assert.strictEqual(n(a), 2);
+  // an offer the server refuses (it doesn't see a double in your saved album) changes nothing
+  g.run(`Net.swap = async () => false`);
+  await g.run(`swapOffer(${JSON.stringify(b)})`);
+  assert.strictEqual(n(b), 3);
+});
+
+test("swap ledger survives a device merge: a phone that never saw the swap can't undo it", () => {
+  const g = load();
+  const m = JSON.parse(g.run(`(() => { const phone = { made: true, t: 1, cup: freshCup(), stk: Object.assign(freshStk(), { got: { x: 2 } }) }, server = { made: true, t: 2, cup: freshCup(), stk: Object.assign(freshStk(), { got: { x: 2 }, gone: { x: 1 } }) }; const m = mergeSaves(phone, server); S = m; return JSON.stringify({ n: stkN("x") }); })()`));
+  assert.strictEqual(m.n, 1);
 });
 
 test("merging two devices keeps Legend editions from both", () => {
   const g = load();
   const m = JSON.parse(g.run(`JSON.stringify(mergeSaves({ made: true, t: 2, cup: freshCup(), stk: Object.assign(freshStk(), { leg: { a: 1 } }) }, { made: true, t: 1, cup: freshCup(), stk: Object.assign(freshStk(), { leg: { b: 1 } }) }).stk.leg)`));
   assert.deepStrictEqual(Object.keys(m).sort(), ["a", "b"]);
+});
+
+test("rebuilt pages: 79 clubs, 18 different eligible players each, legends as Gold Icons", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`JSON.stringify({ n: STK.clubs.length, bad: STK.clubs.filter(c => { const s = STK.by[c]; return s.length !== 18 || new Set(s.map(x => x.key)).size !== 18 || s.some(x => x.i === undefined || !stkEligible(x.i)); }), ars: STK.by["Arsenal"].slice(0, 3).map(s => PL[s.i][0]), che: STK.by["Chelsea"].slice(0, 3).map(s => PL[s.i][0]), liv: STK.by["Liverpool"].slice(0, 3).map(s => PL[s.i][0]), henryTier: STK.by["Arsenal"].find(s => PL[s.i][0] === "Thierry Henry").tier, lacaTier: STK.by["Arsenal"].find(s => PL[s.i][0] === "Alexandre Lacazette").tier })`));
+  assert.strictEqual(r.n, 79);
+  assert.deepStrictEqual(r.bad, []);
+  assert.deepStrictEqual(r.ars, ["Thierry Henry", "Dennis Bergkamp", "Patrick Vieira"]);
+  assert.deepStrictEqual(r.che, ["Frank Lampard", "John Terry", "Didier Drogba"]);
+  assert.deepStrictEqual(r.liv, ["Steven Gerrard", "Mohamed Salah", "Jamie Carragher"]);
+  assert.strictEqual(r.henryTier, "gold");
+  assert.strictEqual(r.lacaTier, "paper");
+});
+
+test("page rebuild migration: stickers of players who left a page become tokens, once, and survive a device merge", () => {
+  const old = JSON.stringify({ v: 3, made: true, name: "T", club: "Arsenal", salt: 1, stk: { got: { "Arsenal~Kolo Touré|81": 1, "Arsenal~Tomas Rosicky|80": 2, "Arsenal~Thierry Henry|77": 1, "Nott'm Forest~Dougie Freedman|74": 1 }, tok: 1, chase: ["Arsenal~Tomas Rosicky|80"], pages: { Arsenal: "2026-11-13" } } });
+  const g = load({ localStorage: { "boffin-matchday-v1": old } });
+  assert.strictEqual(g.run("S.stk.tok"), 3, "Rosicky and Freedman left their pages: a token each, on top of the one already held");
+  assert.strictEqual(g.run(`stkN("Arsenal~Kolo Touré|81")`), 1, "Kolo Touré is still on the Arsenal page");
+  assert.strictEqual(g.run("S.stk.pv"), 2);
+  assert.strictEqual(g.run(`stkN("Arsenal~Thierry Henry|77")`), 1, "Henry stays (now a Gold Icon)");
+  assert.deepStrictEqual(JSON.parse(g.run("JSON.stringify(S.stk.chase)")), []);
+  assert.strictEqual(g.run("S.stk.pages.Arsenal"), undefined, "page no longer complete");
+  assert.strictEqual(g.run("stkMigratePages()"), 0, "runs once");
+  // the other device still on the old save syncs in: no second payout
+  g.run(`S = mergeSaves(S, hydrate(${JSON.stringify(old)})); stkMigratePages()`);
+  assert.strictEqual(g.run("S.stk.tok"), 3);
+  g.run(`view = "album"; albumTab = "stk"; render()`);
+  assert.ok(g.els.main.innerHTML.includes("The album's been redone"));
 });
