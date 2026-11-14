@@ -187,15 +187,6 @@ function cupFullTime() {
   ftAnimate();
   window.scrollTo(0, 0);
 }
-function cupCard() {
-  cupSync();
-  const rd = S.cup.rd,
-    opp = cupFans()[rd];
-  return `<div class="panel fix"><div class="statline"><span>Club Cup · ${esc(S.club)} fans only</span><span>Cups won <b>${S.cup.won}</b></span></div>
-   <div class="vs"><div class="t">${esc(S.name || "You")}<small>${esc(S.club)} fan</small></div><div class="v">v</div><div class="t">${esc(opp.name)}<small>${opp.real ? "REAL FAN" : esc(S.club).toUpperCase() + " FAN" + (Net.ready ? "" : " · HOUSE")}</small></div></div>
-   <div class="cupsteps">${CUPR.map((n, k) => `<i class="${k < rd ? "done" : k === rd ? "on" : ""}">${["R16", "QF", "SF", "Final"][k]}</i>`).join("")}</div>
-   <button class="btn line" data-act="cup">Play the ${esc(CUPR[rd].toLowerCase())}<small>Five ${esc(S.club)} questions. Lose and you're out.</small></button></div>`;
-}
 function startTraining(type) {
   M = {
     mode: "train",

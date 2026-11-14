@@ -2,27 +2,6 @@
 /* ============ screens.js: header and tabs, home, league, album, stats, profile and other sheets ============ */
 /* ============ screens ============ */
 const wide = () => window.matchMedia("(min-width: 1024px)").matches;
-function chrome() {
-  const me = meB();
-  $("who").innerHTML = `<b>${esc(S.name || "Sign on")}</b>${badgeHTML(me, wide() ? "" : "xs")}<span class="lv">LV ${levelOf(S.xp)}</span>`;
-  document.body.classList.toggle("kit-gold", badgeOf(me) === "fd" && S.kit !== false);
-  const g = S.grid[dayKey()],
-    gridOpen = !g || (g.left > 0 && !g.c.every(x => x));
-  $("tabs").innerHTML = [
-    ["home", "Matchday"],
-    ["league", "League"],
-    ["grid", "Grid"],
-    ["album", "Album"]
-  ]
-    .concat(wide() ? [["stats", "Stats"]] : [])
-    .map(
-      t =>
-        `<button class="tab ${view === t[0] ? "on" : ""}" data-act="go" data-v="${t[0]}">${t[1]}${t[0] === "grid" && gridOpen ? "<em></em>" : ""}</button>`
-    )
-    .join("");
-  document.getElementById("app").classList.toggle("focus", view === "match" || view === "ft" || view === "stk");
-  if (view !== "match" && view !== "stk") document.getElementById("app").classList.remove("q");
-}
 const noteText = () =>
   S.note
     ? `You finished <b>${ord(S.note.pos)}</b> with ${S.note.pts} points. ${S.note.to > S.note.from ? "Promoted to <b>" + esc(DIVS[S.note.to]) + "</b>. Onwards." : S.note.to < S.note.from ? "Relegated to <b>" + esc(DIVS[S.note.to]) + "</b>. It happens to the best of them." : "You stay in <b>" + esc(DIVS[S.note.to]) + "</b>."}`
@@ -40,8 +19,7 @@ function renderHome() {
     l1 = levelAt(lv);
   const fourth = rows[3],
     gap = pos <= 4 ? 0 : fourth.pts - S.week.pts,
-    g = S.grid[dayKey()],
-    gdone = g && (g.left <= 0 || g.c.every(x => x));
+    oppPos = rows.findIndex(r => r.id === opp.id) + 1;
   const zone =
     S.div < DIVS.length - 1 && pos <= 4
       ? "In the promotion places"
@@ -52,31 +30,38 @@ function renderHome() {
             ? gap + (gap === 1 ? " pt" : " pts") + " off promotion"
             : "Level on points with 4th"
           : "Top division";
-  const pNote = `${S.note ? `<div class="panel pad" style="border-color:var(--amber)"><span class="eyebrow" style="color:var(--amber)">Last season</span><p class="note" style="margin-top:6px">${noteText()}</p><button class="linkb" data-act="clearnote">Dismiss</button></div>` : ""}`;
-  const pFix = `<div class="panel fix${runIn() ? " fday" : ""}">${runIn() ? `<div class="fdtag">${runInLabel()}</div>` : ""}<div class="statline"><span>${esc(DIVS[S.div])} · Season ${S.season}</span><span>Match <b>${S.week.pl + 1}</b> of ${SEASON}</span></div>
-   <div class="vs"><div class="t">${esc(S.name || "You")}<small>${esc(S.club)} · ${ord(pos)}</small></div><div class="v">v</div><div class="t">${esc(opp.name)}<small>${opp.real ? "REAL PLAYER" : "HOUSE SIDE"} · ${ord(rows.findIndex(r => r.id === opp.id) + 1)}</small></div></div>
-   <button class="btn" data-act="kick">Kick off<small>Five chances each. About 90 seconds.</small></button>
-   <div class="statline"><span class="form">${S.form.length ? S.form.map(f => `<i class="${f}">${f}</i>`).join("") : "<span>No form yet</span>"}</span><span><b>${zone}</b></span></div></div>`;
+  const zc = S.div < DIVS.length - 1 && pos <= 4 ? "ok" : S.div > 0 && pos >= 17 ? "bad" : "";
+  const pNote = `${
+    S.note
+      ? `<div class="panel pad" style="border-color:var(--amber)"><span class="eyebrow" style="color:var(--amber)">Last season</span><p class="note" style="margin-top:6px">${noteText()}</p><button class="linkb" data-act="clearnote">Dismiss</button></div>`
+      : ""
+  }`;
+  const pFix = `<div class="panel fix hero${runIn() ? " fday" : ""}">${runIn() ? `<div class="fdtag">${runInLabel()}</div>` : ""}
+   <div class="statline"><span>${esc(DIVS[S.div])} · Season ${S.season}</span><span>Match <b>${S.week.pl + 1}</b> of ${SEASON}</span></div>
+   <div class="tie"><div class="side">${myCrest()}<b>${esc(S.name || "You")}</b><small>${ord(pos)} · ${S.week.pts} pts</small></div><span class="v">v</span><div class="side">${crest(opp.name)}<b>${esc(opp.name)}</b><small>${ord(oppPos)} · ${opp.pts} pts${opp.real ? " · real player" : ""}</small></div></div>
+   <button class="btn kick" data-act="kick">Kick off<small>Five chances each. About 90 seconds.</small></button>
+   <div class="statline"><span class="form">${S.form.length ? S.form.map(f => `<i class="${f}">${f}</i>`).join("") : "<span>No form yet</span>"}</span><span class="zone ${zc}"><b>${zone}</b></span></div>
+   <div class="prog" aria-hidden="true">${Array.from({ length: SEASON }, (_, k) => `<i class="${k < S.week.pl ? "on" : k === S.week.pl ? "cur" : ""}"></i>`).join("")}</div></div>`;
+  const pYou = `<div class="you">${streakChip() || `<div class="streak">${FLAME}<b>0</b><span>days · play a match to start a streak</span></div>`}<span class="lvl">Level <b>${lv}</b> · ${fmt(l1 - S.xp)} XP to ${lv + 1}</span></div>`;
   const pOff =
     Net.checked && Net.canSignIn() && !Net.uid
       ? `<div class="panel pad"><p class="note"><b>Not signed in.</b> Your progress only lives on this device. Sign in to keep it safe, play on any device and count in the shared tables.</p><button class="btn line sm" style="margin-top:10px" data-act="profile">Sign in</button></div>`
       : Net.checked && !Net.ready
         ? `<div class="panel pad"><p class="note"><b>Playing offline.</b> Your progress saves on this device, but your results won't show in your mates' tables and your opponents are house sides. Share your result after a match to show off.</p></div>`
         : "";
-  const pGrid = `<button class="panel li" data-act="go" data-v="grid" style="border-radius:6px"><span class="k">${gridNo()}</span><span class="tx"><b>Daily Grid</b><span>${gdone ? "Done for today. " + g.c.filter(x => x).length + " of 9, scored " + gridScore(g) + "%." : g ? g.left + " guesses left. Finish the job." : "Nine squares, nine guesses. Same grid for everyone."}</span></span><span class="go">›</span></button>`;
+  const pTiles = `<div class="tiles2">${cupTile()}${gridTile()}</div>`;
   const pTrain = `<div class="hd"><h2>Training ground</h2><span class="eyebrow">No table, small XP</span></div>
-  <div class="panel list">${Object.keys(TYPES)
-    .map(
-      (k, i) =>
-        `<button class="li" data-act="train" data-v="${k}"><span class="k">${pad(i + 1)}</span><span class="tx"><b>${TYPES[k].n}</b><span>${QDESC[k]}</span></span><span class="go">›</span></button>`
-    )
+  <div class="trgrid">${Object.keys(TYPES)
+    .map(k => `<button class="panel tr2" data-act="train" data-v="${k}"><i>${qart(k)}</i><b>${TYPES[k].n}</b></button>`)
     .join("")}</div>`;
-  const pLevel = `<div class="panel pad"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(S.xp)}</b> XP · ${fmt(l1 - S.xp)} to level ${lv + 1}</span></div><div class="bar" style="margin-top:8px"><i style="width:${Math.max(2, ((S.xp - l0) / (l1 - l0)) * 100).toFixed(1)}%"></i></div></div>`;
-  const pFoot = `<p class="foot">${fmt(PL.length)} PLAYERS · ${fmt(BD.xi.length)} LINE-UPS · ${fmt(BD.lists.length)} TOP TENS · ${fmt(BD.tables.length)} FINAL TABLES<br>${Net.ready && !Net.readonly ? "CONNECTED · YOUR RESULTS COUNT IN THE SHARED TABLES" : "PLAYING LOCALLY ON THIS DEVICE"}</p>`;
+  const pFoot = `<p class="foot">${fmt(PL.length)} PLAYERS · ${fmt(QB.all.length)} QUIZ QUESTIONS · ${fmt(BD.xi.length)} LINE-UPS · ${fmt(BD.lists.length)} TOP TENS<br>${
+    Net.ready && !Net.readonly ? "CONNECTED · YOUR RESULTS COUNT IN THE SHARED TABLES" : "PLAYING LOCALLY ON THIS DEVICE"
+  }</p>`;
   const pTheme = themeBanner(),
-    pStk = stkHomeCard();
+    pStk = stkHomeCard(),
+    pObj = S.made ? objCard() : "";
   if (!wide()) {
-    $("main").innerHTML = pNote + pFix + pStk + pTheme + cupCard() + pOff + pGrid + pTrain + pLevel + pFoot;
+    $("main").innerHTML = pNote + pFix + pYou + pStk + pObj + pTiles + pTheme + pTrain + pOff + pFoot;
     return;
   }
   const pLong = `<div class="hd"><h2>Extra time</h2><span class="eyebrow">Long-form · PC only</span></div><div class="panel list">${Object.keys(LONG)
@@ -86,15 +71,32 @@ function renderHome() {
     )
     .join("")}</div>`;
   const pTable = `<div class="hd"><h2>${esc(DIVS[S.div])}</h2><button class="linkb" data-act="go" data-v="league">Full table</button></div>${stakesHTML(rows)}${tableHTML(rows, true)}`;
-  $("main").innerHTML =
-    `${pNote}<div class="dash"><div class="col">${pFix}${pStk}${pTheme}${cupCard()}${pGrid}${pOff}${pLevel}</div><div class="col">${pTable}</div><div class="col">${pLong}${pTrain}</div></div>${pFoot}`;
+  $("main").innerHTML = `${pNote}<div class="dash"><div class="col">${pFix}${pYou}${pStk}${pObj}${pTiles}${pTheme}${pOff}</div><div class="col">${pTable}</div><div class="col">${pLong}${pTrain}</div></div>${pFoot}`;
 }
 function tableHTML(rows, mini) {
   const up = S.div < DIVS.length - 1,
     down = S.div > 0,
-    full = !mini && wide();
-  return `<div class="panel${mini ? " mini" : ""}"><table><tr><th>#</th><th>${esc(DIVS[S.div])}</th><th>P</th>${full ? "<th>W</th><th>D</th><th>L</th>" : ""}<th>GD</th><th>PTS</th></tr>${rows.map((r, i) => `<tr class="${r.me ? "me" : ""} ${up && i < 4 ? "up" : down && i >= 16 ? "down" : ""} ${(up && i === 3) || (down && i === 15) ? "cut" : ""}"><td>${i + 1}</td><td><span class="${r.f ? "fdn" : ""}">${esc(r.name)}</span>${r.me ? '<span class="tag me">YOU</span>' : r.house ? '<span class="tag">HOUSE</span>' : ""}${badgeHTML(r, full ? "" : "xs")}</td><td>${r.pl}</td>${full ? `<td>${r.w}</td><td>${r.d}</td><td>${r.l}</td>` : ""}<td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td>${r.pts}</td></tr>`).join("")}</table>
-    <div class="key">${up ? '<span><i style="background:var(--good)"></i>Top four go up</span>' : ""}${down ? '<span><i style="background:var(--bad)"></i>Bottom four go down</span>' : ""}<span>${SEASON - S.week.pl} of ${SEASON} matches left</span></div></div>`;
+    full = !mini && wide(),
+    prev = leagueTable(true),
+    was = {},
+    anyReal = rows.some(r => r.real);
+  if (prev) prev.forEach((r, i) => (was[r.id] = i));
+  const move = (r, i) => {
+    if (!prev || r.real || was[r.id] === undefined || was[r.id] === i) return "";
+    return was[r.id] > i ? '<i class="mv u">▲</i>' : '<i class="mv d">▼</i>';
+  };
+  const form = r => (r.form && r.form.length ? `<span class="fdots">${r.form.map(f => `<i class="${f}"></i>`).join("")}</span>` : "");
+  return `<div class="panel lt${mini ? " mini" : ""}"><table><tr><th>#</th><th>${esc(DIVS[S.div])}</th><th class="fc">FORM</th><th>P</th>${full ? "<th>W</th><th>D</th><th>L</th>" : ""}<th>GD</th><th>PTS</th></tr>${rows
+    .map(
+      (r, i) =>
+        `<tr class="${r.me ? "me" : ""} ${up && i < 4 ? "up" : down && i >= 16 ? "down" : ""} ${(up && i === 3) || (down && i === 15) ? "cut" : ""}"><td>${i + 1}${move(r, i)}</td><td><span class="tn">${r.me ? myCrest() : crest(r.name)}<span class="${r.f ? "fdn" : ""}">${esc(r.name)}</span>${
+          r.me ? '<span class="tag me">YOU</span>' : r.real ? '<span class="tag real">REAL</span>' : ""
+        }${badgeHTML(r, full ? "" : "xs")}</span></td><td class="fc">${form(r)}</td><td>${r.pl}</td>${full ? `<td>${r.w}</td><td>${r.d}</td><td>${r.l}</td>` : ""}<td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td>${r.pts}</td></tr>`
+    )
+    .join("")}</table>
+    <div class="key">${up ? '<span><i style="background:var(--good)"></i>Top four go up</span>' : ""}${down ? '<span><i style="background:var(--bad)"></i>Bottom four go down</span>' : ""}${
+      anyReal ? '<span><b class="tag real">REAL</b> another player</span>' : ""
+    }<span>${SEASON - S.week.pl} of ${SEASON} matches left</span></div></div>`;
 }
 function renderLeague() {
   const rows = leagueTable(),
@@ -337,4 +339,53 @@ function quitMatch() {
   view = "home";
   save(true);
   render();
+}
+const TABICON = {
+  home: '<path d="M3 5h18v14H3zM12 5v14M3 9h3v6H3M21 9h-3v6h3"/><circle cx="12" cy="12" r="2.6"/>',
+  league: '<path d="M4 6h16M4 10.5h16M4 15h16M4 19.5h10"/>',
+  grid: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16"/>',
+  album: '<rect x="5" y="3.5" width="14" height="17" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8 17c.8-2.4 2.2-3.4 4-3.4s3.2 1 4 3.4"/>',
+  stats: '<path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/>'
+};
+function chrome() {
+  const me = meB(),
+    lv = levelOf(S.xp),
+    l0 = levelAt(lv - 1),
+    l1 = levelAt(lv);
+  $("who").innerHTML = `<b>${esc(S.name || "Sign on")}</b>${badgeHTML(me, wide() ? "" : "xs")}<span class="lv">LV ${lv}</span>`;
+  const xb = $("xpbar");
+  if (xb) xb.style.width = Math.max(1, Math.min(100, ((S.xp - l0) / (l1 - l0)) * 100)).toFixed(1) + "%";
+  document.body.classList.toggle("kit-gold", badgeOf(me) === "fd" && S.kit !== false);
+  const g = S.grid[dayKey()],
+    gridOpen = !g || (g.left > 0 && !g.c.every(x => x));
+  $("tabs").innerHTML = [
+    ["home", "Matchday"],
+    ["league", "League"],
+    ["grid", "Grid"],
+    ["album", "Album"]
+  ]
+    .concat(wide() ? [["stats", "Stats"]] : [])
+    .map(
+      t =>
+        `<button class="tab ${view === t[0] ? "on" : ""}" data-act="go" data-v="${t[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TABICON[t[0]]}</svg><span>${t[1]}</span>${t[0] === "grid" && gridOpen ? "<em></em>" : ""}</button>`
+    )
+    .join("");
+  document.getElementById("app").classList.toggle("focus", view === "match" || view === "ft" || view === "stk");
+  if (view !== "match" && view !== "stk") document.getElementById("app").classList.remove("q");
+}
+/* small tiles on the home screen: the Club Cup and the Daily Grid */
+function cupTile() {
+  cupSync();
+  const rd = S.cup.rd,
+    opp = cupFans()[rd];
+  return `<button class="panel tile2 cup" data-act="cup"><span class="eyebrow">Club Cup · ${esc(S.club)}</span><b>${esc(CUPR[rd])}</b><span class="sub">v ${esc(opp.name)}${opp.real ? " · real fan" : ""}</span>
+  <div class="cupsteps">${CUPR.map((n, k) => `<i class="${k < rd ? "done" : k === rd ? "on" : ""}">${["R16", "QF", "SF", "F"][k]}</i>`).join("")}</div><span class="more">${S.cup.won ? "Cups won " + S.cup.won + " · " : ""}Lose and you're out ›</span></button>`;
+}
+function gridTile() {
+  const g = S.grid[dayKey()],
+    done = g && (g.left <= 0 || g.c.every(x => x)),
+    got = g ? g.c.filter(x => x).length : 0;
+  return `<button class="panel tile2 gridt" data-act="go" data-v="grid"><span class="eyebrow">Daily Grid · No. ${gridNo()}</span><b>${done ? gridScore(g) + "%" : g ? g.left + " left" : "Nine squares"}</b><span class="sub">${
+    done ? got + " of 9. New grid at midnight." : g ? got + " in. Finish the job." : "Same grid for everyone."
+  }</span><div class="minig">${Array.from({ length: 9 }, (_, k) => `<i class="${g && g.c[k] ? "on" : ""}"></i>`).join("")}</div><span class="more">${done ? "See it ›" : "Play ›"}</span></button>`;
 }

@@ -5,31 +5,38 @@ function houseRow(sid, div, name, slot, played) {
   const r0 = rngOf(hash("hs" + sid + "-" + div + "-" + slot)),
     s = r0(),
     r = rngOf(hash("hr" + sid + "-" + div + "-" + slot));
-  const row = { id: "h" + slot, name, house: true, s, pl: played, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+  const row = { id: "h" + slot, name, house: true, s, pl: played, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, form: [] };
   for (let m = 0; m < played; m++) {
     const x = r(),
       pw = 0.2 + 0.38 * s;
     if (x < pw) {
       row.w++;
+      row.form.push("W");
       row.pts += 3;
       row.gf += 2 + Math.floor(r() * 3);
       row.ga += Math.floor(r() * 2);
     } else if (x < pw + 0.24) {
       row.d++;
+      row.form.push("D");
       row.pts++;
       const g = 1 + Math.floor(r() * 2);
       row.gf += g;
       row.ga += g;
     } else {
       row.l++;
+      row.form.push("L");
       row.ga += 2 + Math.floor(r() * 3);
       row.gf += Math.floor(r() * 2);
     }
   }
+  row.form = row.form.slice(-5); // recorded from the same results; nothing about the results changes
   return row;
 }
 const SEASON = 19;
-function leagueTable() {
+/* back = true gives the table as it stood before your last match (house sides one match back, your row from S.wp),
+   for the movement arrows. Real players have no history here, so they stay where they are. */
+function leagueTable(back) {
+  if (back && !(S.wp && S.wp.pl === S.week.pl - 1)) return null;
   const div = S.div,
     sid = S.season + "." + S.salt;
   const real = Net.rows
@@ -54,9 +61,9 @@ function leagueTable() {
     }));
   const names = shuffle(HOUSE, rngOf(hash("hn" + sid + "-" + div))),
     rows = real.slice();
-  for (let k = 0; rows.length < 19; k++) rows.push(houseRow(sid, div, names[k], k, S.week.pl));
-  const w = S.week;
-  rows.push({ id: "me", me: true, name: S.name || "You", f: meB().f, m: meB().m, pl: w.pl, w: w.w, d: w.d, l: w.l, gf: w.gf, ga: w.ga, pts: w.pts });
+  const w = back ? S.wp : S.week;
+  for (let k = 0; rows.length < 19; k++) rows.push(houseRow(sid, div, names[k], k, w.pl));
+  rows.push({ id: "me", me: true, name: S.name || "You", form: S.form, f: meB().f, m: meB().m, pl: w.pl, w: w.w, d: w.d, l: w.l, gf: w.gf, ga: w.ga, pts: w.pts });
   rows.sort((a, b) => b.pts - a.pts || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf || (a.me ? -1 : b.me ? 1 : 0));
   return rows;
 }
