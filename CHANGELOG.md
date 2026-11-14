@@ -1,5 +1,21 @@
 # Changelog
 
+## 14/11/2026 (late afternoon): the sticker overhaul
+- **New sticker front.** The club's shirt from his time there, seen from the back with his surname across the shoulders.
+- **Three era designs**, picked by when he was at the club: 90s cream Panini with a club-colour strip, 00s diagonal
+  colour blocks with a dark name bar, and a modern dark gloss. Paper, Foil and Gold still show in the frame.
+- **Tilt to shine.** The holo on Foil, Gold, Legend and Shiny stickers follows your phone as you tilt it (iPhone asks
+  once, the first time you touch a sticker). Moves with the mouse on a computer.
+- **Peel and stick.** A new sticker has to be dragged into its slot (or tapped) before it's in. Thump, buzz.
+- **Legends.** A black-and-gold special edition of three players on each page. Only winning your division (1st) earns a
+  shot, on Gold rules. Arsenal's are Henry, Bergkamp and Vieira; other clubs use their three Gold Icons for now.
+- **Sticker of the Day.** Same sticker for everyone, one go, Foil rules. Name him and he's yours. Tile on the home
+  screen, panel in the album, shareable result.
+- **Best XI.** New XI tab in the album: pick a formation and fill it from your stickers, any club, by position. Share it.
+- **Team photo.** Finish a page and you get a squad-photo layout of all 18, shareable.
+- **Swaps with mates.** Tap a double, send the link, your mate gives you one of theirs back. Needs both signed in and
+  `supabase/004_swaps.sql` run (HANDOVER.md step 10).
+
 ## 14/11/2026 (afternoon): fairer sticker attempts, Names becomes club knowledge
 **Naming the man on the sticker** was too hard. Now:
 - His clubs show from the start on every tier (the best clue), then position and country, born, and a new last clue, his initials.

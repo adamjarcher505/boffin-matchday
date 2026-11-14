@@ -146,7 +146,7 @@ function shareChain() {
 function chainTile() {
   const c = S.chain && S.chain[dayKey()],
     done = c && c.done;
-  return `<button class="panel tile2 chaint" data-act="go" data-v="chain"><div class="ct"><span class="eyebrow">Chain Reaction · No. ${chainNo()}</span><span class="sub">${
-    done ? "Done for today. New start at midnight." : "Team-mate chain against a 30-second clock. Same start for everyone."
-  }</span><span class="more">${done ? "See it ›" : "Play ›"}</span></div><b class="big">${done ? c.c.length : "30s"}</b></button>`;
+  return `<button class="panel tile2 chaint" data-act="go" data-v="chain"><span class="eyebrow">Chain Reaction · No. ${chainNo()}</span><span class="sub">${
+    done ? "Done for today. New start at midnight." : "Team-mate chain against a 30-second clock."
+  }</span><span class="more">${done ? "See it ›" : "Play ›"}</span><b class="big">${done ? c.c.length : "30"}</b></button>`;
 }

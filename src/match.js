@@ -468,7 +468,7 @@ function fullTime() {
   const ended = settleSeason();
   S.ab = null;
   logMatch();
-  const offer = stkAfterMatch({ mode: "league", goals: a, deep: M.deep, perfect: a === 5 && M.my.length === 5, won: res === "W", promoted: ended && S.note.to > S.note.from });
+  const offer = stkAfterMatch({ mode: "league", goals: a, deep: M.deep, perfect: a === 5 && M.my.length === 5, won: res === "W", promoted: ended && S.note.to > S.note.from, title: ended && S.note.pos === 1 });
   if (ended) careerSeason(S.note);
   save(true);
   sfx.fullTime();

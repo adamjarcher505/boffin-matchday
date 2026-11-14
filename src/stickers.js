@@ -3,8 +3,8 @@
    Stickers live in S.stk (the "Names" log, S.album, is separate and untouched). All numbers are STICKER_RULES in app.js.
    Pages are frozen in sticker-pages.js so a page never reshuffles. */
 const SR = STICKER_RULES;
-const TIER_N = { paper: "Paper", foil: "Foil", gold: "Gold Icon" },
-  TIER_RANK = { paper: 0, foil: 1, gold: 2 };
+const TIER_N = { paper: "Paper", foil: "Foil", gold: "Gold Icon", legend: "Legend" },
+  TIER_RANK = { paper: 0, foil: 1, gold: 2, legend: 3 };
 /* Band colour override per club ({ "Arsenal": "#hex" }). Empty on purpose: the band keeps the tier's colour and the
    shirt (kits.js, sourced) carries the club colours. */
 const CLUB_COLOURS = {};
@@ -73,6 +73,7 @@ const stkTitles = () =>
 
 /* ---------- earning a shot (one offer per match at most) ---------- */
 function stkOfferTier(info) {
+  if (info.title) return "legend"; // 14/11: winning the division
   if (info.promoted || info.final) return "gold";
   if (info.perfect || (info.cupWin && (info.round | 0) >= SR.foilCupRound)) return "foil";
   if ((info.deep | 0) >= SR.paperDeep || (info.goals | 0) >= SR.paperGoals) return "paper";
@@ -80,6 +81,7 @@ function stkOfferTier(info) {
 }
 function stkWhy(info, free) {
   if (free) return "First win. Have one shot on the house.";
+  if (info.title) return "Champions. Winning the division earns a shot at a Legend.";
   if (info.promoted) return "Promotion earns a shot at a Gold Icon.";
   if (info.final) return "Cup winners get a shot at a Gold Icon.";
   if (info.perfect) return "Five from five earns a Foil.";
@@ -129,6 +131,7 @@ function stkPool() {
 function stkTarget(o, r) {
   r = r || Math.random;
   const ok = s => s.i !== undefined;
+  if (o.tier === "legend") return legTarget(r);
   const pick = S.stk.pick && STK.all[S.stk.pick]; // a token-picked slot, used when the offer is good enough for it
   if (pick && ok(pick) && S.stk.tok > 0 && !o.free && TIER_RANK[pick.tier] <= TIER_RANK[o.tier]) {
     S.stk.tok--;
@@ -166,7 +169,8 @@ function stkTarget(o, r) {
 /* ---------- the attempt ---------- */
 let STKA = null,
   stkRaf = 0;
-const stkRules = (o, slot) => (o.free ? "paper" : slot.tier);
+const stkRules = (o, slot) => (o.free ? "paper" : o.daily ? "foil" : o.tier === "legend" ? "gold" : slot.tier);
+const stkLabel = (o, slot) => (o && o.tier === "legend" ? "Legend" : TIER_N[slot.tier]); // what the attempt is for
 function stkBar(label) {
   return `<div class="board"><div class="score"><button class="x" data-act="stkleave" aria-label="Leave">×</button><span class="nm">Sticker chance</span><span class="sc">${label}</span><span class="nm">${esc(S.club)}</span><span class="min">★</span></div><div class="clock"><i id="clk"></i></div></div>`;
 }
@@ -232,8 +236,8 @@ function stkCover() {
     n = SR.clues[rt],
     tr = SR.tries[rt];
   const said = ["", "His clubs showing", "His clubs, position and country showing", "His clubs, position, country and age showing"][n];
-  stkScreen(`${stkBar(TIER_N[slot.tier].toUpperCase().split(" ")[0])}<div class="chance"><h3>Name the man on the sticker</h3><span class="eyebrow">${TIER_N[slot.tier]} · ${esc(slot.club)}</span></div>
-  <div class="stkmys"><div class="stkr ${slot.tier} need big"><span class="band">${esc(slot.club)}</span><i class="sil"></i><span class="needt">?</span><i class="no">${slot.n + 1}</i></div></div>
+  stkScreen(`${stkBar(stkLabel(o, slot).toUpperCase().split(" ")[0])}<div class="chance"><h3>${o.daily ? "Sticker of the Day" : "Name the man on the sticker"}</h3><span class="eyebrow">${stkLabel(o, slot)} · ${esc(slot.club)}</span></div>
+  <div class="stkmys"><div class="stkr ${o.tier === "legend" ? "legend" : slot.tier} need big"><span class="band">${esc(slot.club)}</span><i class="sil"></i><span class="needt">?</span><i class="no">${slot.n + 1}</i></div></div>
   <p class="rule qq">${said}${n === 1 ? ", another clue every " + SR.goldClueEvery + " seconds" : ""}. ${tr === 1 ? "One guess." : tr + " guesses."}<span>${SR.secs} seconds once you start. Every wrong guess unlocks another clue. Miss and he's gone, but you'll find out who he was.</span></p>
   <button class="btn" data-act="stkstart">Name him</button><button class="btn line" data-act="stkleave">Later</button>`);
 }
@@ -267,10 +271,10 @@ function stkStart() {
     rt = stkRules(o, slot);
   o.started = true;
   save();
-  STKA = { slot, rt, gold: rt === "gold", shown: SR.clues[rt], tries: SR.tries[rt], max: SR.tries[rt], t0: Date.now(), limit: SR.secs * 1000, lastShown: 0 };
+  STKA = { slot, rt, leg: o.tier === "legend", daily: o.daily || "", gold: rt === "gold", shown: SR.clues[rt], tries: SR.tries[rt], max: SR.tries[rt], t0: Date.now(), limit: SR.secs * 1000, lastShown: 0 };
   M = { mode: "stk", live: true, run: { onPick: stkPick } };
   stkScreen(
-    `${stkBar(TIER_N[slot.tier].toUpperCase().split(" ")[0])}<div class="chance"><h3>Name the man on the sticker</h3><span class="eyebrow">${TIER_N[slot.tier]} · ${esc(slot.club)}</span></div>
+    `${stkBar(stkLabel(o, slot).toUpperCase().split(" ")[0])}<div class="chance"><h3>${o.daily ? "Sticker of the Day" : "Name the man on the sticker"}</h3><span class="eyebrow">${stkLabel(o, slot)} · ${esc(slot.club)}</span></div>
   <div class="entry"><input id="q" type="text" placeholder="Type a player's name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Player name"><button type="button" class="clr" id="clr" data-act="clrq" aria-label="Clear" hidden>×</button><div class="sug" id="sug" hidden></div></div>
   <p class="msg" id="msg"></p><div id="rbody">${stkCluesHTML()}</div>`,
     true
@@ -440,7 +444,13 @@ const W_ = "#f4f4f1";
 const SH_BODY = "M34 14 L43 11 Q50 19 57 11 L66 14 L68 40 L70 90 Q50 94 30 90 L32 40 Z";
 const SH_LS = "M34 14 L20 21 L10 38 L22 45 L32 34 Z",
   SH_RS = "M66 14 L80 21 L90 38 L78 45 L68 34 Z";
-function kitSVG(k) {
+/* luminance of a #hex (0 dark .. 1 light): picks a readable colour for the name on the back */
+const lumHex = hex => {
+  const n = parseInt((hex || "#888").slice(1), 16);
+  return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+};
+/* the shirt. back = seen from behind with his surname across the shoulders (14/11/2026: the sticker front) */
+function kitSVG(k, back, name) {
   if (!k) return '<svg class="shirt plain" viewBox="0 0 100 100" aria-hidden="true"><path d="' + SH_BODY + " " + SH_LS + " " + SH_RS + '"/></svg>';
   const id = "kt" + ++kitN,
     b = k.b,
@@ -458,24 +468,45 @@ function kitSVG(k) {
     pats.push(`<rect x="44" y="0" width="4" height="100" fill="${c}"/><rect x="52" y="0" width="4" height="100" fill="${k.c2 || c}"/>`);
   else if (k.p === "diag") pats.push(`<path d="M0 100 L100 0 L100 100 Z" fill="${c}"/>`);
   const all = SH_BODY + " " + SH_LS + " " + SH_RS;
-  return `<svg class="shirt kit" viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="${id}c"><path d="${all}"/></clipPath><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>
+  let nameSVG = "";
+  if (back && name) {
+    // the name sits on whatever is behind the shoulders; patterned shirts get a plate in the base colour so it reads, like the real thing
+    const plain = !k.p || k.p === "diag",
+      ground = b,
+      ink = lumHex(ground) > 0.62 ? "#16181b" : "#f6f4ee",
+      nm = name.toUpperCase(),
+      len = Math.min(34, 6 + nm.length * 3.4);
+    nameSVG = `${plain ? "" : `<path d="M30 25 Q50 21 70 25 L70 36 Q50 32 30 36 Z" fill="${ground}"/>`}<path id="${id}n" d="M28 33 Q50 27 72 33" fill="none"/><text font-family="'Big Shoulders Display',Impact,sans-serif" font-weight="800" font-size="9" fill="${ink}" letter-spacing=".4" text-anchor="middle"><textPath href="#${id}n" startOffset="50%" textLength="${len}" lengthAdjust="spacingAndGlyphs">${esc(nm)}</textPath></text>`;
+  }
+  return `<svg class="shirt kit${back ? " back" : ""}" viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="${id}c"><path d="${all}"/></clipPath><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>
 <g clip-path="url(#${id}c)"><rect width="100" height="100" fill="${b}"/>${pats.join("")}${sl ? `<path d="${SH_LS} ${SH_RS}" fill="${sl}"/>` : ""}
 <path d="M22 45 L10 38" stroke="${t}" stroke-width="4"/><path d="M78 45 L90 38" stroke="${t}" stroke-width="4"/>
 <path d="M32 34 L32 40 M68 34 L68 40" stroke="#000" stroke-opacity=".18" stroke-width="1"/><path d="M40 60 Q44 75 41 88 M60 58 Q57 72 60 88" stroke="#000" stroke-opacity=".07" stroke-width="2" fill="none"/>
-<rect width="100" height="100" fill="url(#${id}g)"/></g>
-<path d="M43 11 Q50 19 57 11" stroke="${t}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+${nameSVG}<rect width="100" height="100" fill="url(#${id}g)"/></g>
+${back ? `<path d="M43 11.5 Q50 15 57 11.5" stroke="${t}" stroke-width="2.6" fill="none" stroke-linecap="round"/>` : `<path d="M43 11 Q50 19 57 11" stroke="${t}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`}
 <path d="${all}" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1" stroke-linejoin="round"/></svg>`;
 }
 const stkShirt = slot => kitSVG(kitFor(slot.club, slot.i, slot.c));
+/* 14/11/2026: the card's style follows the era of his time at the club: 90s cream Panini, 00s colour blocks, modern gloss */
+function stkEra(slot) {
+  const ss = stkSeasons(slot.i, slot.c);
+  const mid = ss ? Math.floor((ss.from + ss.to) / 2) : 2015;
+  return mid < 2000 ? "e90" : mid < 2010 ? "e00" : "e10";
+}
+const ERA_N = { e90: "90s", e00: "00s", e10: "Modern" };
 function stkCard(slot, n, cls) {
   const p = PL[slot.i],
     nm = p[0].split(" "),
     sn = nm[nm.length - 1],
     fn = nm.slice(0, -1).join(" "),
-    col = CLUB_COLOURS[slot.club],
+    k = kitFor(slot.club, slot.i, slot.c),
+    kb = (k && k.b) || "#3a4048",
+    kc = (k && k.c) || W_,
     mt = stkMeta(slot.key),
+    leg = stkIsLeg(slot.key),
+    era = leg ? "leg" : stkEra(slot),
     hi = stkHighlight(slot.i, slot.c);
-  return `<div class="stkr ${slot.tier} got${mt.sh ? " shiny" : ""} ${cls || ""}"><span class="band"${col ? ` style="background:${col}"` : ""}>${esc(slot.club)}</span>${stkShirt(slot)}<span class="stars">${STARS[slot.tier]}</span><span class="fn">${esc(fn)}</span><b class="sn">${esc(sn)}</b><span class="meta">${POSN[p[2]]} · ${esc(NAT[p[1]])}</span>${hi ? `<span class="hi">${esc(hi)}</span>` : ""}<i class="no">${slot.n + 1}</i>${n > 1 ? `<em class="x">×${n}</em>` : ""}${mt.sh ? '<em class="shtag">✦ Shiny</em>' : mt.c === 3 ? '<em class="mint">Mint</em>' : ""}</div>`;
+  return `<div class="stkr ${slot.tier} got ${era}${mt.sh ? " shiny" : ""} ${cls || ""}" style="--k:${kb};--k2:${shade(kb, 0.5)};--kc:${kc};--ki:${lumHex(kb) > 0.62 ? "#16181b" : "#fff"}"><i class="ph"></i><span class="band">${esc(slot.club)}</span>${kitSVG(k, true, sn)}<i class="holo"></i><span class="stars">${leg ? "LEGEND" : STARS[slot.tier]}</span><div class="nmb"><span class="fn">${esc(fn)}</span><b class="sn">${esc(sn)}</b></div><span class="meta">${POSN[p[2]]} · ${esc(NAT[p[1]])}</span>${hi ? `<span class="hi">${esc(hi)}</span>` : ""}<i class="no">${slot.n + 1}</i>${n > 1 ? `<em class="x">×${n}</em>` : ""}${mt.sh ? '<em class="shtag">✦ Shiny</em>' : mt.c === 3 ? '<em class="mint">Mint</em>' : ""}</div>`;
 }
 /* the back: everything the data knows about him */
 function stkBack(slot) {
@@ -541,6 +572,8 @@ function stkLose(silent, timeUp) {
     was = o && STK.all[o.key] && STK.all[o.key].i !== undefined && o.started ? PL[STK.all[o.key].i][0] : ""; // 14/11: a miss tells you who it was, so you know him next time
   S.stk.offer = null;
   S.stk.n.lost++;
+  if (o && o.daily) sotdEnd(o.daily, false, 0);
+  stkUnhold();
   stkStop();
   save(true);
   if (silent) {
@@ -557,17 +590,21 @@ function stkWin() {
   const A = STKA,
     slot = A.slot,
     k = slot.key,
-    dup = !!S.stk.got[k],
+    leg = A.leg,
+    dup = leg ? stkIsLeg(k) : !!S.stk.got[k],
     lines = [];
-  S.stk.got[k] = (S.stk.got[k] || 0) + 1;
+  if (!leg || !S.stk.got[k]) S.stk.got[k] = (S.stk.got[k] || 0) + 1; // a Legend edition is an upgrade: it doesn't add a swap
+  if (leg) S.stk.leg = Object.assign({}, S.stk.leg, { [k]: 1 });
   S.stk.n.won++;
   S.stk.chase = S.stk.chase.filter(x => x !== k);
   S.stk.offer = null;
-  let xp = dup ? SR.dupXp : SR.winXp[slot.tier],
+  let xp = dup ? SR.dupXp : SR.winXp[leg ? "legend" : slot.tier],
     token = false,
     page = false;
-  lines.push([dup ? "Swap" : TIER_N[slot.tier] + " sticker", xp]);
-  if (dup) {
+  lines.push([dup ? "Swap" : (leg ? "Legend" : TIER_N[slot.tier]) + " sticker", xp]);
+  if (A.daily) sotdEnd(A.daily, true, A.max - A.tries + 1);
+  stkUnhold();
+  if (dup && !leg) {
     S.stk.dups++;
     if (S.stk.dups % SR.dupsPerToken === 0) {
       S.stk.tok++;
@@ -604,11 +641,13 @@ function stkWin() {
   sfx.goal();
   buzz([20, 30, 20, 30, 90]);
   SHARE = shareSticker(slot.tier, slot.club);
-  stkScreen(`${stkBar("IN")}<div class="verdict goal"><div class="big">${dup ? "Got, got, got" : "Stuck in"}</div><p>${dup ? (shiny ? "Already had him, but this one's shiny. Swapped straight in." : "You've already got him. One for the swaps pile.") : esc(pickR(["Straight in the album. No bubbles.", "Pressed down with the thumb. Lovely.", "He's yours. Earned, not bought."]))}</p></div>
+  const fin = () => stkScreen(`${stkBar("IN")}<div class="verdict goal"><div class="big">${dup ? "Got, got, got" : "Stuck in"}</div><p>${dup ? (shiny ? "Already had him, but this one's shiny. Swapped straight in." : "You've already got him. One for the swaps pile.") : esc(pickR(["Straight in the album. No bubbles.", "Pressed down with the thumb. Lovely.", "He's yours. Earned, not bought."]))}</p></div>
   ${shiny ? `<div class="panel pad shinyban"><b>✦ It's a shiny</b><p class="note">A holographic one. Roughly one sticker in ${Math.round(1 / SR.shinyChance)} comes out like this.</p></div>` : dup && better ? `<div class="panel pad"><p class="note">Upgraded to <b>${CONDN[mt.c]}</b> condition.</p></div>` : ""}<div class="stkmys">${stkFlip(slot, S.stk.got[k], "big stick")}</div>
   <div class="panel pad"><div class="lines">${lines.map(l => `<div><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`).join("")}<div class="tot"><span>XP</span><b>+${xp}</b></div></div><div class="statline" style="margin-top:10px"><span>${esc(slot.club)} page</span><span><b>${stkPageGot(slot.club)}</b> of ${SR.pageSize}</span></div>${token ? `<p class="note" style="margin-top:8px"><b>Three swaps make a token.</b> Spend it in the album to choose which missing sticker your next shot is for.</p>` : dup ? `<p class="note" style="margin-top:8px">${SR.dupsPerToken - (S.stk.dups % SR.dupsPerToken)} more ${SR.dupsPerToken - (S.stk.dups % SR.dupsPerToken) === 1 ? "swap" : "swaps"} for a pick-your-player token.</p>` : ""}</div>
   ${page ? `<div class="panel send up"><span class="eyebrow">Page complete</span><div class="big">${esc(slot.club)}</div><p class="note">${slot.club === S.club ? "Your own club, every last one of them named. That's the whole point of all this." : "All eighteen. Not a gap on the page."} New title: <b>${esc(slot.club)} Completist</b>.</p></div>` : ""}
-  <button class="btn" data-act="stkalbum">To the album</button>${slot.tier !== "paper" ? shareBtns() : ""}<button class="btn line" data-act="go" data-v="home">Home</button>`);
+  <button class="btn" data-act="stkalbum">To the album</button>${slot.tier !== "paper" || leg ? shareBtns() : ""}<button class="btn line" data-act="go" data-v="home">Home</button>`);
+  if (dup || window.PEEL_OFF) fin(); // PEEL_OFF: tests that only care about the result
+  else stkPeel(slot, fin); // a new one gets peeled and stuck in by hand first
 }
 
 /* ---------- the album ---------- */
@@ -618,6 +657,7 @@ const albumSeg = () =>
   `<div class="seg">${[
     ["stk", "Stickers"],
     ["names", "Knowledge"],
+    ["xi", "XI"],
     ["medals", "Medals"],
     ["stats", "Stats"]
   ]
@@ -639,16 +679,22 @@ function renderStickers() {
     titles = stkTitles(),
     o = S.stk.offer;
   const order = STK.clubs.slice().sort((a, b) => (b === S.club) - (a === S.club) || a.localeCompare(b));
-  $("main").innerHTML = `${albumSeg()}${o && !o.started ? stkOfferHTML(o, true) : ""}
+  $("main").innerHTML = `${albumSeg()}${o && !o.started && !o.daily ? stkOfferHTML(o, true) : ""}${sotdPanel()}
   <div class="counts"><div class="panel ct"><b>${fmt(total)}</b><span>Stuck in</span></div><div class="panel ct"><b>${fmt(all)}</b><span>In the album</span></div><div class="panel ct"><b>${S.stk.tok}</b><span>${S.stk.tok === 1 ? "Token" : "Tokens"}</span></div></div>
   <label class="field" for="sc">Page<select id="sc">${order.map(c => `<option value="${esc(c)}" ${c === club ? "selected" : ""}>${esc(c)}${c === S.club ? " (yours)" : ""} · ${stkPageGot(c)}/${SR.pageSize}${S.stk.pages[c] ? " ✓" : ""}</option>`).join("")}</select></label>
   <div class="hd"><h2>${esc(club)}</h2><span class="eyebrow">${S.stk.pages[club] ? "★ Complete" : `Got ${got} · Need ${SR.pageSize - got}`}${slots.filter(x => stkMeta(x.key).sh && S.stk.got[x.key]).length ? " · ✦ " + slots.filter(x => stkMeta(x.key).sh && S.stk.got[x.key]).length + " shiny" : ""}</span></div>
   <div class="stkpage">${slots.map(s => (S.stk.got[s.key] && s.i !== undefined ? `<button class="stkb" data-act="stkview" data-v="${esc(s.key)}" aria-label="${esc(PL[s.i][0])}, look at the sticker">${stkCard(s, S.stk.got[s.key])}</button>` : `<button class="stkr need ${s.tier}${S.stk.chase.includes(s.key) ? " chase" : ""}${S.stk.pick === s.key ? " picked" : ""}" data-act="stkslot" data-v="${esc(s.key)}" aria-label="Missing sticker ${s.n + 1}, ${TIER_N[s.tier]}"><i class="sil"></i><span class="needt">${S.stk.pick === s.key ? "Next shot" : S.stk.chase.includes(s.key) ? "Chasing" : "Need"}</span><i class="no">${s.n + 1}</i></button>`)).join("")}</div>
+  ${albumExtras(club)}
   <div class="key stkkey"><span><i class="k gold"></i>1–${SR.pageIcons} Gold Icons</span><span><i class="k foil"></i>${SR.pageIcons + 1}–${SR.pageIcons + SR.pageFoils} Foils</span><span><i class="k paper"></i>${SR.pageIcons + SR.pageFoils + 1}–${SR.pageSize} Paper</span></div>
-  ${swaps.length ? `<div class="hd"><h2>Swaps</h2><span class="eyebrow">${SR.dupsPerToken - (S.stk.dups % SR.dupsPerToken)} more for a token</span></div><div class="panel pad"><div class="chips">${swaps.map(s => `<span class="hit">${esc(PL[s.i][0])} ×${S.stk.got[s.key] - 1}</span>`).join("")}</div></div>` : ""}
+  ${swaps.length ? `<div class="hd"><h2>Swaps</h2><span class="eyebrow">${SR.dupsPerToken - (S.stk.dups % SR.dupsPerToken)} more for a token</span></div><div class="panel pad"><div class="chips">${swaps.map(s => `<button class="hit" data-act="swapoffer" data-v="${esc(s.key)}">${esc(PL[s.i][0])} ×${S.stk.got[s.key] - 1} · swap</button>`).join("")}</div><p class="note" style="margin-top:8px">Tap a double to swap it with a mate by link.</p></div>` : ""}${swapOutHTML()}
   ${titles.length ? `<div class="panel pad"><div class="statline"><span>Titles</span><span><b>${titles.map(esc).join(" · ")}</b></span></div></div>` : ""}
   <div class="panel pad"><p class="note"><b>How you get them.</b> Nothing is handed out. A match with ${SR.paperDeep > 1 ? SR.paperDeep + " deep cuts" : "a deep cut"} or ${SR.paperGoals} goals earns a Paper shot; five from five${SR.foilCupRound <= 3 ? ` or winning a cup ${["tie", "quarter-final", "semi-final", "final"][SR.foilCupRound]}${SR.foilCupRound ? " or better" : ""}` : ""} earns a Foil; promotion or lifting the cup earns a Gold Icon. Then you have to <b>name the man on the sticker</b> from the clues. Miss and he's gone.</p><p class="note" style="margin-top:8px">Tap one you've got to turn it over: his record is on the back. Name him first go on the fewest clues and he's <b>Mint</b>; about one in ${Math.round(1 / SR.shinyChance)} comes out <b>✦ Shiny</b>, and a swap can still turn up shiny. Tap a missing sticker to <b>chase</b> it (up to ${SR.chaseMax}, ${SR.chaseWeight} times likelier to come up). ${SR.dupsPerToken} swaps make a token, which lets you choose which missing sticker your next shot is for. You still have to name him.</p></div>`;
+  if ((S.stk.out || []).length && Date.now() - (window.SWAPAT || 0) > 20000) {
+    window.SWAPAT = Date.now();
+    swapCollect(); // has a mate taken one of your swaps?
+  }
 }
+
 function stkSlotSheet(key) {
   const s = STK.all[key];
   if (!s) return;

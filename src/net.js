@@ -161,6 +161,16 @@ const Backends = {
       }
       return data || [];
     },
+    // swaps need supabase/004_swaps.sql; until it has been run, swap() reports "not available" (null)
+    async swap(fn, args) {
+      if (this.miss.swap) return null;
+      const { data, error } = await this.sb.rpc(fn, args || {});
+      if (error) {
+        if (notThere(error)) this.miss.swap = true;
+        return null;
+      }
+      return data;
+    },
     async reportQuestion(rec) {
       if (this.miss.rep) return;
       const { error } = await this.sb.from("question_reports").insert(rec);
@@ -259,6 +269,15 @@ const Net = {
   taking: false,
   handoffOK: () => navigator.standalone === true && typeof crypto !== "undefined" && !!crypto.getRandomValues,
   canSignIn: () => Net.kind === "supabase",
+  canSwap: () => Net.kind === "supabase" && !!Net.uid && !Net.b.miss.swap,
+  async swap(fn, args) {
+    if (!Net.canSwap()) return null;
+    try {
+      return await Net.b.swap(fn, args);
+    } catch (e) {
+      return null;
+    }
+  },
   home: () => location.origin + location.pathname,
   async init() {
     try {
@@ -282,6 +301,7 @@ const Net = {
       handedSheet();
     }
     Net.pollHandoff();
+    if (!Net.uid) swapBoot();
   },
   async _init() {
     if (/[?&]offline\b/.test(location.search)) return; // ?offline: play fully local (testing without touching the live database)
@@ -341,8 +361,9 @@ const Net = {
       const open = !!$("over").innerHTML;
       render();
       if (!S.made) profileSheet(true);
-      else if (open) profileSheet(false);
+      else if (open && !SWAPIN) profileSheet(false);
     }
+    swapBoot(); // a swap link waiting, or swaps to collect
   },
   signedOut() {
     Net.uid = Net.b.uid = null;
