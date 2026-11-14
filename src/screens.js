@@ -131,8 +131,19 @@ function cardHTML(i, n) {
 }
 let albumClub = "";
 function renderAlbum() {
+  if (albumTab === "stats" && wide()) albumTab = "stk"; // on a wide screen Stats has its own tab
   if (albumTab === "stk") {
     renderStickers();
+    return;
+  }
+  if (albumTab === "medals") {
+    medalCheck(true);
+    $("main").innerHTML = albumSeg() + medalsHTML();
+    return;
+  }
+  if (albumTab === "stats") {
+    renderStats();
+    $("main").insertAdjacentHTML("afterbegin", albumSeg());
     return;
   }
   const keys = Object.keys(S.album),
@@ -271,10 +282,12 @@ function profileSheet(first) {
     const n = $("nm").value.trim().slice(0, 16);
     S.name = n || "Unnamed Trialist";
     S.club = $("cl").value;
+    const isNew = first && !S.made;
     S.made = true;
     $("over").innerHTML = "";
     save(true);
     render();
+    if (isNew) startLeagueMatch(); // a new player goes straight to their first fixture
   });
 }
 const hintBtn = k => {

@@ -602,7 +602,15 @@ function stkWin() {
 let stkClub = "",
   albumTab = "stk";
 const albumSeg = () =>
-  `<div class="seg"><button class="${albumTab === "stk" ? "on" : ""}" data-act="atab" data-v="stk">Stickers</button><button class="${albumTab === "names" ? "on" : ""}" data-act="atab" data-v="names">Names</button></div>`;
+  `<div class="seg">${[
+    ["stk", "Stickers"],
+    ["names", "Names"],
+    ["medals", "Medals"],
+    ["stats", "Stats"]
+  ]
+    .filter(t => t[0] !== "stats" || !wide())
+    .map(t => `<button class="${albumTab === t[0] ? "on" : ""}" data-act="atab" data-v="${t[0]}">${t[1]}</button>`)
+    .join("")}</div>`;
 function renderStickers() {
   if (!STK.clubs.length) {
     $("main").innerHTML = albumSeg() + `<div class="panel pad"><p class="note">The sticker album isn't available in this build.</p></div>`;

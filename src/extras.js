@@ -159,7 +159,7 @@ function seasonEndHTML(n) {
   <div class="mv"><span>${esc(DIVS[n.from])}</span><i>${up ? "▲" : dn ? "▼" : "="}</i><span>${esc(DIVS[n.to])}</span></div>
   <div class="big">${up ? (n.pos === 1 ? "Champions" : "Promoted") : dn ? "Relegated" : "Staying put"}</div>
   <div class="statline"><span>Finished <b>${ord(n.pos)}</b></span><span><b>${n.pts}</b> pts</span>${n.w !== undefined ? `<span><b>${n.w}</b>W <b>${n.d}</b>D <b>${n.l}</b>L</span>` : ""}</div>
-  <p class="note">${esc(say)}</p>
+  <p class="note">${esc(say)}</p>${seasonAwards(n)}
   <div class="row"><button class="btn line sm" data-act="shareseason">Copy season result</button><a class="btn line sm" href="https://wa.me/?text=${encodeURIComponent(shareSeason(n))}" target="_blank" rel="noopener">WhatsApp</a></div></div>`;
 }
 /* training XP: full rate for the first TUNING.trainSoftCap chances of the day, then a reduced rate (never zero) */

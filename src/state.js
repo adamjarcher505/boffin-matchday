@@ -46,7 +46,7 @@ const STICKER_RULES = {
    To change the format: bump SAVE_V and add a MIGRATIONS[old] step that upgrades a save in place. Never remove or
    rename a field an older client reads: old clients keep unknown fields, so new ones are safe to add. */
 const KEY = "boffin-matchday-v1";
-const SAVE_V = 2;
+const SAVE_V = 3;
 const freshCup = () => ({ club: "", rd: 0, runs: 0, won: 0, best: -1, w: 0, l: 0 });
 const freshStk = () => ({
   got: {},
@@ -89,7 +89,13 @@ const fresh = () => ({
   t: 0,
   stk: freshStk(),
   tr: { d: "", n: 0 },
-  hap: true
+  hap: true,
+  sk: { d: "", n: 0, best: 0 },
+  ob: { d: "", p: {}, done: {}, all: false },
+  md: {},
+  ct: {},
+  sn: { ty: {} },
+  wp: null
 });
 const MIGRATIONS = {
   // v1 -> v2 (12/11/2026): stickers (S.stk), last-updated stamp (S.t), daily training counter (S.tr), haptics toggle (S.hap). Nothing removed.
@@ -98,6 +104,15 @@ const MIGRATIONS = {
     if (!s.t) s.t = 0;
     if (!s.tr) s.tr = { d: "", n: 0 };
     if (s.hap === undefined) s.hap = true;
+  },
+  // v2 -> v3 (14/11/2026): matchday streak (S.sk), daily objectives (S.ob), medals (S.md), lifetime counters (S.ct),
+  // this season's running stats (S.sn), last match's table snapshot (S.wp). Nothing removed or renamed.
+  2: s => {
+    if (!s.sk) s.sk = { d: "", n: 0, best: 0 };
+    if (!s.ob) s.ob = { d: "", p: {}, done: {}, all: false };
+    if (!s.md) s.md = {};
+    if (!s.ct) s.ct = {};
+    if (!s.sn) s.sn = { ty: {} };
   }
 };
 function migrate(o) {
@@ -119,7 +134,10 @@ const hydrate = o => {
   s.stk = Object.assign(freshStk(), o.stk || {});
   s.stk.n = Object.assign(freshStk().n, (o.stk || {}).n || {});
   s.tr = Object.assign({ d: "", n: 0 }, o.tr || {});
-  ["album", "grid", "g", "ts", "lb"].forEach(k => {
+  s.sk = Object.assign({ d: "", n: 0, best: 0 }, o.sk || {});
+  s.ob = Object.assign({ d: "", p: {}, done: {}, all: false }, o.ob || {});
+  if (!s.sn || typeof s.sn !== "object") s.sn = { ty: {} };
+  ["album", "grid", "g", "ts", "lb", "md", "ct"].forEach(k => {
     if (!s[k] || typeof s[k] !== "object") s[k] = {};
   });
   ["form", "played", "recent", "hist"].forEach(k => {
@@ -203,6 +221,13 @@ function mergeSaves(a, b) {
     pages: Object.assign({}, os.pages || {}, bs.pages || {}),
     meta: mergeMeta(os.meta, bs.meta)
   });
+  // medals keep the earliest date either device earned them; counters and the best streak take the higher value
+  m.md = Object.assign({}, other.md || {});
+  Object.keys(base.md || {}).forEach(k => {
+    m.md[k] = m.md[k] && m.md[k] < base.md[k] ? m.md[k] : base.md[k];
+  });
+  m.ct = maxMap(base.ct, other.ct);
+  m.sk = Object.assign({ d: "", n: 0, best: 0 }, base.sk || {}, { best: max((base.sk || {}).best, (other.sk || {}).best) });
   m.t = max(ta, tb);
   return hydrate(m);
 }

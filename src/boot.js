@@ -1,4 +1,5 @@
 /* ============ boot.js: start the game (loaded last) ============ */
+if (S.made) medalCheck(true); // fill the cabinet with what an existing player has already done, quietly
 render();
 if (!S.made) profileSheet(true);
 Net.init();

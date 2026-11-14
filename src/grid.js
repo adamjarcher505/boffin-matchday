@@ -100,6 +100,7 @@ function gridPick(i) {
     $("over").innerHTML = "";
     if (g.c.every(x => x) || g.left <= 0) {
       S.st.grids++;
+      careerGrid(gridScore(g));
     }
     save(true);
     render();
@@ -109,6 +110,8 @@ function gridPick(i) {
     save();
     if (g.left <= 0) {
       S.st.grids++;
+      careerGrid(gridScore(g));
+      save(true);
       $("over").innerHTML = "";
       render();
     } else {
