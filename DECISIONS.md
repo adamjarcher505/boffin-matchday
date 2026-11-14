@@ -2,6 +2,15 @@
 
 Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and why.
 
+## 14/11/2026 late afternoon: sticker overhaul
+- **Back of the shirt, not a face.** No real photos or badges (BLOCKED.md); the surname on the back is drawn text on the sourced kit.
+- **Era by the middle of his time at the club** (before 2000, 2000s, 2010 on), from the same club trail that picks the kit.
+- **Legends can't be picked from the data.** Club trails miss moves (Lacazette shows 2017 to 2025) and the big-match line-ups lean to 2015–16, so "longest serving" or "most big games" both give the wrong men. Default is the page's three Gold Icons; `LEGEND_PICKS` overrides by hand. Arsenal's three are the ones Adam named himself.
+- **A Legend edition is an upgrade of a sticker on the page,** not a new slot (pages are frozen). Winning one also counts as getting the normal sticker if you hadn't.
+- **Sticker of the Day hands out at most one sticker a day** and only if you name him on Foil rules. A waiting normal offer is set aside while you play it and handed back after.
+- **Swaps hold your double back the moment you offer it** (so it can't go twice) and return it if you cancel. The server can't check a save's contents, so a determined cheat could offer a sticker they don't have; it only moves stickers between two signed-in friends, never XP or league points. Devices merge sticker counts by the higher number, so a swap made on one device can briefly look undone on another until both sync.
+- **Peel and stick is skipped for doubles** (nothing new to stick in).
+
 ## 14/11/2026 afternoon: stickers and knowledge
 - **The difficulty of stickers lives in earning the chance, not the guess.** Adam wants stickers hard to get, so offers are untouched; the naming is fairer (see the superseded line under Stickers).
 - **Club knowledge counts anyone you've named who has a record at the club** (clubsOf), not just people named in that club's questions. Ranks are absolute counts (10/25/50/100/200) capped at a share of the club's pool in the data (5/12/25/45/70%), so small clubs can reach Club Historian. XP for a new rank is paid once per rank (S.kr), only for your own club.

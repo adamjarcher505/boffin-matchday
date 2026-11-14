@@ -49,7 +49,7 @@ test("season end: promotion is a proper moment, with a share line", () => {
   assert.strictEqual(g.run("S.div"), 3); assert.strictEqual(g.run("S.season"), 5);
   const html = g.els.main.innerHTML; assert.ok(html.includes("class=\"panel send up\"")); assert.ok(/Champions|Promoted/.test(html));
   const sh = g.run("shareSeason(S.note)"); assert.match(sh, /PROMOTED to League One/); assert.match(sh, /1st in League Two, 57 pts/);
-  assert.strictEqual(g.run("S.stk.offer && S.stk.offer.tier"), "gold", "promotion earns a Gold Icon shot");
+  assert.strictEqual(g.run("S.stk.offer && S.stk.offer.tier"), "legend", "winning the division earns a Legend shot (14/11; plain promotion is still Gold)");
 });
 
 test("training XP halves after 20 chances a day, never reaches zero", () => {
@@ -108,6 +108,7 @@ test("question log: one anonymous record per match, nothing that identifies the 
 
 test("stickers: offers, the attempt, winning, losing and duplicates", () => {
   const g = load({ localStorage: { [KEY]: v1 } });
+  g.run("window.PEEL_OFF = true"); // the peel-and-stick step has its own test
   assert.ok(g.run("STK.clubs.length") >= 60); assert.strictEqual(g.run("STK.by['Arsenal'].length"), 18);
   // every page slot is a real player with full clue data
   assert.strictEqual(g.run("Object.values(STK.all).filter(s => s.i === undefined || !stkEligible(s.i)).length"), 0);
@@ -174,6 +175,7 @@ test("sticker front only claims a title won with that page's club", () => {
 test("sticker collector details: condition, shiny, and merging two devices", () => {
   const g = load({ localStorage: { "boffin-matchday-v1": JSON.stringify({ v: 2, made: true, name: "T", club: "Arsenal", salt: 1 }) } });
   const key = g.run("STK.by['Arsenal'][0].key");
+  g.run("window.PEEL_OFF = true");
   g.run(`Math.random = () => 0.01; S.stk.offer = { tier: 'gold', free: true }; S.stk.offer.key = ${JSON.stringify(key)}; stkStart(); stkPick(STKA.slot.i);`);
   const m = JSON.parse(g.run(`JSON.stringify(S.stk.meta[${JSON.stringify(key)}])`));
   assert.strictEqual(m.c, 3, "named first go on the starting clues = Mint"); assert.strictEqual(m.sh, 1, "shiny roll"); assert.ok(m.d);

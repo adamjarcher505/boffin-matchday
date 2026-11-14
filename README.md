@@ -54,7 +54,8 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 | `src/extras.js` | Share cards, season stakes, Club Wars, question log, theme of the day, haptics |
 | `questions.js` | GENERATED question bank (Pub Quiz). Built by `data-pipeline/`; never hand-edit. Format in data-pipeline/README.md |
 | `kits.js` | Home shirts for the 79 sticker clubs, with era shirts; sourced from Wikipedia (see the header) |
-| `src/stickers.js` | The sticker album: offers, the "name the man on the sticker" attempt, pages, swaps, tokens |
+| `src/stickers.js` | The sticker album: offers, the "name the man on the sticker" attempt, pages, tokens, the sticker card |
+| `src/stickers2.js` | Legends, Sticker of the Day, tilt-to-shine, peel-and-stick, Best XI, team photo, swaps with mates |
 | `src/net.js` | Everything online, behind one interface (Supabase, Claude artifact db, or local) |
 | `src/boot.js` | Starts the game; service worker and update toast |
 | `sw.js` | Offline cache |

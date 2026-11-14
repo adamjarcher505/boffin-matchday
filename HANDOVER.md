@@ -65,3 +65,15 @@ Everything from the overnight run is live and needs no Supabase or GitHub steps.
 2. **Ghost opponents reset.** The question generator changed (fairer questions for the lower divisions), so real
    players' recorded matches from before today aren't replayed. They build back up as people play.
 3. **Try it with the sound on.** On an iPhone the ringer switch has to be on to hear it.
+
+## 10. Sticker swaps: one SQL script (2 minutes)
+Swapping stickers with mates goes through your Supabase database, so it needs one more script. Until you run it,
+the swap buttons just say swaps aren't available, and everything else works.
+1. Supabase → **SQL Editor** → **New query**.
+2. Paste the whole of `supabase/004_swaps.sql` and press **Run**. It's safe to run twice.
+3. Test it: on your phone, tap a double in the album → swap → send the link to yourself, open it on another
+   account. Both accounts have to be signed in.
+
+Also worth a look: the three **Legends** for each club are that page's three Gold Icons, except Arsenal, which
+uses Henry, Bergkamp and Vieira. You can hand-pick others in `LEGEND_PICKS` at the top of `src/stickers2.js`
+(players already on that club's page only) before anyone has won a Legend from that club.

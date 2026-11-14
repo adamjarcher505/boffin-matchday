@@ -33,7 +33,7 @@ const STICKER_RULES = {
   chaseMax: 3, // chase-list players are this many times likelier
   dupXp: 15,
   dupsPerToken: 3, // duplicates: bonus XP, and every N make one pick-your-player token
-  winXp: { paper: 40, foil: 90, gold: 200 },
+  winXp: { paper: 40, foil: 90, gold: 200, legend: 300 },
   pageSize: 18,
   pageIcons: 3,
   pageFoils: 5,
@@ -229,7 +229,8 @@ function mergeSaves(a, b) {
     tok: max(bs.tok, os.tok),
     n: maxMap(bs.n, os.n),
     pages: Object.assign({}, os.pages || {}, bs.pages || {}),
-    meta: mergeMeta(os.meta, bs.meta)
+    meta: mergeMeta(os.meta, bs.meta),
+    leg: Object.assign({}, os.leg || {}, bs.leg || {}) // Legend editions won on either device
   });
   // medals keep the earliest date either device earned them; counters and the best streak take the higher value
   m.md = Object.assign({}, other.md || {});
