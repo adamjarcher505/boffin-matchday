@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { OUT, REPO, REPORTS, fold, ord, seasonLabel, today, rng, shuffle, hashId, writeJSON } from "./lib/util.mjs";
+import { OUT, REPO, REPORTS, CACHE, fold, ord, seasonLabel, today, rng, shuffle, hashId, writeJSON } from "./lib/util.mjs";
 import { CLUBS } from "./config/clubs.mjs";
 import { LIMITS } from "./config/limits.mjs";
 
@@ -154,7 +154,14 @@ const DEST = {}, DESTN = {};   // DESTN: how many players in data.js moved there
 for (const p of players) { const bs = JSON.parse(p.bd_spells); bs.forEach(([c, y], j) => { if (j && !CLUBS.some(k => k.of.length && sameClub(c, k.bd || k.name))) { (DEST[y] = DEST[y] || new Set()).add(c); DESTN[c] = (DESTN[c] || 0) + 1; } }); }
 // 14/11/2026: abroad, random wrong answers made the right one obvious (Juventus v San Jose, Treviso, FC Gueugnon).
 // Now the three come from the eight destinations closest to the answer in how often PL players went there.
-const likeFor = (pool, ans, r) => { const n = c => Math.log(1 + (DESTN[c] || 0)), t = n(ans); return shuffle(pool.slice().sort((a, b) => Math.abs(n(a) - t) - Math.abs(n(b) - t) || a.localeCompare(b)).slice(0, 8), r); };
+// Wrong answers come from the same side of the border as the right one. For a move abroad they're foreign: otherwise English lower-league sides (MK Dons,
+// Rotherham), where plenty of PL players went, got offered next to AC Milan. English League clubs come from
+// engsoccerdata's team names (all four divisions); used only as a build-time filter, nothing from it ships.
+const engKey = t => clubKey(t.replace(/\bUtd\.?/g, "United"));   // "Scunthorpe Utd." = "Scunthorpe United"
+const ENGK = new Set(["mk dons"]);
+try { fs.readFileSync(path.join(CACHE, "verify/engsoccerdata-england.csv"), "utf8").split("\n").slice(1).forEach(l => { const c = l.split(","); if (+c[1] >= 1970) [c[2], c[3]].forEach(t => t && ENGK.add(engKey(t.replace(/"/g, "")))); }); } catch (e) { if (e.code !== "ENOENT") throw e; /* no cache: no filter */ }
+const ENGM = {}, isEng = c => ENGM[c] !== undefined ? ENGM[c] : (ENGM[c] = (k => !!k && (ENGK.has(k) || [...ENGK].some(e => e.startsWith(k + " ") || k.startsWith(e + " "))))(engKey(c)));   // "Yeovil Town" = "Yeovil
+const likeFor = (pool, ans, r) => { const n = c => Math.log(1 + (DESTN[c] || 0)), t = n(ans), same = pool.filter(c => isEng(c) === isEng(ans)), p = same.length >= 3 ? same : pool; return shuffle(p.sort((a, b) => Math.abs(n(a) - t) - Math.abs(n(b) - t) || a.localeCompare(b)).slice(0, 8), r); };
 const destNear = y => [...new Set([y - 1, y, y + 1].flatMap(k => [...(DEST[k] || [])]))];
 const plPlayers = players.filter(p => plSpells.all(p.q).length);
 const natPool = {};   // nationality -> how many PL players, for realistic distractors
@@ -216,7 +223,7 @@ for (const p of plPlayers) {
   const d = pfD(p.fame); if (!d) continue;
   const ws = spellsOf.all(p.q).filter(s => s.start), bs = JSON.parse(p.bd_spells), r = rng("pf" + p.q);
   const years = s => Math.max(0, (s.end_date ? +s.end_date.slice(0, 4) : +ASOF.slice(0, 4)) - +s.start.slice(0, 4));
-  const agreed = ws.filter(s => s.club_id && bs.some(b => sameClub(b[0], cbd(s.club_id)))).sort((a, b) => years(b) - years(a) || a.start.localeCompare(b.start));
+  const agreed = ws.filter(s => s.club_id && CL[s.club_id].of.length && bs.some(b => sameClub(b[0], cbd(s.club_id)))).sort((a, b) => years(b) - years(a) || a.start.localeCompare(b.start));
   if (!agreed.length) continue;
   const best = agreed[0], from = +best.start.slice(0, 4), to = best.end_date ? +best.end_date.slice(0, 4) : +ASOF.slice(0, 4);
   const career = new Set([...ws.map(s => clubKey(nameOfClub(s.club_label, s.club_id))), ...bs.map(s => clubKey(s[0]))]);

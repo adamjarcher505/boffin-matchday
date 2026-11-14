@@ -1,9 +1,9 @@
 # Question bank validation report
 
-Generated 2026-11-13 by `data-pipeline/generate.mjs`. Bank version `20261113`.
+Generated 2026-11-14 by `data-pipeline/generate.mjs`. Bank version `20261114`.
 
-**8320 questions published.** Each one is backed by two independent sources (listed in its `src`).
-122 facts held back for review (`reports/review.json`); 21 rejected on shape (below).
+**8982 questions published.** Each one is backed by two independent sources (listed in its `src`).
+121 facts held back for review (`reports/review.json`); 21 rejected on shape (below).
 
 ## By template and difficulty (1 easiest, 4 hardest)
 
@@ -12,82 +12,83 @@ Generated 2026-11-13 by `data-pipeline/generate.mjs`. Bank version `20261113`.
 | big-win | 0 | 0 | 165 | 91 | 256 |
 | champion | 16 | 18 | 0 | 0 | 34 |
 | club-finish | 0 | 84 | 115 | 487 | 686 |
-| current-club | 6 | 29 | 18 | 101 | 154 |
+| current-club | 6 | 30 | 18 | 101 | 155 |
 | finished | 0 | 63 | 102 | 487 | 652 |
 | h2h | 0 | 0 | 12 | 0 | 12 |
 | h2h-draws | 0 | 0 | 0 | 11 | 11 |
 | losses | 0 | 1 | 0 | 135 | 136 |
-| nationality | 23 | 174 | 377 | 636 | 1210 |
-| never-played | 0 | 81 | 547 | 35 | 663 |
+| nationality | 23 | 174 | 377 | 637 | 1211 |
+| never-played | 0 | 77 | 544 | 43 | 664 |
+| played-for | 61 | 169 | 402 | 0 | 632 |
 | points | 0 | 0 | 34 | 652 | 686 |
-| position | 0 | 51 | 222 | 949 | 1222 |
+| position | 0 | 52 | 222 | 949 | 1223 |
 | relegated | 0 | 0 | 63 | 40 | 103 |
 | score | 0 | 0 | 612 | 216 | 828 |
 | title-count | 0 | 3 | 4 | 0 | 7 |
 | titles-span | 0 | 3 | 0 | 0 | 3 |
-| transfer | 0 | 71 | 347 | 1238 | 1656 |
+| transfer | 0 | 71 | 354 | 1257 | 1682 |
 | unbeaten | 0 | 1 | 0 | 0 | 1 |
 
 | Category | Questions |
 |---|---:|
-| club | 7008 |
+| club | 7670 |
 | competition | 1312 |
 
 ## Club coverage (questions tagged with each club, used by Club Cup)
 
 | Club | Questions |
 |---|---:|
-| (several clubs) | 3325 |
-| Chelsea | 343 |
-| Arsenal | 327 |
-| Liverpool | 298 |
-| Manchester City | 290 |
-| Manchester United | 289 |
-| Tottenham | 254 |
-| Newcastle | 218 |
-| Everton | 189 |
-| Aston Villa | 181 |
-| West Ham | 180 |
-| Blackburn | 142 |
-| Southampton | 129 |
-| Fulham | 124 |
-| Leicester | 119 |
-| Crystal Palace | 115 |
-| Sunderland | 115 |
-| Leeds | 108 |
-| Middlesbrough | 100 |
-| Bolton | 99 |
-| Wolves | 87 |
-| Nott'm Forest | 85 |
-| West Brom | 84 |
-| Watford | 77 |
-| Birmingham | 62 |
-| Stoke | 62 |
-| Norwich | 61 |
-| Portsmouth | 59 |
+| (several clubs) | 3317 |
+| Chelsea | 436 |
+| Arsenal | 391 |
+| Liverpool | 359 |
+| Manchester United | 358 |
+| Manchester City | 352 |
+| Tottenham | 305 |
+| Newcastle | 237 |
+| Everton | 208 |
+| West Ham | 203 |
+| Aston Villa | 202 |
+| Blackburn | 159 |
+| Southampton | 140 |
+| Fulham | 134 |
+| Leicester | 131 |
+| Crystal Palace | 126 |
+| Sunderland | 122 |
+| Leeds | 120 |
+| Middlesbrough | 111 |
+| Bolton | 109 |
+| Wolves | 96 |
+| West Brom | 94 |
+| Nott'm Forest | 88 |
+| Watford | 80 |
+| Stoke | 69 |
+| Norwich | 65 |
+| Birmingham | 65 |
+| QPR | 60 |
+| Portsmouth | 60 |
+| Brighton | 57 |
+| Ipswich | 56 |
 | Coventry | 56 |
-| QPR | 56 |
-| Brighton | 56 |
-| Ipswich | 53 |
-| Derby | 53 |
-| Burnley | 52 |
-| Wigan | 49 |
-| Swansea | 49 |
-| Bournemouth | 48 |
-| Charlton | 47 |
-| Sheffield Wednesday | 43 |
-| Hull | 35 |
-| Sheffield United | 33 |
-| Wimbledon | 30 |
-| Brentford | 27 |
+| Burnley | 56 |
+| Derby | 55 |
+| Swansea | 55 |
+| Wigan | 51 |
+| Bournemouth | 51 |
+| Charlton | 50 |
+| Sheffield Wednesday | 44 |
+| Hull | 40 |
+| Sheffield United | 35 |
+| Wimbledon | 32 |
+| Brentford | 30 |
 | Reading | 26 |
-| Cardiff | 22 |
-| Bradford | 12 |
+| Cardiff | 23 |
+| Bradford | 14 |
+| Huddersfield | 12 |
 | Blackpool | 11 |
-| Huddersfield | 11 |
 | Barnsley FC | 10 |
+| Luton | 9 |
 | Oldham Athletic | 8 |
-| Luton | 7 |
 | Swindon Town | 4 |
 
 ## League tables rebuilt from results vs Wikipedia's final tables
@@ -138,16 +139,16 @@ No mismatches.
 | Reason | Questions |
 |---|---:|
 | nationality: Wikidata and data.js disagree | 92 |
-| current-club: FPL and Wikidata disagree or Wikidata has more than one open spell | 18 |
+| current-club: FPL and Wikidata disagree or Wikidata has more than one open spell | 17 |
 | score: openfootball and engsoccerdata disagree | 9 |
 | score: only one source has this season (engsoccerdata stops at 2024/25) | 3 |
 
-Matches not confirmed by engsoccerdata (big wins and derbies only): 48. Nationality disagreements: 92. Position disagreements (skipped silently, usually winger vs forward): 223.
+Matches not confirmed by engsoccerdata (big wins and derbies only): 48. Nationality disagreements: 92. Position disagreements (skipped silently, usually winger vs forward): 224.
 
 ## Rejected on shape
 
 - **question too long**: 1 (h2hd|man-utd|man-city (73))
-- **answer option too long**: 20 (e.g. tr|Q17619350|2025 Sociedade Esportiva Palmeiras; tr|Q481330|2025 São Paulo Futebol Clube; np|arsenal|Q192923,Q20738815,Q275169,Q430740 Sokratis Papastathopoulos)
+- **answer option too long**: 20 (e.g. tr|Q17619350|2025 Sociedade Esportiva Palmeiras; tr|Q481330|2025 São Paulo Futebol Clube; np|arsenal|Q16302330,Q192923,Q29162,Q50600 Sokratis Papastathopoulos)
 
 ## Limits used (so questions fit a phone without scrolling)
 

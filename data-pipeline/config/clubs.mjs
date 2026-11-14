@@ -61,7 +61,7 @@ export const CLUBS = [
   { id: "wimbledon", name: "Wimbledon", q: "Q19482", bd: "Wimbledon", of: ["Wimbledon FC"], es: "Wimbledon", note: "Wimbledon FC, 1889-2004. Not MK Dons, not AFC Wimbledon." },
   { id: "wolves", name: "Wolves", q: "Q19500", bd: "Wolves", of: ["Wolverhampton Wanderers", "Wolverhampton Wanderers FC"], es: "Wolverhampton Wanderers", fpl: "Wolves" },
   // not Premier League clubs, listed so they're never confused with Wimbledon FC when Phase 3 adds lower leagues
-  { id: "mk-dons", name: "MK Dons", q: "Q19588", of: [], note: "Milton Keynes Dons, from 2004. Separate club from Wimbledon FC." },
-  { id: "afc-wimbledon", name: "AFC Wimbledon", q: "Q19593", of: [], note: "Founded 2002. Separate club from Wimbledon FC." }
+  { id: "mk-dons", name: "MK Dons", q: "Q248188", of: [], note: "Milton Keynes Dons, from 2004. Separate club from Wimbledon FC." },
+  { id: "afc-wimbledon", name: "AFC Wimbledon", q: "Q48851", of: [], note: "Founded 2002. Separate club from Wimbledon FC." }
 ];
 export const byId = Object.fromEntries(CLUBS.map(c => [c.id, c]));

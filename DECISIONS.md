@@ -153,3 +153,18 @@ one-off; `node tools/difficulty.js` still covers fairness). What changed, and wh
   players have v6 matches behind them, as with v5.
 - **Not changed:** EASE limits, the round rules, scoring and XP. The Grid repeats about one match in five for a
   Sunday League player who stays down for 250 matches; promotion makes that unlikely, so it was left.
+- **New Pub Quiz template: "Which of these clubs did he play for?"** (`played-for`, data-pipeline/generate.mjs). The
+  bank had only 45 difficulty-1 questions, so Sunday League leaned on nationality. 632 new questions (61 at d1, 169
+  d2, 402 d3), well-known players only (fame 4.4+). The right answer is his longest Premier League spell that
+  Wikidata and data.js both have; wrong answers are clubs in the Premier League at the time that neither source has
+  him at. Bank 20261113 → 20261114: 8,320 → 8,982 questions.
+- **Transfer wrong answers are like for like.** Abroad, they were random (Juventus v San Jose, Treviso, FC Gueugnon).
+  Now they're the destinations closest to the right answer in how often PL players went there, from the same side of
+  the border: a foreign answer gets foreign wrong answers, an English one English. English clubs are recognised from
+  engsoccerdata's team names, used as a build-time filter only (nothing from it ships; it stays verification-only).
+- **Wrong Wikidata IDs fixed in config/clubs.mjs.** AFC Wimbledon pointed at Q19593, which is Celtic, so 294 Celtic
+  spells were filed as AFC Wimbledon (the new template asked about John Hartson's "AFC Wimbledon" years before this
+  was caught). Now Q48851; MK Dons fixed to Q248188 too. The bank as shipped on 13/11 had no question affected. Every
+  club ID was then checked against its Wikidata label: all 53 match. Played-for also only ever uses Premier League clubs.
+- **The other 451 "never played for" questions that changed** came from Wikidata's data moving between the 13/11 and
+  14/11 downloads (same count, different trios), not from code.
