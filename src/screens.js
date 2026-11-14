@@ -153,29 +153,49 @@ function renderAlbum() {
     $("main").insertAdjacentHTML("afterbegin", albumSeg());
     return;
   }
+  // Knowledge: the Names log, counted per club
   const keys = Object.keys(S.album),
     idx = keys.map(k => KEY2IDX[k]).filter(i => i !== undefined),
-    cult = idx.filter(i => rarOf(i) === 2).length;
+    counts = knowCounts(),
+    mine = clubIdx(S.club),
+    K = mine >= 0 ? knowRank(mine, counts) : null,
+    best = Object.keys(counts)
+      .map(Number)
+      .filter(c => c !== mine)
+      .sort((a, b) => counts[b] - counts[a] || a - b)
+      .slice(0, 6);
+  const row = c => {
+    const R = knowRank(c, counts);
+    return `<div class="kr"><span class="kn">${esc(CLUB[c])}</span><span class="krk r${R.r}">${KNOW_RANKS[R.r]}</span><b>${R.n}</b><div class="bar"><i style="width:${Math.round(R.pc * 100)}%"></i></div></div>`;
+  };
   let list, head;
   if (albumClub !== "") {
     const c = +albumClub;
     list = idx.filter(i => hasClub(i, c)).sort((a, b) => a - b);
-    head = `${esc(CLUB[c])}: ${list.length} of ${fmt(clubPl[c].length)}`;
+    head = `${esc(CLUB[c])}: ${list.length} named`;
   } else {
     list = S.recent.map(k => KEY2IDX[k]).filter(i => i !== undefined);
     head = "Latest names";
   }
   $("main").innerHTML =
-    `${albumSeg()}${founderCard()}<div class="counts"><div class="panel ct"><b>${fmt(idx.length)}</b><span>Collected</span></div><div class="panel ct"><b>${fmt(PL.length)}</b><span>In the book</span></div><div class="panel ct"><b>${cult}</b><span>Cult heroes</span></div></div>
-  <label class="field" for="ac">Show<select id="ac"><option value="">Latest names</option>${BD.gridClubs.map(c => `<option value="${c}" ${String(c) === albumClub ? "selected" : ""}>${esc(CLUB[c])}</option>`).join("")}</select></label>
+    `${albumSeg()}${founderCard()}${
+      K
+        ? `<div class="panel pad know"><span class="eyebrow">Your ${esc(S.club)} knowledge</span><div class="kbig"><b class="krk r${K.r}">${KNOW_RANKS[K.r]}</b><span><b>${K.n}</b> ${esc(S.club)} players named</span></div><div class="bar"><i style="width:${Math.round(K.pc * 100)}%"></i></div><p class="note">${
+            K.next ? `<b>${K.next - K.n}</b> more for <b>${KNOW_RANKS[K.r + 1]}</b> (+${KNOW_XP[K.r + 1]} XP).` : "Top rank. Nobody knows them like you."
+          } Anyone you name correctly, anywhere in the game, counts if he ever played for them.</p></div>`
+        : ""
+    }
+  <div class="panel pad"><div class="statline"><span>Players named</span><span><b>${fmt(idx.length)}</b></span></div><div class="statline"><span>Cult heroes among them</span><span><b>${idx.filter(i => rarOf(i) === 2).length}</b></span></div></div>
+  ${best.length ? `<div class="hd"><h2>Clubs you know best</h2></div><div class="panel pad kl">${best.map(row).join("")}</div>` : ""}
   <div class="hd"><h2>${head}</h2></div>
+  <label class="field" for="ac">Show<select id="ac"><option value="">Latest names</option>${BD.gridClubs.map(c => `<option value="${c}" ${String(c) === albumClub ? "selected" : ""}>${esc(CLUB[c])}</option>`).join("")}</select></label>
   ${
     list.length
       ? `<div class="stk">${list
           .slice(0, 80)
           .map(i => cardHTML(i, S.album[pkey(i)]))
           .join("")}</div>`
-      : `<div class="panel pad"><p class="note">${idx.length ? "None from here yet." : "Empty for now. Every player you name correctly, in a match, the grid or training, goes in this log. The obscure ones are worth the most."}</p></div>`
+      : `<div class="panel pad"><p class="note">${idx.length ? "None from here yet." : "Empty for now. Every player you name correctly, in a match, the grid or training, counts towards every club he played for."}</p></div>`
   }`;
 }
 function renderStats() {

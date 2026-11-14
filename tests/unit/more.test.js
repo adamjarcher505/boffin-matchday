@@ -103,3 +103,21 @@ test("Chain Reaction: merging two devices keeps the further-on go", () => {
   const m = JSON.parse(g.run(`JSON.stringify(mergeSaves({ made: true, t: 2, cup: freshCup(), chain: { "2026-11-14": { t0: 1, c: ["a"], done: true } } }, { made: true, t: 1, cup: freshCup(), chain: { "2026-11-14": { t0: 1, c: ["a", "b", "c"], done: true } } }).chain)`));
   assert.strictEqual(m["2026-11-14"].c.length, 3);
 });
+
+test("club knowledge: counts per club, ranks scale for small clubs, a new rank with your own club pays once", () => {
+  const g = load({ localStorage: SAVE });
+  const ars = g.run(`clubIdx("Arsenal")`);
+  assert.strictEqual(g.run(`knowRank(${ars}).r`), 0);
+  const xp0 = g.run("S.xp");
+  g.run(`clubPl[${ars}].slice(0, 10).forEach(i => addAlbum(i))`);
+  assert.strictEqual(g.run(`knowRank(${ars}).r`), 1);
+  assert.strictEqual(g.run("S.xp") - xp0, 50, "Regular pays 50");
+  g.run(`addAlbum(clubPl[${ars}][0])`); // naming him again doesn't count twice
+  assert.strictEqual(g.run(`knowRank(${ars}).n`), 10);
+  // a small club's top rank is reachable
+  const small = g.run(`(() => { let c = 0; clubPl.forEach((p, k) => { if (p.length >= 8 && p.length < 30) c = k; }); return c; })()`);
+  assert.ok(g.run(`knowNeed(${small}, 5)`) <= g.run(`clubPl[${small}].length`));
+  g.run(`view = "album"; albumTab = "names"; render()`);
+  assert.ok(g.els.main.innerHTML.includes("Your Arsenal knowledge"));
+  assert.ok(g.els.main.innerHTML.includes("Regular"));
+});

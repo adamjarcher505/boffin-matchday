@@ -231,9 +231,10 @@ function stkCover() {
     rt = stkRules(o, slot),
     n = SR.clues[rt],
     tr = SR.tries[rt];
+  const said = ["", "His clubs showing", "His clubs, position and country showing", "His clubs, position, country and age showing"][n];
   stkScreen(`${stkBar(TIER_N[slot.tier].toUpperCase().split(" ")[0])}<div class="chance"><h3>Name the man on the sticker</h3><span class="eyebrow">${TIER_N[slot.tier]} · ${esc(slot.club)}</span></div>
   <div class="stkmys"><div class="stkr ${slot.tier} need big"><span class="band">${esc(slot.club)}</span><i class="sil"></i><span class="needt">?</span><i class="no">${slot.n + 1}</i></div></div>
-  <p class="rule qq">${n === 3 ? "All three clues showing" : n === 2 ? "Two clues showing" : "One clue to start, another every " + SR.goldClueEvery + " seconds"}. ${tr === 1 ? "One guess." : tr + " guesses."}<span>30 seconds on the clock once you start. Miss and he's gone.</span></p>
+  <p class="rule qq">${said}${n === 1 ? ", another clue every " + SR.goldClueEvery + " seconds" : ""}. ${tr === 1 ? "One guess." : tr + " guesses."}<span>${SR.secs} seconds once you start. Every wrong guess unlocks another clue. Miss and he's gone, but you'll find out who he was.</span></p>
   <button class="btn" data-act="stkstart">Name him</button><button class="btn line" data-act="stkleave">Later</button>`);
 }
 function stkCluesHTML() {
@@ -242,10 +243,21 @@ function stkCluesHTML() {
     a = p[5],
     path = [];
   for (let k = 0; k < a.length; k += 2) if (!path.length || path[path.length - 1][0] !== a[k]) path.push([a[k], a[k + 1] + 1990]);
-  const shown = A.gold ? Math.min(3, 1 + Math.floor((Date.now() - A.t0) / (SR.goldClueEvery * 1000))) : A.shown,
-    lock = k => `<div class="clue lock"><span>Clue ${k}</span><b>${A.gold ? "Unlocking…" : "Not on this one"}</b></div>`;
+  // clues in order of how much they give away: clubs, position + nation, born, initials. Wrong guesses and (Gold) the clock unlock more.
+  const timed = A.gold ? 1 + Math.floor((Date.now() - A.t0) / (SR.goldClueEvery * 1000)) : 0,
+    shown = Math.min(4, Math.max(A.shown + (A.max - A.tries), timed)),
+    inits = p[0]
+      .split(" ")
+      .map(w => w[0] + ".")
+      .join(" "),
+    cell = (on, h, v, what) => `<div class="clue c3${on ? "" : " lock"}"><span>${h}</span><b>${on ? v : A.gold ? "…" : what}</b></div>`;
   A.lastShown = shown;
-  return `<div class="clues"><div class="clue"><span>Plays</span><b>${POSN[p[2]]} · ${esc(NAT[p[1]])}</b></div>${shown >= 2 ? `<div class="clue"><span>Born</span><b>${1900 + p[3]}</b></div>` : lock(2)}${shown >= 3 ? `<div class="clue trail"><span>Clubs on record</span><div class="path">${path.map((c, k) => `${k ? "<i>›</i>" : ""}<span>${esc(CLUB[c[0]])}<em>${c[1] >= 2025 ? "now" : "'" + String(c[1]).slice(2)}</em></span>`).join("")}</div></div>` : lock(3)}</div>
+  return `<div class="clues"><div class="clue trail"><span>Clubs on record</span><div class="path">${path.map((c, k) => `${k ? "<i>›</i>" : ""}<span>${esc(CLUB[c[0]])}<em>${c[1] >= 2025 ? "now" : "'" + String(c[1]).slice(2)}</em></span>`).join("")}</div></div><div class="cl3">${cell(
+    shown >= 2,
+    "Plays",
+    POSN[p[2]] + " · " + esc(NAT[p[1]]),
+    "?"
+  )}${cell(shown >= 3, "Born", 1900 + p[3], "?")}${cell(shown >= 4, "Initials", esc(inits), "?")}</div></div>
   <div class="tries">${Array.from({ length: A.max }, (_, k) => `<i class="${k >= A.tries ? "x" : ""}"></i>`).join("")}<span>${A.tries} ${A.tries === 1 ? "guess" : "guesses"} left</span></div>`;
 }
 function stkStart() {
@@ -255,7 +267,7 @@ function stkStart() {
     rt = stkRules(o, slot);
   o.started = true;
   save();
-  STKA = { slot, rt, gold: rt === "gold", shown: SR.clues[rt], tries: SR.tries[rt], max: SR.tries[rt], t0: Date.now(), limit: 30000, lastShown: 0 };
+  STKA = { slot, rt, gold: rt === "gold", shown: SR.clues[rt], tries: SR.tries[rt], max: SR.tries[rt], t0: Date.now(), limit: SR.secs * 1000, lastShown: 0 };
   M = { mode: "stk", live: true, run: { onPick: stkPick } };
   stkScreen(
     `${stkBar(TIER_N[slot.tier].toUpperCase().split(" ")[0])}<div class="chance"><h3>Name the man on the sticker</h3><span class="eyebrow">${TIER_N[slot.tier]} · ${esc(slot.club)}</span></div>
@@ -285,7 +297,7 @@ function stkTick() {
     c.style.transform = "scaleX(" + left / A.limit + ")";
     c.parentNode.classList.toggle("low", left < 5000);
   }
-  if (A.gold && Math.min(3, 1 + Math.floor((Date.now() - A.t0) / (SR.goldClueEvery * 1000))) !== A.lastShown) {
+  if (A.gold && Math.min(4, Math.max(A.shown + (A.max - A.tries), 1 + Math.floor((Date.now() - A.t0) / (SR.goldClueEvery * 1000)))) !== A.lastShown) {
     const b = $("rbody");
     if (b) b.innerHTML = stkCluesHTML();
     sfx.tick();
@@ -310,7 +322,7 @@ function stkPick(i) {
     stkLose(false, false);
     return;
   }
-  msg(PL[i][0] + "? " + pickR(["Not him.", "Wrong sticker.", "Have another look at the clues.", "Nope. One more go."]), "bad");
+  msg(PL[i][0] + "? " + pickR(["Not him. Another clue's in.", "Wrong sticker. Have another clue.", "Nope. New clue below."]), "bad");
   const b = $("rbody");
   if (b) b.innerHTML = stkCluesHTML();
 }
@@ -525,18 +537,19 @@ const STK_LOST = [
   "Gone. You'll see him again, and you'd better know him."
 ];
 function stkLose(silent, timeUp) {
-  const o = S.stk.offer;
+  const o = S.stk.offer,
+    was = o && STK.all[o.key] && STK.all[o.key].i !== undefined && o.started ? PL[STK.all[o.key].i][0] : ""; // 14/11: a miss tells you who it was, so you know him next time
   S.stk.offer = null;
   S.stk.n.lost++;
   stkStop();
   save(true);
   if (silent) {
-    toast("You walked away from a sticker. He's gone.");
+    toast(was ? "You walked away. It was " + was + "." : "You walked away from a sticker. He's gone.");
     return;
   }
   sfx.no();
   buzz([60, 40, 60]);
-  stkScreen(`${stkBar("GONE")}<div class="verdict nogoal"><div class="big">${timeUp ? "Time's up" : "Not him"}</div><p>${esc(pickR(STK_LOST))}</p><p>We're not telling you who it was. He stays a mystery till you name him.</p></div>
+  stkScreen(`${stkBar("GONE")}<div class="verdict nogoal"><div class="big">${timeUp ? "Time's up" : "Not him"}</div><p>${esc(pickR(STK_LOST))}</p>${was ? `<p>It was <b>${esc(was)}</b>. Remember the name: he can come round again.</p>` : ""}</div>
   <div class="stkmys"><div class="stkr ${o && STK.all[o.key] ? STK.all[o.key].tier : "paper"} need big gone"><i class="sil"></i><span class="needt">Gone</span></div></div>
   <button class="btn" data-act="stkalbum">To the album</button><button class="btn line" data-act="go" data-v="home">Home</button>`);
 }
@@ -604,7 +617,7 @@ let stkClub = "",
 const albumSeg = () =>
   `<div class="seg">${[
     ["stk", "Stickers"],
-    ["names", "Names"],
+    ["names", "Knowledge"],
     ["medals", "Medals"],
     ["stats", "Stats"]
   ]

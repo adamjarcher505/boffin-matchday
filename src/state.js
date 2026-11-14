@@ -24,8 +24,9 @@ const STICKER_RULES = {
   deepAt: 0.7,
   paperGoals: 4, // ...or this many goals from the five chances
   foilCupRound: 2, // foil offer: five from five, or winning a cup tie from this round on (0 = any tie, 1 = quarter-final...)
-  clues: { paper: 3, foil: 2, gold: 1 }, // clues showing at the start
-  tries: { paper: 2, foil: 1, gold: 1 },
+  clues: { paper: 3, foil: 2, gold: 1 }, // clues showing at the start, of four: clubs, position + nation, born, initials (14/11: clubs always first)
+  tries: { paper: 3, foil: 2, gold: 2 }, // 14/11: was 2/1/1. Each wrong guess also unlocks the next clue
+  secs: 45, // the clock on a sticker attempt (was 30)
   goldClueEvery: 6, // gold: one more clue every N seconds
   ownClub: 0.5, // share of offers that come from the player's own club
   chaseWeight: 3,
@@ -192,6 +193,7 @@ function mergeSaves(a, b) {
     .concat(base.played || [])
     .slice(-60);
   m.st = maxMap(base.st, other.st);
+  m.kr = Math.max(base.kr || 0, other.kr || 0); // club knowledge rank already paid out
   // Chain Reaction: one go a day, so keep whichever device got further with today's
   Object.keys(other.chain || {}).forEach(k => {
     const x = (m.chain || {})[k],
@@ -280,9 +282,43 @@ function addXp(n) {
 function addAlbum(i) {
   const k = pkey(i);
   const isNew = !S.album[k];
+  const mine = isNew && S.club ? clubIdx(S.club) : -1,
+    before = mine >= 0 && hasClub(i, mine) ? knowRank(mine).r : -1;
   S.album[k] = (S.album[k] || 0) + 1;
   S.recent = [k].concat(S.recent.filter(x => x !== k)).slice(0, 40);
+  if (before >= 0) {
+    // club knowledge: a new rank with your own club pays out (once per rank, kept in S.kr)
+    const now = knowRank(mine);
+    if (now.r > before && now.r > (S.kr || 0)) {
+      S.kr = now.r;
+      addXp(KNOW_XP[now.r]);
+      toast(S.club + " knowledge: " + KNOW_RANKS[now.r] + ". +" + KNOW_XP[now.r] + " XP");
+    }
+  }
   return isNew;
+}
+/* ---------- club knowledge (14/11/2026): the Names log counted per club ----------
+   Every player you've named who has a record at a club counts towards that club. Ranks are absolute counts, but scaled
+   down for clubs with a small pool in the data, so Brentford fans can reach the top too. */
+const KNOW_RANKS = ["Day Tripper", "Regular", "Season Ticket", "Anorak", "Boffin", "Club Historian"];
+const KNOW_AT = [0, 10, 25, 50, 100, 200],
+  KNOW_FRAC = [0, 0.05, 0.12, 0.25, 0.45, 0.7],
+  KNOW_XP = [0, 50, 100, 200, 400, 800];
+const knowNeed = (c, r) => Math.min(KNOW_AT[r], Math.max(r, Math.ceil(clubPl[c].length * KNOW_FRAC[r])));
+function knowCounts() {
+  const n = {};
+  Object.keys(S.album).forEach(k => {
+    const i = KEY2IDX[k];
+    if (i !== undefined) clubsOf(i).forEach(c => (n[c] = (n[c] || 0) + 1));
+  });
+  return n;
+}
+function knowRank(c, counts) {
+  const n = counts ? counts[c] || 0 : Object.keys(S.album).filter(k => KEY2IDX[k] !== undefined && hasClub(KEY2IDX[k], c)).length;
+  let r = 0;
+  for (let k = 1; k < KNOW_AT.length; k++) if (n >= knowNeed(c, k)) r = k;
+  const next = r + 1 < KNOW_AT.length ? knowNeed(c, r + 1) : null;
+  return { n, r, next, of: clubPl[c].length, pc: next ? (n - knowNeed(c, r)) / (next - knowNeed(c, r)) : 1 };
 }
 
 /* ============ founder & founding members ============
