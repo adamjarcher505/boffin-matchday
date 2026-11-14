@@ -21,6 +21,10 @@ window.QA = {
       cancelAnimationFrame(raf); if (M) M.live = false;
     }
     if (innerWidth >= 1024) for (const k of Object.keys(LONG)) { R.push(await screen("extra time: " + LONG[k].n, async () => { M = null; startLong(k); document.querySelector("[data-act=take]").click(); })); cancelAnimationFrame(raf); if (M) M.live = false; }
+    // Chain Reaction: start screen, live (with suggestions open), finished
+    // (the start and finished screens are ordinary pages and may scroll, like the Daily Grid page; the live one may not)
+    R.push(await screen("chain live", async () => { M = null; S.chain = {}; view = "chain"; render(); document.querySelector("[data-act=chaingo]").click(); await wait(60); const q = document.getElementById("q"); if (q) { q.value = "sa"; q.dispatchEvent(new Event("input", { bubbles: true })); } }));
+    S.chain = {}; save();
     // grid sheet
     R.push(await screen("grid sheet", async () => { M = null; view = "grid"; render(); const c = document.querySelector("[data-act=cell]"); if (c) c.click(); await wait(60); const q = document.getElementById("q"); if (q) { q.value = "sa"; q.dispatchEvent(new Event("input", { bubbles: true })); } }, true));
     document.getElementById("over").innerHTML = "";
@@ -34,7 +38,7 @@ window.QA = {
     R.push(await screen("sign-on sheet (first time)", async () => { profileSheet(true); }, true));
     document.getElementById("over").innerHTML = "";
     // whole-page screens may scroll (they're lists); report their height for the record
-    if (opts.pages) for (const v of ["home", "league", "album", "grid"]) R.push(Object.assign(await screen("page: " + v, async () => { M = null; view = v; render(); }), { pageOk: true }));
+    if (opts.pages) for (const v of ["home", "league", "album", "grid", "chain"]) R.push(Object.assign(await screen("page: " + v, async () => { M = null; view = v; render(); }), { pageOk: true }));
     M = null; view = "home"; render(); window.scrollTo(0, 0);
     out.bad = R.filter(r => !r.ok || (!r.pageOk && r.overflow > 2));
     return out;

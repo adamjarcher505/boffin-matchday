@@ -14,6 +14,8 @@ const TUNING = {
   finalDay: 3, // the last N fixtures of a season get the Final Day treatment
   warsTop: 10, // Club Wars: a club's score is its top N fans' weekly goals divided by N
   gridHint: [2, 3], // daily grid: % off a square's share of the score for the first and second hint (one hint on a full grid = 98%)
+  chainXp: 5, // Chain Reaction: XP per link...
+  chainXpCap: 60, // ...up to this much a day
   gridHintXp: 5, // ...and XP off that square per hint taken
   logMinSample: 30 // question log: aggregates only come back once a question has this many answers
 };
@@ -137,7 +139,7 @@ const hydrate = o => {
   s.sk = Object.assign({ d: "", n: 0, best: 0 }, o.sk || {});
   s.ob = Object.assign({ d: "", p: {}, done: {}, all: false }, o.ob || {});
   if (!s.sn || typeof s.sn !== "object") s.sn = { ty: {} };
-  ["album", "grid", "g", "ts", "lb", "md", "ct"].forEach(k => {
+  ["album", "grid", "chain", "g", "ts", "lb", "md", "ct"].forEach(k => {
     if (!s[k] || typeof s[k] !== "object") s[k] = {};
   });
   ["form", "played", "recent", "hist"].forEach(k => {
@@ -190,6 +192,12 @@ function mergeSaves(a, b) {
     .concat(base.played || [])
     .slice(-60);
   m.st = maxMap(base.st, other.st);
+  // Chain Reaction: one go a day, so keep whichever device got further with today's
+  Object.keys(other.chain || {}).forEach(k => {
+    const x = (m.chain || {})[k],
+      y = other.chain[k];
+    if (!x || (y.done && !x.done) || (y.c || []).length > (x.c || []).length) m.chain = { [k]: y };
+  });
   m.lb = maxMap(base.lb, other.lb);
   m.ts = Object.assign({}, other.ts || {});
   Object.keys(base.ts || {}).forEach(k => {

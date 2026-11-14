@@ -2,6 +2,16 @@
 
 Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and why.
 
+## 14/11/2026 morning: new types and Chain Reaction
+- **League matches now draw five types from twenty** (The Grid is still always in). More variety per match; each old type turns up less often. `QV` bumped to v6, so ghosts from before today aren't replayed.
+- **"Team-mates" means the season squad records** (same club, same season, top-five leagues, 2010 on) for Six Degrees, Ever Team-mates? and Chain Reaction, the same rule The Link uses. Older team-mates won't count; the rule is shown on screen.
+- **Ever Team-mates? only asks a "never" when it's provably never**: every club the two share must be in the season records for both and joined 2010 or later. Otherwise a pre-2010 spell could make "never" wrong.
+- **Spot the Fake's fake club comes from clubs his old team-mates went to** (plausible, right level) and is never a club he has any record at. Players whose trail is out of date order in the data, or has one club under two names (Troyes / ESTAC Troyes), are skipped. Known risk: the data misses some real moves (DATA_SOURCES.md), so a "fake" could in rare cases be a real move the data doesn't have.
+- **Flag XI only uses club line-ups** (country line-ups would be eleven of the same flag) and isn't in the Club Cup (your own club would always be the answer). Most club line-ups in the data are Premier League 2015–16.
+- **Hidden Row in the Club Cup hides a different club**, never yours. Only one final-table round per cup tie (Hidden Row, Final Standings or Name the Season).
+- **Exact Score uses the question bank's scorelines** (two-source checked). They're all difficulty 3–4, so lower divisions get the 3s.
+- **Chain Reaction counts the go from the moment the clock starts**, even if you leave. Two devices merge to whichever got further.
+
 ## Foundations
 - **Save key stays `boffin-matchday-v1`; the format version moved to `S.v = 2`.** Changing the key would orphan every existing save. A `MIGRATIONS` table upgrades old saves in place; new fields only, nothing removed, so an older copy of the game still reads a newer save.
 - **Merging replaced "more XP wins".** League state (division, season, week, salt, form) can't be mixed between devices without breaking the table, so it comes whole from the save updated last. Collections are unioned and records take the max. Counters aren't summed: without a common ancestor that would double-count shared history. Tested with two devices both playing offline.

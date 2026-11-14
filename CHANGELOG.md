@@ -1,5 +1,23 @@
 # Changelog
 
+## 14/11/2026 (morning): eight new question types, Chain Reaction, Grid cover fix
+**Grid fix.** The card before The Grid used to show both clubs, so you could think it through before the clock started.
+Now it says "Two categories, one player" and the clubs appear when you tap Take it. Same fix for The Link (the two
+players) and Squad Sheet (the club and season), which had the same leak.
+
+**New question types** (in league matches, training and, where the club's data allows, the Club Cup):
+- **Six Degrees**: link two players through team-mates, one name at a time. Shortest route pays a bonus.
+- **Ever Team-mates?**: five pairs, yes or never. The "nevers" are often men who played for the same club at different times.
+- **Spot the Fake**: a real career path with one made-up move slipped in. Tap it.
+- **Who Bought Him?**: player, selling club, year and fee. Pick the buyer from four.
+- **Hidden Row**: a final top four with one club blanked out. Pick it from four.
+- **In Order**: tap four transfers, four finishers or four top-ten names into order. The whole order has to be right.
+- **Flag XI**: a real club line-up shown only as nationality flags. Whose XI is it?
+- **Exact Score**: set the scoreline with two steppers. Exact = 2 points, right result = 1.
+
+**Chain Reaction** (new daily game, tile on the home screen): same starting player for everyone, 30 seconds, name a
+team-mate of the last man, keep the chain going. One go a day, 5 XP a link (max 60), shareable result.
+
 ## 14/11/2026 (overnight): match feel, a livelier home screen, streaks and medals
 **In a match**
 - **Goals feel like goals.** The verdict slams in with a crowd roar, then the other side's chance lands a beat later

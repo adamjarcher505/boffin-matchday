@@ -21,7 +21,7 @@ function msg(t, cls) {
     m.className = "msg " + (cls || "");
   }
 }
-const QV = "v5." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
+const QV = "v6." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
 function startLeagueMatch() {
   settleSeason();
   const opp = nextOpponent(),
@@ -83,10 +83,11 @@ function makeCupMatch(seed, c, tier) {
   const r = rngOf(hash("cup" + seed)),
     out = [],
     used = new Set();
-  const order = shuffle(["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season", "quiz"], r);
+  const order = shuffle(["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season", "quiz", "six", "pals", "fake", "buy", "row", "order", "exact"], r);
   for (const t of order) {
     if (out.length >= 5) break;
     if ((t === "season" && used.has("champ")) || (t === "champ" && used.has("season"))) continue;
+    if ((t === "row" && (used.has("champ") || used.has("season"))) || ((t === "champ" || t === "season") && used.has("row"))) continue; // one final-table round per tie
     const x = makeRound(t, r, tier, { club: c });
     if (x) {
       out.push(x);
@@ -243,7 +244,7 @@ function chanceCover() {
   }${M.i === 0 && M.mode === "cup" ? " <b>" + esc(M.opp.name) + "</b> is a " + esc(S.club) + " fan too, so it's all " + esc(S.club) + " questions. Lose and you're out." : ""}`;
   $("main").innerHTML = `<div class="board">${scoreHTML()}<div class="clock"><i id="clk"></i></div>${chanceStrip()}</div>
   <div class="cvwrap">${intro}${situation()}<div class="qhero"><i class="qic">${qart(spec.type)}</i><div class="qht"><span class="eyebrow">${chLbl(true)}</span><b>${esc(M.long ? LONG[M.long].n : T.n)}</b><span>${esc(M.long ? LONG[M.long].d : QDESC[spec.type] || "")}</span></div></div>
-  <p class="rule qq">${esc(run.rule || T.rule)}${run.hint ? `<span>${esc(run.hint)}</span>` : ""}</p>
+  <p class="rule qq">${esc(run.cover || run.rule || T.rule)}${run.hint && !run.cover ? `<span>${esc(run.hint)}</span>` : ""}</p>
   <p class="note cvnote">${note}</p>
   <button class="btn" data-act="take">${M.i === 0 ? "Kick off" : M.i >= 5 ? "Step up" : "Take it"}</button></div>`;
   window.scrollTo(0, 0);

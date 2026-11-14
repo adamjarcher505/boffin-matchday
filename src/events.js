@@ -101,7 +101,7 @@ function submitPick(i, raw) {
   if (c) c.hidden = true;
   if (view === "grid") {
     if (i >= 0) gridPick(i);
-  } else if (M && M.live && M.run && M.run.onPick) M.run.onPick(i, raw || "");
+  } else if (view === "chain") chainPick(i); else if (M && M.live && M.run && M.run.onPick) M.run.onPick(i, raw || "");
   if (q && q.isConnected) {
     try {
       q.focus();
@@ -265,7 +265,11 @@ document.addEventListener("click", e => {
     leagueTab = v;
     renderLeague();
   } else if (act === "cell") cellSheet(+v);
-  else if (act === "sharegrid") {
+  else if (act === "chaingo") chainGo();
+  else if (act === "sharechain") {
+    SHARE = shareChain();
+    doShare();
+  } else if (act === "sharegrid") {
     SHARE = shareGrid();
     doShare();
   } else if (act === "shareseason") {

@@ -48,6 +48,7 @@ function specKey(x) {
   if (t === "odd") return "o" + x.sets.map(z => z.o[z.x]).join(".");
   if (t === "champ") return "k" + x.qs.map(q => q.t + "." + (q.p !== undefined ? q.p : q.c)).join("_");
   if (t === "quiz") return "z" + x.qs.map(q => q.id).join(".");
+  if (MORE_TYPES.includes(t)) return moreKey(x);
   return t;
 }
 const isSeen = x => !!x && (S.seen || []).includes(specKey(x));
@@ -133,6 +134,7 @@ function makeRaw(type, r, tier, sc) {
     if (sc.club !== undefined) return null;
   }
   if (type === "squad" || type === "odd" || type === "race" || type === "champ") return makeScoped(type, r, tier, {});
+  if (MORE_TYPES.includes(type)) return makeMore(type, r, tier, {}) || makeCell(r, tier); // data can't support it this time: a Grid instead
   if (type === "cell") return makeCell(r, tier);
   if (type === "quiz") return makeQuiz(r, tier, null) || makeScoped("champ", r, tier, {}); // no bank on this device: a Final Standings round instead
   if (type === "top") {
@@ -228,6 +230,7 @@ function makeScoped(type, r, tier, sc) {
     pl = !!sc.pl;
   if (type === "cell") return makeCell(r, tier, sc);
   if (type === "quiz") return makeQuiz(r, tier, sc);
+  if (MORE_TYPES.includes(type)) return makeMore(type, r, tier, sc);
   if (type === "top") {
     let pool = club ? listsOf(C) : pl ? PLLISTS.filter(i => BD.lists[i][2] <= tier + 1) : BD.lists.map((l, i) => i);
     if (!pool.length) return null;

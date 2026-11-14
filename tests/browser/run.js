@@ -37,6 +37,9 @@ const PLAY = `async (score) => {
   else if (t === "career") run.onPick(spec.p);
   else if (t === "xi") spec.blanks.slice(0, spec.target).forEach(k => run.onPick(-1, BD.xi[spec.i][6][k][0]));
   else if (t === "season") { run.onInput(BD.tables[spec.i][1]); run.onTap("lock"); }
+  else if (t === "six") { const nb = new Set(tmOf(spec.b)), mid = tmOf(spec.a).find(i => nb.has(i)); if (mid !== undefined) run.onPick(mid); else { M.timeout = true; endChance(); } }
+  else if (t === "exact") { for (let g = 0; g < 4 && M.live; g++) { const x = SCORE_BY[spec.qs[run.k]]; run.h = x.hg; run.a = x.ag; run.onTap("lock"); await wait(1650); } }
+  else if (t === "order") { for (let g = 0; g < 4 && M.live; g++) { const st = spec.sets[run.k]; const vals = st.v === "fee" ? st.h.map(h => BD.hl[h][4]) : st.v === "tab" ? st.o.map(k => 4 - k) : st.o.map(k => BD.lists[st.li][3][k][1]); vals.map((v, j) => j).sort((x, y) => vals[y] - vals[x]).forEach(j => run.onTap(String(j))); await wait(1750); } }
   else {   // tap rounds: find the right button each time from the round's own data
     for (let g = 0; g < 8 && M.live; g++) {
       let v = 0;
@@ -45,7 +48,12 @@ const PLAY = `async (score) => {
       else if (t === "odd") v = spec.sets[run.k].x;
       else if (t === "champ") { const q = spec.qs[run.k]; v = q.c !== undefined ? BD.tables[q.t][3].findIndex(x => x[0] === CLUB[q.c]) : q.o.indexOf(q.p); }
       else if (t === "quiz") v = spec.qs[run.k].o.indexOf(0);
-      run.onTap(String(v)); await wait(1250);
+      else if (t === "pals") v = spec.pairs[run.k][2];
+      else if (t === "fake") v = spec.sets[run.k].at;
+      else if (t === "buy") { const q = spec.qs[run.k]; v = q.o.indexOf(BD.hl[q.h][2]); }
+      else if (t === "row") { const q = spec.qs[run.k]; v = q.o.indexOf(BD.tables[q.t][3][q.k][0]); }
+      else if (t === "flags") { const q = spec.qs[run.k]; v = q.o.indexOf(BD.xi[q.i][0]); }
+      run.onTap(String(v)); await wait(1400);
     }
   }
   return t;
