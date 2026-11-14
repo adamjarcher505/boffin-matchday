@@ -12,7 +12,7 @@ Moved here from a claude.ai artifact (https://claude.ai/code/artifact/5be71bbb-8
 
 ## Files
 Full map and data model in README.md. Judgment calls in DECISIONS.md; what's blocked in BLOCKED.md; Adam's to-do in HANDOVER.md.
-- `index.html`: markup only. Script order: config, data, questions, sticker-pages, kits, then `src/`: core, state, fx, career, league, generators, rounds, match, grid, screens, events, extras, stickers, net, boot. Plain scripts sharing globals; order matters.
+- `index.html`: markup only. Script order: config, data, questions, sticker-pages, kits, then `src/`: core, state, fx, career, league, generators, rounds, rounds-more, match, grid, chain, screens, events, extras, stickers, net, boot. Plain scripts sharing globals; order matters.
 - `src/styles.css`: all CSS. Newest sections at the bottom, dated.
 - `src/core.js`: data lookups, `TYPES`, helpers, player search. `CLUBS_PICK` = pickable clubs.
 - `src/state.js`: `TUNING` and `STICKER_RULES` (balance numbers); save format `SAVE_V` (now 3) + `MIGRATIONS` + `hydrate` + `mergeSaves`.
@@ -20,6 +20,7 @@ Full map and data model in README.md. Judgment calls in DECISIONS.md; what's blo
 - `src/career.js`: streak (`S.sk`), daily objectives (`OBJ`, `S.ob`), medals (`MEDALS`, `S.md`), season awards. XP only; numbers in `CAREER`.
 - `src/league.js`: `leagueTable`, `settleSeason`, house sides.
 - `src/generators.js`: `makeMatch`, `makeRound`, `makeScoped`, `makeCupMatch`, seeded with `rngOf(hash(...))`. `EASE` = fair-for-the-division limits (tuned with `node tools/difficulty.js`).
+- `src/rounds-more.js`: makers + runtimes for the 14/11 types (`MORE_TYPES`: six, pals, fake, buy, row, order, flags, exact), team-mate lookups (`tmOf`), flags. `src/chain.js`: Chain Reaction daily game.
 - `src/rounds.js`: `RUN` (how each type plays). `src/match.js`: match engine, verdict, full time; `QV` = question-generator version (bump whenever a seed's questions change). `src/grid.js`, `src/screens.js`, `src/events.js`.
 - `src/extras.js`: share cards, season stakes and Final Day, "around you" lines, training XP cap, Club Wars (top 10 ÷ 10), question log, theme of the day (`THEMES`, `THEME_ROTA` from `tools/theme-support.js`), haptics.
 - `src/stickers.js`: sticker album (`S.stk`), offers after matches, the "name the man on the sticker" attempt, pages, swaps, tokens. Separate from the Names log (`S.album`).

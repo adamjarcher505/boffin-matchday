@@ -72,6 +72,7 @@ const RUN = {
       spec.a.t === "c" && spec.b.t === "c"
         ? `Name a player who played for both ${CLUB[spec.a.v]} and ${CLUB[spec.b.v]}.`
         : `Name a player who ${catPhrase(spec.a)} and ${catPhrase(spec.b)}.`;
+    R.cover = "Two categories, one player. You'll see them when the clock starts."; // 14/11/2026: no thinking time before kick-off
     return R;
   },
   mates(spec) {
@@ -85,6 +86,7 @@ const RUN = {
     );
     R.rule = `Name a player who was team-mates with both ${PL[a][0]} and ${PL[b][0]}.`;
     R.hint = "Same club, same season, 2010 onwards";
+    R.cover = "Two players. Name someone who played with both. You'll see who when the clock starts.";
     return R;
   },
   top(spec) {
@@ -278,6 +280,7 @@ const RUN = {
       lab = sqLabel(spec.y),
       R = { found: [], over: false, picks: [], rule: `Name ${spec.target} players who were in the ${CLUB[c]} squad in ${lab}.` };
     R.title = CLUB[c] + " " + lab;
+    R.cover = `One club, one season. Name ${spec.target} of the squad. You'll see which when the clock starts.`;
     R.body = rev =>
       `<p class="rule" style="color:var(--text);font-weight:600">${esc(CLUB[c])} squad · ${lab}</p><div class="chips">${R.found.map(i => `<span class="hit">${esc(PL[i][0])}</span>`).join("")}${rev ? "" : Array.from({ length: Math.max(0, spec.target - R.found.length) }, () => "<span>?</span>").join("")}</div>${
         rev

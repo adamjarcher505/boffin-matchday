@@ -45,8 +45,10 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 | `src/league.js` | League table, house sides, season settle |
 | `src/generators.js` | Question makers, seeded. `EASE` = the fair-for-the-division limits |
 | `src/rounds.js` | How each question type plays (`RUN`), and the long desktop modes |
+| `src/rounds-more.js` | Eight more types (14/11/2026): Six Degrees, Ever Team-mates?, Spot the Fake, Who Bought Him?, Hidden Row, In Order, Flag XI, Exact Score |
 | `src/match.js` | The match engine: league, cup, training; verdict and full-time screens. `QV` lives here |
 | `src/grid.js` | The Daily Grid |
+| `src/chain.js` | Chain Reaction, the daily 30-second team-mate chain |
 | `src/screens.js` | Header, tabs, home, league, album, stats, sheets |
 | `src/events.js` | Account actions, the name box, the click handler |
 | `src/extras.js` | Share cards, season stakes, Club Wars, question log, theme of the day, haptics |

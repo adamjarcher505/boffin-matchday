@@ -181,8 +181,18 @@ const TYPES = {
   odd: { n: "Odd One Out", rule: "", t: 22, typed: 0 },
   race: { n: "Higher or Lower", rule: "", t: 20, typed: 0 },
   champ: { n: "Final Standings", rule: "", t: 20, typed: 0 },
-  quiz: { n: "Pub Quiz", rule: "", t: 30, typed: 0 }
+  quiz: { n: "Pub Quiz", rule: "", t: 30, typed: 0 },
+  six: { n: "Six Degrees", rule: "", t: 45, typed: 1 },
+  pals: { n: "Ever Team-mates?", rule: "", t: 20, typed: 0 },
+  fake: { n: "Spot the Fake", rule: "", t: 25, typed: 0 },
+  buy: { n: "Who Bought Him?", rule: "", t: 25, typed: 0 },
+  row: { n: "Hidden Row", rule: "", t: 25, typed: 0 },
+  order: { n: "In Order", rule: "", t: 35, typed: 0 },
+  flags: { n: "Flag XI", rule: "", t: 30, typed: 0 },
+  exact: { n: "Exact Score", rule: "", t: 35, typed: 0 }
 };
+/* added 14/11/2026: makers and runtimes in src/rounds-more.js */
+const MORE_TYPES = ["six", "pals", "fake", "buy", "row", "order", "flags", "exact"];
 const QDESC = {
   cell: "Two categories, one player.",
   top: "Top scorers, record signings, most appearances.",
@@ -194,7 +204,15 @@ const QDESC = {
   squad: "One club, one season. Name the squad.",
   odd: "Three played there. One never did.",
   race: "Goals, appearances, fees. Who had more?",
-  champ: "Who finished where, season by season."
+  champ: "Who finished where, season by season.",
+  six: "Two players. Link them through team-mates.",
+  pals: "Did these two ever share a dressing room?",
+  fake: "One move in this career never happened.",
+  buy: "The player, the fee, the year. Who paid it?",
+  row: "A final table with one club blanked out.",
+  order: "Fees, finishes, top tens. Sort them.",
+  flags: "A line-up shown only as flags.",
+  exact: "Name the scoreline. Exact gets the most."
 };
 /* line drawings for each question type (original, drawn in code): a faint backdrop on question screens and the badge on each chance's title card */
 const QART = {
@@ -209,7 +227,15 @@ const QART = {
   odd: '<circle cx="20" cy="20" r="8"/><circle cx="44" cy="20" r="8"/><circle cx="20" cy="44" r="8"/><circle cx="44" cy="44" r="8" fill="currentColor"/>',
   race: '<path d="M20 52V12M8 24l12-12 12 12M44 12v40M32 40l12 12 12-12"/>',
   champ: '<path d="M6 56h52M22 56V28h20v28M6 56V40h16M42 56V46h16M27 18l5-9 5 9"/>',
-  quiz: '<path d="M14 10h30l8 8v36H14z"/><path d="M44 10v8h8M22 26h22M22 34h22M22 42h14"/>'
+  quiz: '<path d="M14 10h30l8 8v36H14z"/><path d="M44 10v8h8M22 26h22M22 34h22M22 42h14"/>',
+  six: '<circle cx="10" cy="32" r="5"/><circle cx="32" cy="14" r="5"/><circle cx="32" cy="50" r="5"/><circle cx="54" cy="32" r="5"/><path d="M14 29l14-12M14 35l14 12M36 17l14 12M36 47l14-12"/>',
+  pals: '<circle cx="22" cy="20" r="8"/><circle cx="42" cy="20" r="8"/><path d="M8 54c0-9 6-16 14-16s14 7 14 16M28 54c0-9 6-16 14-16s14 7 14 16"/>',
+  fake: '<circle cx="10" cy="32" r="5"/><circle cx="32" cy="32" r="5"/><circle cx="54" cy="32" r="5"/><path d="M15 32h12M37 32h12M26 12l12 12M38 12 26 24"/>',
+  buy: '<rect x="8" y="16" width="48" height="32" rx="4"/><path d="M8 26h48M16 38h12M42 38h6"/>',
+  row: '<rect x="8" y="8" width="48" height="48" rx="4"/><path d="M8 20h48M8 32h48M8 44h48"/><rect x="12" y="23" width="40" height="6" fill="currentColor"/>',
+  order: '<path d="M10 14h8M10 28h8M10 42h8M26 14h28M26 28h22M26 42h16M14 50v6"/>',
+  flags: '<path d="M14 56V8M14 10h30l-6 9 6 9H14M34 56V36M34 38h18l-4 6 4 6H34"/>',
+  exact: '<rect x="6" y="16" width="20" height="32" rx="3"/><rect x="38" y="16" width="20" height="32" rx="3"/><path d="M30 28v2M30 36v2"/>'
 };
 const qart = t =>
   `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${QART[t] || QART.cell}</svg>`;
