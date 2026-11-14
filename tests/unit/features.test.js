@@ -13,7 +13,7 @@ test("share cards never include answers, question titles or question clubs", () 
   for (const s of secrets) assert.ok(!share.includes(s), "share card leaks: " + s);
   assert.match(share, /^BOFFIN MATCHDAY · /); assert.match(share, /🟩⬛🟩🟩⬛/); assert.match(share, /of 20/); assert.match(share, /Level \d+ · Arsenal fan/);
   assert.ok(share.includes(g.run("SHARE_URL")));
-  assert.ok(!/claude\.ai\/artifact/.test(fs.readFileSync(path.join(ROOT, "app.js"), "utf8") + fs.readFileSync(path.join(ROOT, "extras.js"), "utf8")), "no hard-coded share links");
+  assert.ok(!/claude\.ai\/artifact/.test(fs.readdirSync(path.join(ROOT, "src")).filter(f => f.endsWith(".js")).map(f => fs.readFileSync(path.join(ROOT, "src", f), "utf8")).join("")), "no hard-coded share links");
   const grid = g.run("shareGrid()"); assert.match(grid, /BOFFIN GRID No\. \d+/); assert.ok(!/[A-Z][a-z]+ [A-Z][a-z]+/.test(grid.split("\n").slice(1, 4).join(" ")), "grid card shows squares only");
 });
 

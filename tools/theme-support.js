@@ -1,6 +1,6 @@
 // How often each theme of the day matches a league chance, across all four tiers. Themes the data can't back up
 // (fewer than MIN of chances match) are left out of the rota. Run from the project root:  node tools/theme-support.js
-// Prints the table and the rota to paste into THEME_ROTA in extras.js (or pass --write to update it).
+// Prints the table and the rota to paste into THEME_ROTA in src/extras.js (or pass --write to update it).
 const fs = require("fs"), path = require("path");
 const { load } = require("../tests/harness.js");
 const MIN = .06;   // with 5 chances a match, 6% of chances matching = roughly 1 match in 4 has at least one themed chance
@@ -25,7 +25,7 @@ fs.mkdirSync(path.join(__dirname, "..", "tests", "out"), { recursive: true });
 fs.writeFileSync(path.join(__dirname, "..", "tests", "out", "theme-support.txt"), txt);
 console.log(txt);
 if (process.argv.includes("--write")) {
-  const f = path.join(__dirname, "..", "extras.js"); let s = fs.readFileSync(f, "utf8");
+  const f = path.join(__dirname, "..", "src", "extras.js"); let s = fs.readFileSync(f, "utf8");
   s = s.replace(/const THEME_ROTA = \[[^\]]*\];/, "const THEME_ROTA = " + JSON.stringify(keep.map(r => r.id)).replace(/,/g, ", ") + ";");
-  fs.writeFileSync(f, s); console.log("THEME_ROTA updated in extras.js");
+  fs.writeFileSync(f, s); console.log("THEME_ROTA updated in src/extras.js");
 }
