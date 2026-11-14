@@ -233,7 +233,7 @@ function freshSeed(seed, tier) {
    question inside it. A template with only a handful of questions is scaled down (full weight at 60), so the one
    unbeaten-season question doesn't turn up every week. Unknown templates (a new pipeline one) count as 1. */
 const QUIZ_W = {
-  "played-for": 3, champion: 2, "never-played": 2.5, "runner-up": 2, transfer: 2, "current-club": 2, finished: 2, "club-finish": 2,
+  "played-for": 3, champion: 2, "never-played": 2.5, transfer: 2, "current-club": 2, finished: 2, "club-finish": 2,
   "big-win": 2, relegated: 2, "title-count": 2, "titles-span": 2, h2h: 1.5, nationality: 1.5, score: 1.2, unbeaten: 1,
   points: 1, losses: 0.6, "h2h-draws": 0.6, position: 0.4
 };

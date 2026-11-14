@@ -48,7 +48,8 @@ the question's key, so it stays the same between runs as long as the fact does.
 ## Adding a template
 
 Add it in `generate.mjs` through `Q({...})`, giving it two sources. Run, read `reports/validation.md`, check
-`reports/sample.md`. The game picks it up with no code change (Pub Quiz draws from the whole bank).
+`reports/sample.md`. The game picks it up with no code change. Pub Quiz picks a template first, by the weights in `QUIZ_W`
+(src/generators.js); a template not listed there counts as 1, so add it to `QUIZ_W` if it deserves more or less airtime.
 
 ## Phases
 

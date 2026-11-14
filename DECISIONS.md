@@ -127,3 +127,29 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
 - **Save v3** adds S.sk, S.ob, S.md, S.ct, S.sn and S.wp. Old versions of the game keep fields they don't know, so a
   phone still on the old build doesn't wipe them when it syncs.
 - **Stats on phones** lives under Album → Stats to avoid a fifth tab.
+
+## Question categories and generation (14/11/2026, evening)
+Reviewed every question type against 2,000 generated league matches and the whole Pub Quiz bank (scripts were
+one-off; `node tools/difficulty.js` still covers fairness). What changed, and why:
+- **The five chances are mixed on purpose now** (`pickTypes` in src/generators.js). Before, it was any five of twelve
+  with The Grid forced in: 4% of matches had four tap rounds and only The Grid to type, 1.5% had five typing rounds on a
+  phone keyboard. Now every match has 2 or 3 of each. The Grid still turns up in every match, in a random slot.
+- **One per family.** The Fee and Higher or Lower (both "which number's bigger") met in 11% of matches; Final Standings
+  and Name the Season (both a final table) in 12%. Now never. Club Cup already kept the tables apart; it now keeps
+  both families apart and tries for the same typed/tap balance, dropping that rule only when a small club can't build
+  enough of one kind (better than padding with repeat Grids).
+- **Final Standings and Pub Quiz can still meet** (12% of matches). Same layout, but different questions entirely;
+  splitting them would have made Pub Quiz rarer. Worth revisiting if players say it feels samey.
+- **The Fee never shows the same transfer or player twice in a round.** One in ten Fee rounds did.
+- **Sunday League gets 44 top tens instead of 16** (`easyTop`): the next band's Premier League lists where at least
+  7 of the 10 are well known. A third of Sunday League top tens were repeats over 250 matches. Ligue 1 and Serie A
+  scoring charts were left out on purpose, even where they'd pass the fame test.
+- **Pub Quiz picks a template first, then a question** (`QUIZ_W`). Straight random picks meant nationality was 24% of
+  Sunday League questions and "what position did he play" (the same four buttons every time) was one in ten. Weights
+  favour the good stuff (played for, never played for, champions, transfers, finishing positions); position guesses
+  are down to 2-3%. Templates with under 60 questions are scaled down so a handful of questions doesn't repeat weekly.
+  Inside a template it leans towards the division's band (weight 3 on it, 2 one away, 1 further).
+- **QV v6.** The mix changes what every seed builds, so v5 ghosts aren't replayed; house-style results fill in until
+  players have v6 matches behind them, as with v5.
+- **Not changed:** EASE limits, the round rules, scoring and XP. The Grid repeats about one match in five for a
+  Sunday League player who stays down for 250 matches; promotion makes that unlikely, so it was left.
