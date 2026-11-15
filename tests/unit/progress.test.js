@@ -89,5 +89,5 @@ test("rankings, another player's card and head to head", () => {
   g.run(`view = "stats"; render()`);
   assert.strictEqual(g.run("view"), "me", "the old Stats view opens your profile");
   assert.ok(g.els.main.innerHTML.includes("The road")); assert.ok(g.els.main.innerHTML.includes("Share my card"));
-  assert.match(g.run("shareCard()"), /^BOFFIN MATCHDAY · .+\nLevel \d+ · /);
+  assert.match(g.run("shareCard()"), /^1X2 · .+\nLevel \d+ · /);
 });

@@ -437,7 +437,7 @@ function shareCard() {
     sc = scoring(pr),
     sp = specialist(pr.ts);
   return (
-    `BOFFIN MATCHDAY · ${p.name}\nLevel ${lv} · ${rankOf(lv)} · ${frameOf(lv).n} card\n${p.club} fan · ${DIVS[p.div]}\n` +
+    `1X2 · ${p.name}\nLevel ${lv} · ${rankOf(lv)} · ${frameOf(lv).n} card\n${p.club} fan · ${DIVS[p.div]}\n` +
     (sc != null ? `Scoring ${sc}% · ` : "") +
     `${fmt(pr.g)} goals · ${fmt(pr.dc)} deep cuts · ${fmt(pr.md)} medals\n` +
     (sp ? `Specialist subject: ${sp.best.n} (${sp.best.pc}%)\n` : "") +

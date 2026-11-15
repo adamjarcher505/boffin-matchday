@@ -122,7 +122,7 @@ function sotdSheet() {
 }
 function shareSotd() {
   const d = sotdDone();
-  return `BOFFIN STICKER OF THE DAY No. ${sotdNo()}\n${!d ? "Not tried yet" : d.r ? "✅ Named in " + d.g + (d.g === 1 ? " guess" : " guesses") : "❌ Got away"}\n${shareTail()}`;
+  return `1X2 STICKER OF THE DAY No. ${sotdNo()}\n${!d ? "Not tried yet" : d.r ? "✅ Named in " + d.g + (d.g === 1 ? " guess" : " guesses") : "❌ Got away"}\n${shareTail()}`;
 }
 function sotdTile() {
   const sl = sotdSlot(dayKey());
@@ -264,7 +264,7 @@ function shareXI() {
   F.forEach((f, j) => {
     if (X.s[j] && xiOK(X.s[j])) by[f[0]].push(PL[STK.all[X.s[j]].i][0].split(" ").slice(-1)[0]);
   });
-  return `MY BOFFIN XI (${X.f}), every sticker earned\n${["GK", "DEF", "MID", "FWD"].filter(r => by[r].length).map(r => r + ": " + by[r].join(", ")).join("\n")}\n${shareTail()}`;
+  return `MY 1X2 XI (${X.f}), every sticker earned\n${["GK", "DEF", "MID", "FWD"].filter(r => by[r].length).map(r => r + ": " + by[r].join(", ")).join("\n")}\n${shareTail()}`;
 }
 
 /* ---------- team photo: a finished page, laid out like a squad photo ---------- */
@@ -277,7 +277,7 @@ function teamPhoto(club) {
   <div class="row"><button class="btn line" data-act="shareteam" data-v="${esc(club)}">Copy</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareTeam(club))}" target="_blank" rel="noopener">WhatsApp</a></div>
   <button class="btn line" data-act="closeover">Close</button></div></div>`;
 }
-const shareTeam = club => `Finished the ${club} page on BOFFIN MATCHDAY. All ${SR.pageSize} stickers, every one named.\n${shareTail()}`;
+const shareTeam = club => `Finished the ${club} page on 1X2. All ${SR.pageSize} stickers, every one named.\n${shareTail()}`;
 
 /* ---------- the extra bits on an album page: Legends row, team photo, Sticker of the Day, swaps ---------- */
 function albumExtras(club) {
@@ -367,7 +367,7 @@ async function swapOffer(k) {
 }
 function swapShareSheet(code, k) {
   const sl = STK.all[k],
-    txt = `Got, got, need? I'll swap you my ${sl.club} ${TIER_N[sl.tier]} sticker (${swapName(k)}) for one of your doubles on BOFFIN MATCHDAY: ${swapLink(code)}`;
+    txt = `Got, got, need? I'll swap you my ${sl.club} ${TIER_N[sl.tier]} sticker (${swapName(k)}) for one of your doubles on 1X2: ${swapLink(code)}`;
   SHARE = txt;
   $("over").innerHTML = `<div class="sheet"><div class="box"><span class="eyebrow">Swap offered</span><h1>Send it to a mate</h1>
   <div class="stkmys">${stkCard(sl, 1, "big")}</div>

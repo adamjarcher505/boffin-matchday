@@ -284,7 +284,7 @@ function cellSheet(k) {
 /* Safari, after passing a sign-in back to the game on the home screen (Net.giveHandoff) */
 function handedSheet() {
   $("over").innerHTML =
-    `<div class="sheet"><div class="box"><span class="eyebrow">Signed in</span><h1>Back to the app</h1><p class="note">You're in. Go back to Boffin on your home screen and it'll sign you in by itself in a few seconds. You can close this Safari tab.</p><div class="row"><button class="btn line" data-act="closeover">Close</button></div></div></div>`;
+    `<div class="sheet"><div class="box"><span class="eyebrow">Signed in</span><h1>Back to the app</h1><p class="note">You're in. Go back to 1X2 on your home screen and it'll sign you in by itself in a few seconds. You can close this Safari tab.</p><div class="row"><button class="btn line" data-act="closeover">Close</button></div></div></div>`;
 }
 function confirmSheet(title, text, yes, fn) {
   $("over").innerHTML =

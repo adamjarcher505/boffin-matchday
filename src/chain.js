@@ -141,7 +141,7 @@ function chainGo() {
 }
 function shareChain() {
   const c = chainState();
-  return `BOFFIN CHAIN No. ${chainNo()}\n🔗 ${c.c.length} ${c.c.length === 1 ? "link" : "links"} in ${CHAIN_SECS} seconds\nStarted from ${PL[chainStart(dayKey())][0]}\n${shareTail()}`;
+  return `1X2 CHAIN No. ${chainNo()}\n🔗 ${c.c.length} ${c.c.length === 1 ? "link" : "links"} in ${CHAIN_SECS} seconds\nStarted from ${PL[chainStart(dayKey())][0]}\n${shareTail()}`;
 }
 function chainTile() {
   const c = S.chain && S.chain[dayKey()],

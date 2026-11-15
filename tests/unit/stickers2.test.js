@@ -70,7 +70,7 @@ test("Best XI: only your stickers, right position, shared as text", () => {
   assert.ok(gk, "a keeper to pick");
   assert.strictEqual(g.run(`POSN[PL[STK.all[${JSON.stringify(gk)}].i][2]]`), "GK");
   g.run(`xiState().s[0] = ${JSON.stringify(gk)}; render()`);
-  assert.ok(g.run("shareXI()").startsWith("MY BOFFIN XI (4-3-3)"));
+  assert.ok(g.run("shareXI()").startsWith("MY 1X2 XI (4-3-3)"));
   assert.ok(g.run("shareXI()").includes("GK: "));
 });
 

@@ -14,7 +14,7 @@ const buzz = p => {
 const shareTail = () => `Level ${levelOf(S.xp)} · ${S.club} fan` + (SHARE_URL ? "\n" + SHARE_URL : "");
 function shareLeague(o) {
   const mv = o.after < o.before ? `, up ${o.before - o.after}` : o.after > o.before ? `, down ${o.after - o.before}` : "";
-  return `BOFFIN MATCHDAY · ${o.div}\n${S.name || "Me"} ${o.a}–${o.b} ${o.opp} ${o.res === "W" ? "✅" : o.res === "D" ? "🤝" : "❌"}\n${pips(o.my)}\n${ord(o.after)} of 20${mv} · ${o.pts} pts from ${o.pl}\n${shareTail()}`;
+  return `1X2 · ${o.div}\n${S.name || "Me"} ${o.a}–${o.b} ${o.opp} ${o.res === "W" ? "✅" : o.res === "D" ? "🤝" : "❌"}\n${pips(o.my)}\n${ord(o.after)} of 20${mv} · ${o.pts} pts from ${o.pl}\n${shareTail()}`;
 }
 function shareCup(o) {
   const line =
@@ -23,14 +23,14 @@ function shareCup(o) {
       : o.out === "through"
         ? "Through to the " + o.next.toLowerCase()
         : "Knocked out in the " + o.round.toLowerCase();
-  return `BOFFIN CLUB CUP · ${S.club} · ${o.round}\n${S.name || "Me"} ${o.a}–${o.b} ${o.opp} ${o.win ? "✅" : "❌"}${o.pens ? " (pens)" : ""}\n${pips(o.my)}\n${line}\n${shareTail()}`;
+  return `1X2 CLUB CUP · ${S.club} · ${o.round}\n${S.name || "Me"} ${o.a}–${o.b} ${o.opp} ${o.win ? "✅" : "❌"}${o.pens ? " (pens)" : ""}\n${pips(o.my)}\n${line}\n${shareTail()}`;
 }
 function shareGrid() {
   const g = gridState(),
     got = g.c.filter(x => x).length,
     obs = got ? Math.round(g.r.reduce((s, x) => s + x, 0) / got) : 0;
   const nh = gridHints(g); // green: clean, yellow: needed a hint, black: missed
-  return `BOFFIN GRID No. ${gridNo()}\n${[0, 1, 2]
+  return `1X2 GRID No. ${gridNo()}\n${[0, 1, 2]
     .map(r =>
       [0, 1, 2]
         .map(c => {
@@ -43,10 +43,10 @@ function shareGrid() {
 }
 function shareSeason(n) {
   const out = n.to > n.from ? "PROMOTED to " + DIVS[n.to] + " ⬆️" : n.to < n.from ? "Relegated to " + DIVS[n.to] + " ⬇️" : "Staying in " + DIVS[n.to];
-  return `BOFFIN MATCHDAY · Season ${n.s || ""} done\n${S.name || "Me"}: ${ord(n.pos)} in ${DIVS[n.from]}, ${n.pts} pts\n${out}\n${shareTail()}`;
+  return `1X2 · Season ${n.s || ""} done\n${S.name || "Me"}: ${ord(n.pos)} in ${DIVS[n.from]}, ${n.pts} pts\n${out}\n${shareTail()}`;
 }
 function shareSticker(tier, club) {
-  return `BOFFIN STICKERS · ${club}\n${tier === "gold" ? "🟨 Gold Icon" : tier === "foil" ? "✨ Foil" : "📄 Paper"} sticker stuck in. Named him from the clues.\n${stkCount()} in the album\n${shareTail()}`;
+  return `1X2 STICKERS · ${club}\n${tier === "gold" ? "🟨 Gold Icon" : tier === "foil" ? "✨ Foil" : "📄 Paper"} sticker stuck in. Named him from the clues.\n${stkCount()} in the album\n${shareTail()}`;
 }
 
 /* ---------- C. season stakes ---------- */

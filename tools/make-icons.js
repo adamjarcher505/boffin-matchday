@@ -1,15 +1,15 @@
-// Draws the app icons (amber LED dot-matrix "B" on graphite) as PNGs. No dependencies.
+// Draws the app icons (amber LED dot-matrix "X" (1X2) on graphite) as PNGs. No dependencies.
 // Run from the project root:  node tools/make-icons.js
 const fs = require("fs"), zlib = require("zlib"), path = require("path");
 
 const GLYPH = [   // 5x7 LED font
-  "1111.",
   "1...1",
   "1...1",
-  "1111.",
+  ".1.1.",
+  "..1..",
+  ".1.1.",
   "1...1",
-  "1...1",
-  "1111."
+  "1...1"
 ];
 const BG = [15, 17, 19], PANEL = [23, 26, 29], AMBER = [240, 181, 65], DIM = [44, 40, 32];
 

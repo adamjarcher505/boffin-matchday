@@ -11,10 +11,10 @@ test("share cards never include answers, question titles or question clubs", () 
   const share = playLeague(g, [1, 0, 1, 1, 0], 0), rounds = JSON.parse(g.run("JSON.stringify(M.rounds)"));
   const secrets = JSON.parse(g.run(`JSON.stringify([].concat(...M.rounds.map(sp => { const r = RUN[sp.type](sp), out = []; if (r.title) out.push(r.title); (r.picks || []).forEach(i => out.push(PL[i][0])); if (sp.type === "career") out.push(PL[sp.p][0]); if (sp.type === "squad") out.push(CLUB[sp.c]); if (sp.type === "top") out.push(BD.lists[sp.i][0]); if (sp.type === "xi") out.push(BD.xi[sp.i][0] + " " + BD.xi[sp.i][2]); return out; })).filter(x => x && x !== S.club))`));
   for (const s of secrets) assert.ok(!share.includes(s), "share card leaks: " + s);
-  assert.match(share, /^BOFFIN MATCHDAY · /); assert.match(share, /🟩⬛🟩🟩⬛/); assert.match(share, /of 20/); assert.match(share, /Level \d+ · Arsenal fan/);
+  assert.match(share, /^1X2 · /); assert.match(share, /🟩⬛🟩🟩⬛/); assert.match(share, /of 20/); assert.match(share, /Level \d+ · Arsenal fan/);
   assert.ok(share.includes(g.run("SHARE_URL")));
   assert.ok(!/claude\.ai\/artifact/.test(fs.readdirSync(path.join(ROOT, "src")).filter(f => f.endsWith(".js")).map(f => fs.readFileSync(path.join(ROOT, "src", f), "utf8")).join("")), "no hard-coded share links");
-  const grid = g.run("shareGrid()"); assert.match(grid, /BOFFIN GRID No\. \d+/); assert.ok(!/[A-Z][a-z]+ [A-Z][a-z]+/.test(grid.split("\n").slice(1, 4).join(" ")), "grid card shows squares only");
+  const grid = g.run("shareGrid()"); assert.match(grid, /1X2 GRID No\. \d+/); assert.ok(!/[A-Z][a-z]+ [A-Z][a-z]+/.test(grid.split("\n").slice(1, 4).join(" ")), "grid card shows squares only");
 });
 
 test("season stakes: points to the promotion line and to safety, read straight off the table", () => {

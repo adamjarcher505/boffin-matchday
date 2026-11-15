@@ -1,6 +1,6 @@
 {
-  "name": "Boffin Matchday",
-  "short_name": "Boffin",
+  "name": "1X2 · The Football Quiz",
+  "short_name": "1X2",
   "description": "The football quiz where you play fixtures, not quizzes. Do you know ball?",
   "start_url": "./",
   "scope": "./",
