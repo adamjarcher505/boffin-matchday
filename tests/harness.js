@@ -44,7 +44,7 @@ function load(opts = {}) {
   for (const s of scripts) {
     if (s === "config.js" && opts.config) continue;
     if (opts.stopBefore && s === opts.stopBefore) break;
-    if ((opts.skip || []).includes(s) || !fs.existsSync(path.join(ROOT, s))) continue;
+    if ((opts.skip || []).includes(s) || s.startsWith("vendor/") || !fs.existsSync(path.join(ROOT, s))) continue; // third-party map library: not needed headless
     vm.runInContext(fs.readFileSync(path.join(ROOT, s), "utf8"), ctx, { filename: s });
   }
   return { ctx, scripts, els, storage: ls, run: code => vm.runInContext(code, ctx), listeners };

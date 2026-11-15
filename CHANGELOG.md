@@ -1,5 +1,13 @@
 # Changelog
 
+## 15/11/2026: Pin the Ground
+- **New round, Pin the Ground.** Three clubs; drop a pin where each one plays. Satellite imagery with no place names
+  (Esri World Imagery), Leaflet vendored in `vendor/leaflet/`. Within 1.5km scores 2, within 8km scores 1. After each
+  lock the real ground shows in green with the distance.
+- **91 grounds** in `grounds.js` (2026-27 season, Premier League to League Two). Swindon Town has no coordinates yet,
+  so it's left out. Sources and verified flags are in the stadium data file. Grounds flagged `single` need a second check.
+- Joins the match rotation as one more round type, so league and cup matches now draw from one more round.
+
 ## 15/11/2026: levelling you want to grind, and player profiles to compare
 - **New level curve.** Quick early levels (level 5 in about 3 matches, 10 in about 11), then a cap so no level takes
   more than about 8 matches. The old curve kept getting steeper for ever (13 matches a level at 80). Existing test

@@ -1,5 +1,14 @@
 # Decisions
 
+## 15/11/2026: Pin the Ground
+- **Esri World Imagery for the satellite layer.** Labels are off in the imagery itself, so no place names show. Esri asks
+  for attribution (shown on the map). Check the terms before any commercial launch.
+- **Leaflet vendored, not loaded from a CDN**, so the service worker can cache it for offline play.
+- **Grounds with a single source are included** so the round can ship; Adam asked for the set "with what we've got".
+  Everton, Nottingham Forest and the other `single` rows are the first things to check on a map.
+- **Map-free tests.** The headless harness skips `vendor/` files, so the map code is checked by unit tests of the
+  generator and scoring only. The map itself hasn't been run in a browser yet.
+
 Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and why.
 
 ## 14/11/2026 evening: pages rebuilt, swaps server-side

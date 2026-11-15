@@ -83,7 +83,7 @@ function makeCupMatch(seed, c, tier) {
   const r = rngOf(hash("cup" + seed)),
     out = [],
     used = new Set();
-  const order = shuffle(["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season", "quiz", "six", "pals", "fake", "buy", "row", "order", "exact"], r),
+  const order = shuffle(["cell", "squad", "odd", "career", "mates", "top", "race", "xi", "hl", "champ", "season", "quiz", "six", "pals", "fake", "buy", "row", "order", "exact", "pin"], r),
     fam = new Set(),
     failed = new Set();
   // same rules as league matches (pickTypes): one per family, and 2-3 typed / 2-3 tap. Small clubs can't always
@@ -278,6 +278,7 @@ function takeChance() {
     paint: () => {
       const b = $("rbody");
       if (b) b.innerHTML = run.body(false);
+      if (run.mount) run.mount();
     },
     done: () => endChance()
   };
