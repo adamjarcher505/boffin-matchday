@@ -80,7 +80,7 @@ test("Missing XI never hides a player the records don't know (line-up score 0)",
 test("save v3: a v2 save gains the career fields and loses nothing", () => {
   const g = load();
   const s = JSON.parse(g.run(`JSON.stringify(hydrate({ v: 2, made: true, name: "Old Hand", club: "Arsenal", xp: 999, div: 2, season: 3, salt: 5, week: { pl: 4, w: 2, d: 1, l: 1, gf: 9, ga: 6, pts: 7 }, st: { m: 40, w: 22, goals: 120, deep: 12, bestDiv: 2, grids: 3 }, album: { "A|1": 1 } }))`));
-  assert.strictEqual(s.v, 3); assert.strictEqual(s.xp, 999); assert.strictEqual(s.week.pts, 7); assert.strictEqual(s.st.w, 22);
+  assert.strictEqual(s.v, g.run("SAVE_V")); assert.strictEqual(s.xp, 999); assert.strictEqual(s.week.pts, 7); assert.strictEqual(s.st.w, 22);
   assert.deepStrictEqual(s.sk, { d: "", n: 0, best: 0 }); assert.deepStrictEqual(s.md, {}); assert.deepStrictEqual(s.ct, {}); assert.ok(s.ob && s.sn);
 });
 

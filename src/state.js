@@ -17,7 +17,18 @@ const TUNING = {
   chainXp: 5, // Chain Reaction: XP per link...
   chainXpCap: 60, // ...up to this much a day
   gridHintXp: 5, // ...and XP off that square per hint taken
-  logMinSample: 30 // question log: aggregates only come back once a question has this many answers
+  logMinSample: 30, // question log: aggregates only come back once a question has this many answers
+  lvTokenEvery: 5, // levels: a sticker token every N levels (titles and card frames are in progress.js)
+  winRunXp: 10, // wins on the bounce (league and cup): +N XP per win in a row after the first...
+  winRunCap: 50, // ...capped
+  // the level curve (15/11/2026): XP from level n to n+1 = min(lvBase + lvMul * n^lvPow, lvCap) + lvCreep per level past
+  // lvCreepFrom. At ~200 XP a match: level 5 in about 3 matches, 10 in about 11, then never more than ~8 matches a level.
+  lvBase: 40,
+  lvMul: 30,
+  lvPow: 1.2,
+  lvCap: 1300,
+  lvCreepFrom: 35,
+  lvCreep: 6
 };
 const STICKER_RULES = {
   paperDeep: 1, // paper offer: a league or cup match with at least this many deep cuts (rarity >= deepAt)
@@ -49,7 +60,7 @@ const STICKER_RULES = {
    To change the format: bump SAVE_V and add a MIGRATIONS[old] step that upgrades a save in place. Never remove or
    rename a field an older client reads: old clients keep unknown fields, so new ones are safe to add. */
 const KEY = "boffin-matchday-v1";
-const SAVE_V = 3;
+const SAVE_V = 4;
 const freshCup = () => ({ club: "", rd: 0, runs: 0, won: 0, best: -1, w: 0, l: 0 });
 const freshStk = () => ({
   got: {},
@@ -98,7 +109,9 @@ const fresh = () => ({
   md: {},
   ct: {},
   sn: { ty: {} },
-  wp: null
+  wp: null,
+  lvr: 1,
+  wsk: 0
 });
 const MIGRATIONS = {
   // v1 -> v2 (12/11/2026): stickers (S.stk), last-updated stamp (S.t), daily training counter (S.tr), haptics toggle (S.hap). Nothing removed.
@@ -116,6 +129,12 @@ const MIGRATIONS = {
     if (!s.md) s.md = {};
     if (!s.ct) s.ct = {};
     if (!s.sn) s.sn = { ty: {} };
+  },
+  // v3 -> v4 (15/11/2026): level rewards paid up to (S.lvr: the current level, so rewards start from the next one) and
+  // wins in a row (S.wsk). Nothing removed or renamed.
+  3: s => {
+    if (s.lvr === undefined) s.lvr = levelOf(s.xp || 0);
+    if (s.wsk === undefined) s.wsk = 0;
   }
 };
 function migrate(o) {
@@ -239,14 +258,11 @@ function mergeSaves(a, b) {
   });
   m.ct = maxMap(base.ct, other.ct);
   m.sk = Object.assign({ d: "", n: 0, best: 0 }, base.sk || {}, { best: max((base.sk || {}).best, (other.sk || {}).best) });
+  m.lvr = max(a.lvr, b.lvr); // level rewards already paid out
   m.t = max(ta, tb);
   return hydrate(m);
 }
-let S = fresh();
-try {
-  const raw = localStorage.getItem(KEY);
-  if (raw) S = hydrate(JSON.parse(raw));
-} catch (e) {}
+let S = fresh(); // loaded from storage below, once the level curve exists (migrations use it)
 let saveT = 0;
 function persist() {
   clearTimeout(saveT);
@@ -265,19 +281,33 @@ const cwNow = () => {
   if (S.cw.wk !== weekNo()) S.cw = { wk: weekNo(), gf: 0, pts: 0 };
   return S.cw;
 };
-const levelAt = n => Math.round((120 * Math.pow(n, 1.6)) / 10) * 10;
+/* levels: levelAt(n) = total XP to reach level n + 1 (levelAt(0) = 0). Curve numbers in TUNING.lv*. Reshaped 15/11/2026,
+   before launch. Once players are live, changing it moves everyone's level: only change it above levels nobody has reached. */
+const LV_MAX = 999;
+const lvGap = n => Math.round((Math.min(TUNING.lvBase + TUNING.lvMul * Math.pow(n, TUNING.lvPow), TUNING.lvCap) + TUNING.lvCreep * Math.max(0, n - TUNING.lvCreepFrom)) / 10) * 10;
+const LV_AT = [0];
+for (let n = 1; n <= LV_MAX; n++) LV_AT[n] = LV_AT[n - 1] + lvGap(n);
+const levelAt = n => LV_AT[Math.max(0, Math.min(n, LV_MAX))];
 const levelOf = xp => {
   let n = 0;
-  while (xp >= levelAt(n + 1)) n++;
+  while (n < LV_MAX - 1 && xp >= LV_AT[n + 1]) n++;
   return n + 1;
 };
-function addXp(n) {
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) S = hydrate(JSON.parse(raw));
+} catch (e) {}
+/* quiet: the full-time screens celebrate on the XP bar (progress.js) instead of a toast */
+function addXp(n, quiet) {
   const a = levelOf(S.xp);
   S.xp += Math.round(n);
   const b = levelOf(S.xp);
   if (b > a) {
-    toast("Level " + b + ". The knowledge grows.");
-    setTimeout(() => sfx.level(), 500);
+    lvGrant(a, b);
+    if (!quiet) {
+      toast(lvToast(a, b));
+      setTimeout(() => sfx.level(), 500);
+    }
   }
 }
 function addAlbum(i) {

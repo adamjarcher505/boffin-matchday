@@ -56,10 +56,11 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 | `kits.js` | Home shirts for the 79 sticker clubs, with era shirts; sourced from Wikipedia (see the header) |
 | `src/stickers.js` | The sticker album: offers, the "name the man on the sticker" attempt, pages, tokens, the sticker card |
 | `src/stickers2.js` | Legends, Sticker of the Day, tilt-to-shine, peel-and-stick, Best XI, team photo, swaps with mates |
+| `src/progress.js` | Titles, card frames, level rewards, wins on the bounce, the full-time XP bar and level-up sheet, player profiles, head to head, XP rankings |
 | `src/net.js` | Everything online, behind one interface (Supabase, Claude artifact db, or local) |
 | `src/boot.js` | Starts the game; service worker and update toast |
 | `sw.js` | Offline cache |
-| `supabase/` | `schema.sql` (run first), `002_additions.sql` (run second), `003_handoff.sql` (third: iPhone sign-in hand-off), `make-founder.sql` |
+| `supabase/` | `schema.sql` (run first), `002_additions.sql` (run second), `003_handoff.sql` (third: iPhone sign-in hand-off), `004_swaps.sql` (sticker swaps), `005_profile.sql` (public profile numbers), `make-founder.sql` |
 | `tools/` | Icons, coverage report, sticker pages, theme support, service worker version |
 | `tests/` | Dev-only. Never shipped or cached |
 
@@ -86,6 +87,7 @@ Players get a "New version ready, tap to refresh" toast. Nothing takes over mid-
 | `g` | recent match results by seed, so opponents can replay them as ghosts |
 | `t` | last update (ms) |
 | `f`, `m` | Founder flag, member number. A trigger stops players changing either |
+| `pr` | Public profile numbers (`005_profile.sql`): matches, wins, goals, deep cuts, chances and goals per question type, names, stickers, medals, best division, best win run and day streak. Optional: without the column the game reads and writes rows without it |
 
 **`saves`** (private: each player reads and writes only their own row): `id`, `json` (the whole save), `t` (its last-updated stamp, used to merge devices).
 

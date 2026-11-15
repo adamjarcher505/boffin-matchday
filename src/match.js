@@ -162,8 +162,10 @@ function cupFullTime() {
   }
   const final = head === "Cup winners";
   const career = careerAfter({ mode: "cup", a, b, res: win ? "W" : "L", my: M.my.slice(), types: M.rounds.map(r => r.type), deep: M.deep, newN: M.newN || 0, behind: !!M.behind, cupWin: win, final, pens, opp: M.opp.name }, lines);
-  const tot = lines.reduce((s, l) => s + l[1], 0);
-  addXp(tot);
+  winRunLines(win).forEach(l => lines.push(l));
+  const tot = lines.reduce((s, l) => s + l[1], 0),
+    xp0 = S.xp;
+  addXp(tot, true);
   S.st.goals += a;
   S.st.deep += M.deep;
   logMatch();
@@ -175,7 +177,7 @@ function cupFullTime() {
   SHARE = shareCup({ a, b, opp: M.opp.name, round: rdName, my: M.my, pens, win, out: final ? "won" : win ? "through" : "out", next: win && !final ? CUPR[S.cup.rd] : "" });
   $("main").innerHTML = `${ftHero({ eyebrow: "Club Cup · " + esc(S.club) + " · " + esc(rdName), a, b, opp: M.opp.name, cls: win ? "W" : "L", word: head, note: `${pens ? "After penalties" : "Full time"}${coin ? ", settled on a coin toss" : ""}. ${esc(sub)}` })}
   <div class="vidi" id="vidi"></div>
-  ${xpPanel(lines, tot)}${career}${offer}
+  ${xpPanel(lines, tot, xp0)}${career}${offer}
   <div class="panel pad"><div class="statline"><span>Cups won <b>${S.cup.won}</b></span><span>Cup ties <b>${S.cup.w}W ${S.cup.l}L</b></span><span>Best <b>${S.cup.best >= 4 ? "Winners" : S.cup.best >= 0 ? CUPR[S.cup.best] : "—"}</b></span></div></div>
   <button class="btn" data-act="cup">${win && !final ? "Play the " + CUPR[S.cup.rd].toLowerCase() : "Start a new cup run"}</button>${shareBtns()}<button class="btn line" data-act="go" data-v="home">Home</button>
   ${reviewHTML()}<div class="hd"><h2>How it went</h2></div><div class="panel pad"><div class="recap">${M.out
@@ -185,7 +187,7 @@ function cupFullTime() {
     )
     .join("")}</div></div>`;
   vidi($("vidi"), `FT  ${S.name || "YOU"} ${a}  ${M.opp.name} ${b}${pens ? "  (PENS)" : ""}`);
-  ftAnimate();
+  ftAnimate(xp0);
   window.scrollTo(0, 0);
 }
 function startTraining(type) {
@@ -463,8 +465,10 @@ function fullTime() {
     pts = w.pts,
     table = miniTable(rowsB, rowsA);
   const career = careerAfter({ mode: "league", a, b, res, my: M.my.slice(), types: M.rounds.map(r => r.type), deep: M.deep, newN: M.newN || 0, behind: !!M.behind, oppPos, before, after, opp: M.opp.name }, lines);
-  const tot = lines.reduce((s, l) => s + l[1], 0);
-  addXp(tot);
+  winRunLines(res === "W").forEach(l => lines.push(l));
+  const tot = lines.reduce((s, l) => s + l[1], 0),
+    xp0 = S.xp;
+  addXp(tot, true);
   const ended = settleSeason();
   S.ab = null;
   logMatch();
@@ -479,7 +483,7 @@ function fullTime() {
   $("main").innerHTML = `${ftHero({ eyebrow: "Full time · " + esc(divName) + " · Match " + pl + " of " + SEASON, a, b, opp: M.opp.name, cls: res, word: res === "W" ? "Won" : res === "D" ? "Drew" : "Lost", note: esc(pickR(SAY[res])) })}
   <div class="vidi" id="vidi"></div>
   ${ended ? seasonEndHTML(S.note) : table}
-  ${xpPanel(lines, tot)}${career}${offer}
+  ${xpPanel(lines, tot, xp0)}${career}${offer}
   <button class="btn" data-act="kick">${ended ? "Start the new season" : "Next fixture"}</button>${shareBtns()}<div class="row"><button class="btn line" data-act="go" data-v="league">Table</button><button class="btn line" data-act="go" data-v="home">Home</button></div>
   ${reviewHTML()}<div class="hd"><h2>How it went</h2></div><div class="panel pad"><div class="recap">${M.out
     .map(
@@ -488,7 +492,7 @@ function fullTime() {
     )
     .join("")}</div></div>`;
   vidi($("vidi"), `FT  ${S.name || "YOU"} ${a}${sp(a)}  ${M.opp.name} ${b}${sp(b)}` + (around.length ? "\n" + around.join("\n") : ""));
-  ftAnimate();
+  ftAnimate(xp0);
   window.scrollTo(0, 0);
 }
 /* the state of play, shown on the card before each chance (league and cup) */
@@ -526,13 +530,14 @@ function ftHero(o) {
   <div class="res ${o.cls}">${esc(o.word)}</div><p class="note">${o.note}</p>
   <div class="ftpips">${M.my.map((x, k) => `<i class="${x ? "g" : "n"}${k >= 5 ? " pen" : ""}"></i>`).join("")}</div></div>`;
 }
-function xpPanel(lines, tot) {
-  const lv = levelOf(S.xp),
-    l1 = levelAt(lv);
+/* the XP lines, then the level bar starting from where you were before this match (from = XP before) */
+function xpPanel(lines, tot, from) {
+  const f = from === undefined ? S.xp : from,
+    lv = levelOf(f);
   return `<div class="panel pad xpp"><div class="lines">${lines
     .map((l, k) => `<div style="--k:${k}"><span>${esc(l[0])}</span><b>+${l[1]}</b></div>`)
     .join("")}<div class="tot" style="--k:${lines.length}"><span>XP</span><b id="xpt" data-to="${tot}">+0</b></div></div>
-  <div class="xpl"><div class="statline"><span>Level <b>${lv}</b></span><span><b>${fmt(l1 - S.xp)}</b> XP to level ${lv + 1}</span></div><div class="bar"><i id="xpb"></i></div></div></div>`;
+  <div class="xpl"><div class="statline"><span>Level <b id="xplv">${lv}</b> · <span id="xptl">${esc(rankOf(lv))}</span></span><span id="xpn">${xpToGo(f)}</span></div><div class="bar"><i id="xpb"></i></div><p class="xpnext">${nextRewardLine(levelOf(S.xp))}</p></div></div>`;
 }
 /* five rows of the table around you, sliding from where they were before the match to where they are now */
 function miniTable(before, after) {
@@ -556,15 +561,11 @@ function miniTable(before, after) {
     .join("")}</div></div>`;
 }
 /* run the full-time sequence: XP counts up, the bar fills, the table rows settle */
-function ftAnimate() {
-  const lv = levelOf(S.xp),
-    l0 = levelAt(lv - 1),
-    l1 = levelAt(lv),
-    t = $("xpt");
+function ftAnimate(from) {
+  const t = $("xpt");
   if (t) setTimeout(() => countUp(t, +t.dataset.to, 900, "+"), still() ? 0 : 500);
+  animXp(from === undefined ? S.xp : from, S.xp); // fills, rolls over at each level, then the level-up sheet
   requestAnimationFrame(() => {
-    const x = $("xpb");
-    if (x) x.style.width = Math.max(2, Math.min(100, ((S.xp - l0) / (l1 - l0)) * 100)) + "%";
     const m = document.querySelector(".mtr");
     if (m) setTimeout(() => m.classList.add("go"), still() ? 0 : 700);
   });

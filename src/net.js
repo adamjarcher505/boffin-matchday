@@ -26,6 +26,8 @@ const loadScript = src =>
     document.head.appendChild(s);
   });
 const COLS = "id,n,c,d,w,cg,cp,s,p,pl,wn,dr,ls,gf,ga,xp,g,cu,t,f,m";
+// `pr` (public profile numbers, supabase/005_profile.sql) is optional: without the column, rows are read and written without it
+const noCol = e => !!e && (["PGRST204", "42703"].includes(String(e.code)) || /column .*(does not exist|could not find)|could not find the '\w+' column/i.test(e.message || ""));
 const notThere = e =>
   !!e &&
   (["PGRST202", "PGRST205", "42883", "42P01", "404"].includes(String(e.code)) ||
@@ -129,12 +131,27 @@ const Backends = {
       return true;
     },
     async players() {
-      const { data, error } = await this.sb.from("players").select(COLS).order("t", { ascending: false }).limit(500);
+      const q = cols => this.sb.from("players").select(cols).order("t", { ascending: false }).limit(500);
+      let { data, error } = await q(this.miss.pr ? COLS : COLS + ",pr");
+      if (error && !this.miss.pr && noCol(error)) {
+        this.miss.pr = true;
+        ({ data, error } = await q(COLS));
+      }
       if (error) throw error;
       return data || [];
     },
     async pushPlayer(row) {
-      const { error } = await this.sb.from("players").update(row).eq("id", this.uid);
+      if (this.miss.pr) {
+        row = Object.assign({}, row);
+        delete row.pr;
+      }
+      let { error } = await this.sb.from("players").update(row).eq("id", this.uid);
+      if (error && row.pr && noCol(error)) {
+        this.miss.pr = true;
+        row = Object.assign({}, row);
+        delete row.pr;
+        ({ error } = await this.sb.from("players").update(row).eq("id", this.uid));
+      }
       if (error) throw error;
     },
     async stampSave() {
@@ -284,7 +301,7 @@ const Net = {
       await Net._init();
     } catch (e) {}
     Net.checked = true;
-    if (view === "home" || view === "stats") render();
+    if (view === "home" || view === "me" || view === "pl") render();
     // the welcome/profile sheet was drawn before we knew sign-in was available: redraw it with the sign-in box, keeping what was typed
     if (Net.canSignIn() && $("pf") && !document.querySelector(".acct")) {
       const nm = $("nm") ? $("nm").value : "",
@@ -490,6 +507,7 @@ const Net = {
     xp: S.xp,
     g: S.g,
     cu: S.cup.won,
+    pr: profPub(),
     t: Date.now()
   }),
   /* Sync = pull-merge-push. If another device has written since we last synced, its save is merged into ours

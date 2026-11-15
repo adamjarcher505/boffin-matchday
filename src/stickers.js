@@ -659,7 +659,7 @@ const albumSeg = () =>
     ["names", "Knowledge"],
     ["xi", "XI"],
     ["medals", "Medals"],
-    ["stats", "Stats"]
+    ["stats", "Profile"]
   ]
     .filter(t => t[0] !== "stats" || !wide())
     .map(t => `<button class="${albumTab === t[0] ? "on" : ""}" data-act="atab" data-v="${t[0]}">${t[1]}</button>`)

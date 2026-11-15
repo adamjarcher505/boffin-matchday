@@ -77,3 +77,9 @@ the swap buttons just say swaps aren't available, and everything else works.
 Also worth a look: the three **Legends** for each club are that page's three Gold Icons, except Arsenal, which
 uses Henry, Bergkamp and Vieira. You can hand-pick others in `LEGEND_PICKS` at the top of `src/stickers2.js`
 (players already on that club's page only) before anyone has won a Legend from that club.
+
+## 11. Full player profiles: one SQL script (1 minute)
+Supabase → **SQL Editor** → **New query** → paste the whole of `supabase/005_profile.sql` → **Run**. Safe to run twice.
+This lets players see each other's full stats (scoring rate, deep cuts, medals, specialist subject...) on their cards
+and in head to head. Until it's run, cards and rankings still work but only show level, title, club, division and cups
+for other people.

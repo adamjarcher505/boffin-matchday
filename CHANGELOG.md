@@ -1,5 +1,23 @@
 # Changelog
 
+## 15/11/2026: levelling you want to grind, and player profiles to compare
+- **New level curve.** Quick early levels (level 5 in about 3 matches, 10 in about 11), then a cap so no level takes
+  more than about 8 matches. The old curve kept getting steeper for ever (13 matches a level at 80). Existing test
+  saves jump up a few levels.
+- **Titles every 5 levels**: Trialist, Pub Expert, Programme Collector, Terrace Tactician, Phone-in Caller... up to
+  The GOAT at 80, then a star every 10 levels.
+- **Card frames**: Graphite, Bronze (10), Silver (20), Gold (30), Floodlit (40), Legend (60). The frame colours your
+  LV badge in the top bar and the rankings.
+- **A sticker token every 5 levels.** Paid once, even across two devices.
+- **Wins on the bounce**: +10 XP a win after the first, up to +50, league and cup together.
+- **Full time**: the XP bar fills from where you were, rolls over at each level with a chime, then a Level Up sheet
+  shows the new title and rewards. Every XP screen says what the next reward is.
+- **Your profile**: tap your name (or Profile on PC, Album → Profile on a phone). Your card, the road of rewards ahead,
+  day streak, wins in a row, XP ranking, stats by question type, the journey and season history. Share your card.
+- **League → Rankings**: every real player by XP, or just your club's fans, with "N XP to overtake ___".
+- **Tap anyone** in the rankings or the league table for their card and a head to head that counts who wins more
+  categories. Full stats need `supabase/005_profile.sql` (HANDOVER.md step 11).
+
 ## 14/11/2026 (late afternoon): the sticker overhaul
 - **New sticker front.** The club's shirt from his time there, seen from the back with his surname across the shoulders.
 - **Three era designs**, picked by when he was at the club: 90s cream Panini with a club-colour strip, 00s diagonal

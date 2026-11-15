@@ -283,6 +283,15 @@ document.addEventListener("click", e => {
     if (S.hap) buzz(40);
     profileSheet(false);
   } else if (act === "profile") profileSheet(!S.made);
+  else if (act === "chip") {
+    if (!S.made) {
+      profileSheet(true);
+      return;
+    }
+    M = null;
+    view = "me";
+    render();
+  }
   else if (act === "sound") {
     S.sound = !S.sound;
     save();

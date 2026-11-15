@@ -13,10 +13,7 @@ function countdown() {
 function renderHome() {
   const rows = leagueTable(),
     pos = myPos(rows),
-    opp = nextOpponent(),
-    lv = levelOf(S.xp),
-    l0 = levelAt(lv - 1),
-    l1 = levelAt(lv);
+    opp = nextOpponent();
   const fourth = rows[3],
     gap = pos <= 4 ? 0 : fourth.pts - S.week.pts,
     oppPos = rows.findIndex(r => r.id === opp.id) + 1;
@@ -47,7 +44,7 @@ function renderHome() {
    <div class="statline"><span class="form">${S.form.length ? S.form.map(f => `<i class="${f}">${f}</i>`).join("") : "<span>No form yet</span>"}</span><span class="zone ${zc}"><b>${zone}</b></span></div>
    <p class="ifwin">${winLine}</p>
    <div class="prog" aria-hidden="true">${Array.from({ length: SEASON }, (_, k) => `<i class="${k < S.week.pl ? "on" : k === S.week.pl ? "cur" : ""}"></i>`).join("")}</div></div>`;
-  const pYou = `<div class="you">${streakChip() || `<div class="streak">${FLAME}<b>0</b><span>days · play a match to start a streak</span></div>`}<span class="lvl">Level <b>${lv}</b> · ${fmt(l1 - S.xp)} XP to ${lv + 1}</span></div>`;
+  const pYou = `<div class="you">${streakChip() || `<div class="streak">${FLAME}<b>0</b><span>days · play a match to start a streak</span></div>`}</div>${levelPanel()}`;
   const pOff =
     Net.checked && Net.canSignIn() && !Net.uid
       ? `<div class="panel pad"><p class="note"><b>Not signed in.</b> Your progress only lives on this device. Sign in to keep it safe, play on any device and count in the shared tables.</p><button class="btn line sm" style="margin-top:10px" data-act="profile">Sign in</button></div>`
@@ -94,7 +91,7 @@ function tableHTML(rows, mini) {
   return `<div class="panel lt${mini ? " mini" : ""}"><table><tr><th>#</th><th>${esc(DIVS[S.div])}</th><th class="fc">FORM</th><th>P</th>${full ? "<th>W</th><th>D</th><th>L</th>" : ""}<th>GD</th><th>PTS</th></tr>${rows
     .map(
       (r, i) =>
-        `<tr class="${r.me ? "me" : ""} ${up && i < 4 ? "up" : down && i >= 16 ? "down" : ""} ${(up && i === 3) || (down && i === 15) ? "cut" : ""}"><td>${i + 1}${move(r, i)}</td><td><span class="tn">${r.me ? myCrest() : crest(r.name)}<span class="${r.f ? "fdn" : ""}">${esc(r.name)}</span>${
+        `<tr${r.real || r.me ? ` data-act="prof" data-v="${esc(r.id)}"` : ""} class="${r.me ? "me" : ""} ${up && i < 4 ? "up" : down && i >= 16 ? "down" : ""} ${(up && i === 3) || (down && i === 15) ? "cut" : ""}"><td>${i + 1}${move(r, i)}</td><td><span class="tn">${r.me ? myCrest() : crest(r.name)}<span class="${r.f ? "fdn" : ""}">${esc(r.name)}</span>${
           r.me ? '<span class="tag me">YOU</span>' : r.real ? '<span class="tag real">REAL</span>' : ""
         }${badgeHTML(r, full ? "" : "xs")}</span></td><td class="fc">${form(r)}</td><td>${r.pl}</td>${full ? `<td>${r.w}</td><td>${r.d}</td><td>${r.l}</td>` : ""}<td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td>${r.pts}</td></tr>`
     )
@@ -108,14 +105,15 @@ function renderLeague() {
     up = S.div < DIVS.length - 1,
     down = S.div > 0;
   let body;
-  if (leagueTab === "table") {
+  if (leagueTab === "rank") body = rankingsHTML();
+  else if (leagueTab === "table") {
     body = `${stakesHTML(rows)}${tableHTML(rows)}
     <p class="note">A season is ${SEASON} matches: you play everyone once. <b>House sides</b> fill the places real players haven't taken yet, and play a match every time you do.</p>`;
   } else {
     body = warsHTML();
   }
   $("main").innerHTML =
-    `<div class="seg"><button class="${leagueTab === "table" ? "on" : ""}" data-act="ltab" data-v="table">League table</button><button class="${leagueTab === "wars" ? "on" : ""}" data-act="ltab" data-v="wars">Club Wars</button></div>${body}
+    `<div class="seg"><button class="${leagueTab === "table" ? "on" : ""}" data-act="ltab" data-v="table">League table</button><button class="${leagueTab === "wars" ? "on" : ""}" data-act="ltab" data-v="wars">Club Wars</button><button class="${leagueTab === "rank" ? "on" : ""}" data-act="ltab" data-v="rank">Rankings</button></div>${body}
   <div class="hd"><h2>The pyramid</h2></div><div class="panel list">${DIVS.map((d, i) => i)
     .reverse()
     .map(
@@ -202,76 +200,17 @@ function renderAlbum() {
       : `<div class="panel pad"><p class="note">${idx.length ? "None from here yet." : "Empty for now. Every player you name correctly, in a match, the grid or training, counts towards every club he played for."}</p></div>`
   }`;
 }
+/* Stats became your profile (progress.js, 15/11/2026): your card, the road ahead, streaks, then the old stats */
 function renderStats() {
-  const st = S.st,
-    ts = S.ts || {},
-    hist = S.hist || [],
-    got = Object.keys(S.album).length;
-  const tiles = [
-    ["Matches", fmt(st.m)],
-    ["Win rate", st.m ? Math.round((st.w / st.m) * 100) + "%" : "–"],
-    ["Goals", fmt(st.goals)],
-    ["Deep cuts", fmt(st.deep)],
-    ["Best division", DIVS[st.bestDiv]],
-    ["Cups won", S.cup.won],
-    ["Level", levelOf(S.xp)],
-    ["Album", fmt(got)]
-  ];
-  const types = Object.keys(TYPES)
-    .map(k => {
-      const t = ts[k] || [0, 0];
-      return { k, n: TYPES[k].n, a: t[0], g: t[1], pc: t[0] ? Math.round((t[1] / t[0]) * 100) : -1 };
-    })
-    .sort((x, y) => y.pc - x.pc || y.a - x.a);
-  const ranked = types.filter(t => t.a >= 3),
-    best = ranked[0],
-    worst = ranked.length > 1 ? ranked[ranked.length - 1] : null;
-  const pts = hist.map(h => h.d).concat(S.div),
-    W = 640,
-    H = 220,
-    L = 132,
-    X = i => L + (pts.length > 1 ? (i * (W - L - 20)) / (pts.length - 1) : (W - L) / 2),
-    Y = d => H - 24 - (d * (H - 48)) / (DIVS.length - 1);
-  const path = pts.map((d, i) => (i ? "H" + X(i).toFixed(1) + "V" : "M" + X(i).toFixed(1) + " ") + Y(d).toFixed(1)).join("");
-  const chart = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Division by season">${DIVS.map((n, d) => `<line x1="${L - 6}" x2="${W - 10}" y1="${Y(d)}" y2="${Y(d)}" class="gl"/><text x="${L - 12}" y="${Y(d) + 4}" text-anchor="end">${esc(n)}</text>`).join("")}<path d="${path}" class="ln"/>${pts.map((d, i) => `<circle cx="${X(i)}" cy="${Y(d)}" r="${i === pts.length - 1 ? 5 : 3.5}" class="${i === pts.length - 1 ? "now" : "pt"}"><title>Season ${i + 1}: ${esc(DIVS[d])}</title></circle>`).join("")}</svg>`;
-  $("main").innerHTML = `<div class="hd"><h2>Career stats</h2><span class="eyebrow">${esc(S.name || "You")} · ${esc(S.club)} fan</span></div>
-  <div class="tiles">${tiles.map(t => `<div class="panel tile"><b>${esc(String(t[1]))}</b><span>${t[0]}</span></div>`).join("")}</div>
-  <div class="dash two"><div class="col">
-    <div class="hd"><h2>By question type</h2><span class="eyebrow">Scoring rate</span></div>
-    <div class="panel pad"><div class="types">${types.map(t => `<div class="trow"><span>${esc(t.n)}</span><div class="bar"><i style="width:${Math.max(0, t.pc)}%"></i></div><b>${t.a ? t.pc + "%" : "–"}</b><em>${t.g}/${t.a}</em></div>`).join("")}</div>
-    <p class="note" style="margin-top:12px">${best ? `Strongest: <b>${esc(best.n)}</b>. ${worst && worst.k !== best.k ? `Needs work: <b>${esc(worst.n)}</b>. Have a go on the training ground.` : ""}` : "Play a few more chances and your strengths show up here."}</p></div>
-    <div class="hd"><h2>Extra time bests</h2></div>
-    <div class="panel list">${Object.keys(LONG)
-      .map(
-        (k, i) =>
-          `<button class="li" data-act="long" data-v="${k}"><span class="k">ET${i + 1}</span><span class="tx"><b>${LONG[k].n}</b><span>${S.lb[k] ? "Best: " + S.lb[k] + " named" : "Not played yet"}</span></span><span class="go">›</span></button>`
-      )
-      .join("")}</div>
-  </div><div class="col">
-    <div class="hd"><h2>The journey</h2><span class="eyebrow">Division by season</span></div>
-    <div class="panel pad">${chart}</div>
-    <div class="hd"><h2>Season history</h2></div>
-    <div class="panel">${
-      hist.length
-        ? `<table class="hist"><tr><th>S</th><th>Division</th><th>POS</th><th>W-D-L</th><th>GD</th><th>PTS</th></tr>${hist
-            .slice()
-            .reverse()
-            .map(
-              h =>
-                `<tr class="${h.to > h.d ? "up" : h.to < h.d ? "down" : ""}"><td>${h.s}</td><td>${esc(DIVS[h.d])}${h.to > h.d ? '<span class="tag up">UP</span>' : h.to < h.d ? '<span class="tag dn">DOWN</span>' : ""}</td><td>${ord(h.pos)}</td><td>${h.w}-${h.dr}-${h.l}</td><td>${h.gf - h.ga > 0 ? "+" : ""}${h.gf - h.ga}</td><td>${h.pts}</td></tr>`
-            )
-            .join("")}</table>`
-        : `<p class="note pad">No finished seasons yet. Season ${S.season} is ${S.week.pl} of ${SEASON} matches in.</p>`
-    }</div>
-  </div></div>
-  <p class="foot">Per-type stats and season history started recording on 11 November 2026.</p>`;
+  renderProfile(null);
 }
 function render() {
   settleSeason();
+  if (view === "stats") view = "me"; // the old Stats tab is now your profile
   chrome();
-  if (view === "stats" && !wide()) view = "home";
   if (view === "home") renderHome();
-  else if (view === "stats") renderStats();
+  else if (view === "me") renderProfile(null);
+  else if (view === "pl") renderProfile(profId);
   else if (view === "league") renderLeague();
   else if (view === "grid") renderGrid();
   else if (view === "chain") renderChain();
@@ -375,14 +314,15 @@ const TABICON = {
   league: '<path d="M4 6h16M4 10.5h16M4 15h16M4 19.5h10"/>',
   grid: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16"/>',
   album: '<rect x="5" y="3.5" width="14" height="17" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8 17c.8-2.4 2.2-3.4 4-3.4s3.2 1 4 3.4"/>',
-  stats: '<path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/>'
+  stats: '<path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/>',
+  me: '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.8 3.8-5.6 7-5.6s5.8 1.8 7 5.6"/>'
 };
 function chrome() {
   const me = meB(),
     lv = levelOf(S.xp),
     l0 = levelAt(lv - 1),
     l1 = levelAt(lv);
-  $("who").innerHTML = `<b>${esc(S.name || "Sign on")}</b>${badgeHTML(me, wide() ? "" : "xs")}<span class="lv">LV ${lv}</span>`;
+  $("who").innerHTML = `<b>${esc(S.name || "Sign on")}</b>${badgeHTML(me, wide() ? "" : "xs")}${lvChip(S.xp)}`;
   const xb = $("xpbar");
   if (xb) xb.style.width = Math.max(1, Math.min(100, ((S.xp - l0) / (l1 - l0)) * 100)).toFixed(1) + "%";
   document.body.classList.toggle("kit-gold", badgeOf(me) === "fd" && S.kit !== false);
@@ -394,10 +334,10 @@ function chrome() {
     ["grid", "Grid"],
     ["album", "Album"]
   ]
-    .concat(wide() ? [["stats", "Stats"]] : [])
+    .concat(wide() ? [["me", "Profile"]] : [])
     .map(
       t =>
-        `<button class="tab ${view === t[0] ? "on" : ""}" data-act="go" data-v="${t[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TABICON[t[0]]}</svg><span>${t[1]}</span>${t[0] === "grid" && gridOpen ? "<em></em>" : ""}</button>`
+        `<button class="tab ${view === t[0] || (view === "pl" && profBack === t[0]) ? "on" : ""}" data-act="go" data-v="${t[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TABICON[t[0]]}</svg><span>${t[1]}</span>${t[0] === "grid" && gridOpen ? "<em></em>" : ""}</button>`
     )
     .join("");
   document.getElementById("app").classList.toggle("focus", view === "match" || view === "ft" || view === "stk");
