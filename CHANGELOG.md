@@ -18,6 +18,18 @@
 - **Tap anyone** in the rankings or the league table for their card and a head to head that counts who wins more
   categories. Full stats need `supabase/005_profile.sql` (HANDOVER.md step 11).
 
+## 14/11/2026 (evening): proper club legends on every page, swaps locked down
+- **Every sticker page rebuilt.** The first pages ranked players by a fame score that leaned to the 2010s, so Lacazette
+  was an Arsenal Gold Icon and Henry a Paper, and Liverpool had no Gerrard. Now each club's 3 Gold Icons are its legends
+  and the 5 Foils the next tier, all hand-picked (`tools/sticker-picks.json`), checked against the data and spot-checked
+  against club and fan polls. Paper is the best-known, longest-serving of the players already on the page.
+- **Nobody loses out.** Albums are kept by player, so anyone still on his page stays in your album (Henry just moved up to
+  Gold). Stickers of the 257 players who left a page turn into tokens, one each, and a note in the album explains it.
+- **Legend editions are the new Gold Icons** (Arsenal: Henry, Bergkamp, Vieira; Chelsea: Lampard, Terry, Drogba...).
+- **Swaps locked down.** The server now checks each side really has the double in their saved album and moves the
+  stickers itself. Nobody can offer a sticker they haven't got, offer the same double twice, or take a swap without
+  giving a real double back. Needs `supabase/004_swaps.sql` run (again, if you already ran it).
+
 ## 14/11/2026 (evening): question review
 - **Every match is a proper mix**: 2 or 3 typing rounds and 2 or 3 tapping rounds, never two "which number's
   bigger" rounds (The Fee, Higher or Lower) or two final-table rounds (Final Standings, Name the Season) in one match.

@@ -145,8 +145,8 @@ const MEDALS = [
   { id: "alb1k", n: "Encyclopaedia", d: "1,000 names in the album", t: "g", i: "1K", ok: () => Object.keys(S.album).length >= 1000 },
   { id: "grid9", n: "Nine From Nine", d: "A perfect Daily Grid, no hints", t: "s", i: "9/9", ok: () => S.ct.gridp >= 1 },
   { id: "grid10", n: "Grid Regular", d: "Finish 10 Daily Grids", t: "b", i: "▦", ok: () => S.st.grids >= 10 },
-  { id: "stk10", n: "Collector", d: "Stick in 10 stickers", t: "b", i: "S10", ok: () => Object.keys((S.stk || {}).got || {}).length >= 10 },
-  { id: "stk50", n: "Got, Got, Need", d: "Stick in 50 stickers", t: "s", i: "S50", ok: () => Object.keys((S.stk || {}).got || {}).length >= 50 },
+  { id: "stk10", n: "Collector", d: "Stick in 10 stickers", t: "b", i: "S10", ok: () => stkCount() >= 10 },
+  { id: "stk50", n: "Got, Got, Need", d: "Stick in 50 stickers", t: "s", i: "S50", ok: () => stkCount() >= 50 },
   // habit
   { id: "sk3", n: "Regular", d: "A three-day matchday streak", t: "b", i: "3d", ok: () => (S.sk.best || 0) >= 3 },
   { id: "sk7", n: "Season Ticket", d: "A seven-day matchday streak", t: "s", i: "7d", ok: () => (S.sk.best || 0) >= 7 },

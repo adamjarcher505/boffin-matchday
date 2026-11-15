@@ -1,0 +1,1109 @@
+{
+ "_about": "Hand-picked tiers for the sticker pages (14/11/2026). gold = 3 Gold Icons (the club's legends of the era the data covers, roughly 1992 on), foil = 5 Foils (the next tier of club heroes). The 10 Paper slots are filled from the data by tools/make-sticker-pages.js --picks. Names must match data.js. Legend editions are the Gold Icons.",
+ "Arsenal": {
+  "gold": [
+   "Thierry Henry",
+   "Dennis Bergkamp",
+   "Patrick Vieira"
+  ],
+  "foil": [
+   "Robert Pirès",
+   "Cesc Fàbregas",
+   "Bukayo Saka",
+   "Robin van Persie",
+   "Freddie Ljungberg"
+  ]
+ },
+ "Chelsea": {
+  "gold": [
+   "Frank Lampard",
+   "John Terry",
+   "Didier Drogba"
+  ],
+  "foil": [
+   "Gianfranco Zola",
+   "Eden Hazard",
+   "Petr Cech",
+   "Ashley Cole",
+   "N'Golo Kanté"
+  ]
+ },
+ "Liverpool": {
+  "gold": [
+   "Steven Gerrard",
+   "Mohamed Salah",
+   "Jamie Carragher"
+  ],
+  "foil": [
+   "Virgil van Dijk",
+   "Robbie Fowler",
+   "Luis Suárez",
+   "Michael Owen",
+   "Trent Alexander-Arnold"
+  ]
+ },
+ "Manchester United": {
+  "gold": [
+   "Ryan Giggs",
+   "Eric Cantona",
+   "Cristiano Ronaldo"
+  ],
+  "foil": [
+   "Paul Scholes",
+   "Wayne Rooney",
+   "Roy Keane",
+   "David Beckham",
+   "Rio Ferdinand"
+  ]
+ },
+ "Manchester City": {
+  "gold": [
+   "Sergio Agüero",
+   "Kevin De Bruyne",
+   "David Silva"
+  ],
+  "foil": [
+   "Vincent Kompany",
+   "Yaya Touré",
+   "Erling Haaland",
+   "Pablo Zabaleta",
+   "Rodri"
+  ]
+ },
+ "Tottenham": {
+  "gold": [
+   "Harry Kane",
+   "Heung-min Son",
+   "Ledley King"
+  ],
+  "foil": [
+   "Gareth Bale",
+   "Luka Modric",
+   "Hugo Lloris",
+   "Teddy Sheringham",
+   "Jermain Defoe"
+  ]
+ },
+ "Everton": {
+  "gold": [
+   "Leighton Baines",
+   "Tim Cahill",
+   "Duncan Ferguson"
+  ],
+  "foil": [
+   "Seamus Coleman",
+   "Phil Jagielka",
+   "Mikel Arteta",
+   "Tim Howard",
+   "Tony Hibbert"
+  ]
+ },
+ "Newcastle": {
+  "gold": [
+   "Alan Shearer",
+   "Shay Given",
+   "Peter Beardsley"
+  ],
+  "foil": [
+   "Gary Speed",
+   "Nolberto Solano",
+   "Bruno Guimarães",
+   "Fabricio Coloccini",
+   "Les Ferdinand"
+  ]
+ },
+ "Aston Villa": {
+  "gold": [
+   "Gareth Barry",
+   "Dwight Yorke",
+   "Stiliyan Petrov"
+  ],
+  "foil": [
+   "Ollie Watkins",
+   "John McGinn",
+   "Olof Mellberg",
+   "Gabriel Agbonlahor",
+   "Emiliano Martínez"
+  ]
+ },
+ "West Ham": {
+  "gold": [
+   "Mark Noble",
+   "Paolo Di Canio",
+   "Declan Rice"
+  ],
+  "foil": [
+   "Jarrod Bowen",
+   "Dimitri Payet",
+   "Michail Antonio",
+   "Julian Dicks",
+   "Joe Cole"
+  ]
+ },
+ "Leicester": {
+  "gold": [
+   "Jamie Vardy",
+   "Riyad Mahrez",
+   "Kasper Schmeichel"
+  ],
+  "foil": [
+   "N'Golo Kanté",
+   "Wes Morgan|84",
+   "Wilfred Ndidi",
+   "Emile Heskey",
+   "Muzzy Izzet"
+  ]
+ },
+ "Real Madrid": {
+  "gold": [
+   "Raúl",
+   "Cristiano Ronaldo",
+   "Iker Casillas"
+  ],
+  "foil": [
+   "Sergio Ramos",
+   "Zinédine Zidane",
+   "Luka Modric",
+   "Karim Benzema",
+   "Roberto Carlos"
+  ]
+ },
+ "Barcelona": {
+  "gold": [
+   "Lionel Messi",
+   "Xavi",
+   "Andrés Iniesta"
+  ],
+  "foil": [
+   "Carles Puyol",
+   "Sergio Busquets",
+   "Víctor Valdés",
+   "Gerard Piqué",
+   "Luis Suárez"
+  ]
+ },
+ "Atlético Madrid": {
+  "gold": [
+   "Koke",
+   "Antoine Griezmann",
+   "Diego Godín"
+  ],
+  "foil": [
+   "Fernando Torres",
+   "Jan Oblak",
+   "Gabi",
+   "Juanfran Torres",
+   "Radamel Falcao"
+  ]
+ },
+ "Bayern Munich": {
+  "gold": [
+   "Thomas Müller",
+   "Manuel Neuer",
+   "Philipp Lahm"
+  ],
+  "foil": [
+   "Bastian Schweinsteiger",
+   "Arjen Robben",
+   "Franck Ribéry",
+   "Robert Lewandowski",
+   "Oliver Kahn"
+  ]
+ },
+ "Dortmund": {
+  "gold": [
+   "Marco Reus",
+   "Matthias Sammer",
+   "Mats Hummels"
+  ],
+  "foil": [
+   "Lukasz Piszczek",
+   "Robert Lewandowski",
+   "Roman Weidenfeller",
+   "Pierre-Emerick Aubameyang",
+   "Erling Haaland"
+  ]
+ },
+ "Juventus": {
+  "gold": [
+   "Alessandro Del Piero",
+   "Gianluigi Buffon",
+   "Pavel Nedved"
+  ],
+  "foil": [
+   "Giorgio Chiellini",
+   "Andrea Pirlo",
+   "Zinédine Zidane",
+   "David Trézéguet",
+   "Edgar Davids"
+  ]
+ },
+ "AC Milan": {
+  "gold": [
+   "Andriy Shevchenko",
+   "Kaká|82",
+   "Andrea Pirlo"
+  ],
+  "foil": [
+   "Gennaro Gattuso",
+   "Clarence Seedorf",
+   "Alessandro Nesta",
+   "Filippo Inzaghi",
+   "Zlatan Ibrahimovic"
+  ]
+ },
+ "Inter": {
+  "gold": [
+   "Javier Zanetti",
+   "Diego Milito",
+   "Wesley Sneijder"
+  ],
+  "foil": [
+   "Esteban Cambiasso",
+   "Júlio César",
+   "Lautaro Martínez",
+   "Christian Vieri",
+   "Ronaldo"
+  ]
+ },
+ "Roma": {
+  "gold": [
+   "Francesco Totti",
+   "Daniele De Rossi",
+   "Cafu"
+  ],
+  "foil": [
+   "Gabriel Batistuta",
+   "Vincenzo Montella",
+   "Edin Dzeko",
+   "Vincent Candela",
+   "Simone Perrotta"
+  ]
+ },
+ "Napoli": {
+  "gold": [
+   "Marek Hamsik",
+   "Dries Mertens",
+   "Lorenzo Insigne"
+  ],
+  "foil": [
+   "Kalidou Koulibaly",
+   "Edinson Cavani",
+   "Gonzalo Higuaín",
+   "Ezequiel Lavezzi",
+   "José Callejón"
+  ]
+ },
+ "PSG": {
+  "gold": [
+   "Edinson Cavani",
+   "Kylian Mbappé",
+   "Thiago Silva"
+  ],
+  "foil": [
+   "Zlatan Ibrahimovic",
+   "Marquinhos",
+   "Marco Verratti",
+   "Raí",
+   "Pauleta"
+  ]
+ },
+ "Lyon": {
+  "gold": [
+   "Karim Benzema",
+   "Grégory Coupet",
+   "Alexandre Lacazette"
+  ],
+  "foil": [
+   "Sonny Anderson",
+   "Sidney Govou",
+   "Cris",
+   "Nabil Fekir",
+   "Anthony Réveillère"
+  ]
+ },
+ "Marseille": {
+  "gold": [
+   "Steve Mandanda",
+   "Dimitri Payet",
+   "Didier Drogba"
+  ],
+  "foil": [
+   "Mathieu Valbuena",
+   "Mamadou Niang",
+   "Robert Pirès",
+   "André-Pierre Gignac",
+   "Franck Ribéry"
+  ]
+ },
+ "Monaco": {
+  "gold": [
+   "Ludovic Giuly",
+   "Danijel Subasic",
+   "Radamel Falcao"
+  ],
+  "foil": [
+   "Kylian Mbappé",
+   "David Trézéguet",
+   "Wissam Ben Yedder",
+   "João Moutinho",
+   "Thierry Henry"
+  ]
+ },
+ "Sevilla": {
+  "gold": [
+   "Jesús Navas",
+   "Frédéric Kanouté",
+   "Dani Alves"
+  ],
+  "foil": [
+   "Luís Fabiano",
+   "Ivan Rakitic",
+   "Andrés Palop",
+   "José Antonio Reyes",
+   "Éver Banega"
+  ]
+ },
+ "Valencia": {
+  "gold": [
+   "Gaizka Mendieta",
+   "David Villa",
+   "Rubén Baraja"
+  ],
+  "foil": [
+   "David Albelda",
+   "Roberto Ayala",
+   "Vicente",
+   "Dani Parejo",
+   "José Gayà"
+  ]
+ },
+ "Lazio": {
+  "gold": [
+   "Alessandro Nesta",
+   "Ciro Immobile",
+   "Pavel Nedved"
+  ],
+  "foil": [
+   "Sergej Milinković-Savić",
+   "Luis Alberto",
+   "Miroslav Klose",
+   "Senad Lulic",
+   "Siniša Mihajlović"
+  ]
+ },
+ "Leverkusen": {
+  "gold": [
+   "Michael Ballack",
+   "Stefan Kießling",
+   "Lúcio"
+  ],
+  "foil": [
+   "Dimitar Berbatov",
+   "Oliver Neuville",
+   "Florian Wirtz",
+   "Simon Rolfes",
+   "Gonzalo Castro"
+  ]
+ },
+ "Southampton": {
+  "gold": [
+   "James Ward-Prowse",
+   "Rickie Lambert",
+   "Adam Lallana"
+  ],
+  "foil": [
+   "James Beattie",
+   "Wayne Bridge",
+   "José Fonte",
+   "Virgil van Dijk",
+   "Sadio Mané"
+  ]
+ },
+ "Crystal Palace": {
+  "gold": [
+   "Wilfried Zaha",
+   "Julián Speroni",
+   "Andy Johnson"
+  ],
+  "foil": [
+   "Luka Milivojevic",
+   "Eberechi Eze",
+   "James McArthur",
+   "Dougie Freedman",
+   "Jason Puncheon"
+  ]
+ },
+ "Fulham": {
+  "gold": [
+   "Clint Dempsey",
+   "Aleksandar Mitrovic",
+   "Brede Hangeland"
+  ],
+  "foil": [
+   "Danny Murphy",
+   "Steed Malbranque",
+   "Mark Schwarzer",
+   "Luís Boa Morte",
+   "Tom Cairney"
+  ]
+ },
+ "Sunderland": {
+  "gold": [
+   "Kevin Phillips",
+   "Niall Quinn",
+   "Thomas Sørensen"
+  ],
+  "foil": [
+   "Jermain Defoe",
+   "Darren Bent",
+   "Stéphane Sessègnon",
+   "Lee Cattermole",
+   "Julio Arca"
+  ]
+ },
+ "Ajax": {
+  "gold": [
+   "Jari Litmanen",
+   "Edwin van der Sar",
+   "Luis Suárez"
+  ],
+  "foil": [
+   "Marc Overmars",
+   "Patrick Kluivert",
+   "Clarence Seedorf",
+   "Edgar Davids",
+   "Zlatan Ibrahimovic"
+  ]
+ },
+ "Porto": {
+  "gold": [
+   "Deco",
+   "Vítor Baía",
+   "Jardel"
+  ],
+  "foil": [
+   "Hulk",
+   "Radamel Falcao",
+   "Ricardo Carvalho",
+   "Lucho González",
+   "Pepe|83"
+  ]
+ },
+ "Benfica": {
+  "gold": [
+   "Luisão",
+   "Simão",
+   "Nuno Gomes"
+  ],
+  "foil": [
+   "Óscar Cardozo",
+   "Pablo Aimar",
+   "Ángel Di María",
+   "Rui Costa",
+   "Jonas"
+  ]
+ },
+ "Sporting CP": {
+  "gold": [
+   "Rui Patrício",
+   "Bruno Fernandes",
+   "João Moutinho"
+  ],
+  "foil": [
+   "Nani",
+   "Luís Figo",
+   "Sebastián Coates",
+   "Pedro Gonçalves",
+   "Miguel Veloso"
+  ]
+ },
+ "Leeds": {
+  "gold": [
+   "Mark Viduka",
+   "Harry Kewell",
+   "Gary Speed"
+  ],
+  "foil": [
+   "Alan Smith",
+   "Kalvin Phillips",
+   "Ian Harte",
+   "Lee Bowyer",
+   "Liam Cooper"
+  ]
+ },
+ "Wolves": {
+  "gold": [
+   "Conor Coady",
+   "Rúben Neves",
+   "Raúl Jiménez"
+  ],
+  "foil": [
+   "João Moutinho",
+   "Matt Doherty",
+   "Diogo Jota",
+   "Adama Traoré|96",
+   "Pedro Neto"
+  ]
+ },
+ "Fiorentina": {
+  "gold": [
+   "Gabriel Batistuta",
+   "Rui Costa",
+   "Luca Toni"
+  ],
+  "foil": [
+   "Sébastien Frey",
+   "Adrian Mutu",
+   "Alberto Gilardino",
+   "Federico Chiesa",
+   "Davide Astori"
+  ]
+ },
+ "Schalke": {
+  "gold": [
+   "Manuel Neuer",
+   "Benedikt Höwedes",
+   "Klaas-Jan Huntelaar"
+  ],
+  "foil": [
+   "Raúl",
+   "Kevin Kurányi",
+   "Olaf Thon",
+   "Julian Draxler",
+   "Gerald Asamoah"
+  ]
+ },
+ "Villarreal": {
+  "gold": [
+   "Juan Román Riquelme",
+   "Marcos Senna",
+   "Bruno Soriano"
+  ],
+  "foil": [
+   "Diego Forlán",
+   "Santi Cazorla",
+   "Giuseppe Rossi",
+   "Gerard Moreno",
+   "Cani"
+  ]
+ },
+ "PSV": {
+  "gold": [
+   "Ronaldo",
+   "Ruud van Nistelrooy",
+   "Arjen Robben"
+  ],
+  "foil": [
+   "Mateja Kezman",
+   "Mark van Bommel",
+   "Ji-sung Park",
+   "Memphis Depay",
+   "Ibrahim Afellay"
+  ]
+ },
+ "Celtic": {
+  "gold": [
+   "Henrik Larsson",
+   "Chris Sutton",
+   "Neil Lennon"
+  ],
+  "foil": [
+   "Paul Lambert",
+   "Shunsuke Nakamura",
+   "Lubomir Moravcik",
+   "Virgil van Dijk",
+   "Tom Boyd"
+  ]
+ },
+ "RB Leipzig": {
+  "gold": [
+   "Yussuf Poulsen",
+   "Timo Werner",
+   "Emil Forsberg"
+  ],
+  "foil": [
+   "Christopher Nkunku",
+   "Marcel Sabitzer",
+   "Willi Orbán",
+   "Péter Gulácsi",
+   "Dayot Upamecano"
+  ]
+ },
+ "Atalanta": {
+  "gold": [
+   "Papu Gómez",
+   "Josip Ilicic",
+   "Duván Zapata"
+  ],
+  "foil": [
+   "Germán Denis",
+   "Remo Freuler",
+   "Rafael Tolói",
+   "Luis Muriel",
+   "Gianpaolo Bellini"
+  ]
+ },
+ "Brighton": {
+  "gold": [
+   "Lewis Dunk",
+   "Glenn Murray",
+   "Bobby Zamora"
+  ],
+  "foil": [
+   "Pascal Groß",
+   "Anthony Knockaert",
+   "Dale Stephens",
+   "Alexis Mac Allister",
+   "Solly March"
+  ]
+ },
+ "Stoke": {
+  "gold": [
+   "Ryan Shawcross",
+   "Peter Crouch",
+   "Rory Delap"
+  ],
+  "foil": [
+   "Ricardo Fuller",
+   "Jonathan Walters",
+   "Asmir Begovic",
+   "Matthew Etherington",
+   "Glenn Whelan"
+  ]
+ },
+ "Middlesbrough": {
+  "gold": [
+   "Juninho Paulista",
+   "Mark Schwarzer",
+   "Gareth Southgate"
+  ],
+  "foil": [
+   "Fabrizio Ravanelli",
+   "Stewart Downing",
+   "Mark Viduka",
+   "Jimmy Floyd Hasselbaink",
+   "Gaizka Mendieta"
+  ]
+ },
+ "Blackburn": {
+  "gold": [
+   "Alan Shearer",
+   "Chris Sutton",
+   "Colin Hendry"
+  ],
+  "foil": [
+   "Tim Flowers",
+   "Graeme Le Saux",
+   "Tim Sherwood",
+   "Brad Friedel",
+   "Damien Duff"
+  ]
+ },
+ "Bolton": {
+  "gold": [
+   "Jay-Jay Okocha",
+   "Kevin Davies",
+   "Jussi Jääskeläinen"
+  ],
+  "foil": [
+   "Kevin Nolan",
+   "Iván Campo",
+   "El-Hadji Diouf",
+   "Youri Djorkaeff",
+   "Gary Speed"
+  ]
+ },
+ "Nott'm Forest": {
+  "gold": [
+   "Pierre van Hooijdonk",
+   "Stan Collymore",
+   "Morgan Gibbs-White"
+  ],
+  "foil": [
+   "Steve Stone",
+   "Chris Wood",
+   "Brennan Johnson",
+   "Joe Worrall",
+   "Ryan Yates"
+  ]
+ },
+ "Sheffield United": {
+  "gold": [
+   "Billy Sharp",
+   "Phil Jagielka",
+   "Brian Deane"
+  ],
+  "foil": [
+   "Chris Basham",
+   "John Fleck",
+   "Jack O'Connell",
+   "Michael Brown",
+   "Michael Tonge"
+  ]
+ },
+ "Ipswich": {
+  "gold": [
+   "Marcus Stewart",
+   "Kieron Dyer",
+   "James Scowcroft"
+  ],
+  "foil": [
+   "Darren Bent",
+   "Jamie Clapham",
+   "Finidi George",
+   "Mauricio Taricco",
+   "Freddie Sears"
+  ]
+ },
+ "Hull": {
+  "gold": [
+   "Dean Windass",
+   "Nick Barmby",
+   "Tom Huddlestone"
+  ],
+  "foil": [
+   "Jake Livermore",
+   "Jarrod Bowen",
+   "Curtis Davies",
+   "Geovanni",
+   "Boaz Myhill"
+  ]
+ },
+ "Coventry": {
+  "gold": [
+   "Dion Dublin",
+   "Viktor Gyökeres",
+   "Callum Wilson"
+  ],
+  "foil": [
+   "Darren Huckerby",
+   "Mustapha Hadji",
+   "Gary Breen",
+   "John Hartson",
+   "Noel Whelan"
+  ]
+ },
+ "Burnley": {
+  "gold": [
+   "Ben Mee",
+   "Ashley Barnes",
+   "James Tarkowski"
+  ],
+  "foil": [
+   "Tom Heaton",
+   "Nick Pope",
+   "Robbie Blake",
+   "Jay Rodríguez",
+   "Jóhann Berg Gudmundsson"
+  ]
+ },
+ "Bournemouth": {
+  "gold": [
+   "Callum Wilson",
+   "Simon Francis",
+   "Steve Cook"
+  ],
+  "foil": [
+   "Harry Arter",
+   "Charlie Daniels",
+   "Joshua King",
+   "Dominic Solanke",
+   "Adam Smith"
+  ]
+ },
+ "Brentford": {
+  "gold": [
+   "Ivan Toney",
+   "Christian Nörgaard",
+   "Bryan Mbeumo"
+  ],
+  "foil": [
+   "David Raya",
+   "Rico Henry",
+   "Pontus Jansson",
+   "Yoane Wissa",
+   "Ethan Pinnock"
+  ]
+ },
+ "Luton": {
+  "gold": [
+   "Carlton Morris",
+   "Kiernan Dewsbury-Hall",
+   "Phil Gray"
+  ],
+  "foil": [
+   "Elliot Lee",
+   "Adam Boyd",
+   "Sam Parkin",
+   "Callum McManaman",
+   "Eunan O'Kane"
+  ]
+ },
+ "Birmingham": {
+  "gold": [
+   "Jude Bellingham",
+   "Stan Lazaridis",
+   "Maik Taylor"
+  ],
+  "foil": [
+   "Christophe Dugarry",
+   "Mikael Forssell",
+   "Geoff Horsfield",
+   "Sebastian Larsson",
+   "Damien Johnson"
+  ]
+ },
+ "Blackpool": {
+  "gold": [
+   "Charlie Adam",
+   "Brett Ormerod",
+   "Gary Taylor-Fletcher"
+  ],
+  "foil": [
+   "DJ Campbell",
+   "Ian Evatt",
+   "Matt Gilks",
+   "Keith Southern",
+   "Stephen Dobbie"
+  ]
+ },
+ "Cardiff": {
+  "gold": [
+   "Peter Whittingham",
+   "Robert Earnshaw",
+   "Craig Bellamy"
+  ],
+  "foil": [
+   "Joe Ledley",
+   "Kevin McNaughton",
+   "Sean Morrison",
+   "David Marshall",
+   "Aron Gunnarsson"
+  ]
+ },
+ "Huddersfield": {
+  "gold": [
+   "Andy Booth",
+   "Jordan Rhodes",
+   "Jonathan Hogg"
+  ],
+  "foil": [
+   "Aaron Mooy",
+   "Christopher Schindler",
+   "Jon Stead",
+   "Tom Ince|92",
+   "Lewis O'Brien"
+  ]
+ },
+ "Norwich": {
+  "gold": [
+   "Grant Holt",
+   "Darren Huckerby",
+   "Teemu Pukki"
+  ],
+  "foil": [
+   "Wes Hoolahan",
+   "Russell Martin",
+   "Grant Hanley",
+   "Chris Sutton",
+   "Emiliano Buendía"
+  ]
+ },
+ "QPR": {
+  "gold": [
+   "Les Ferdinand",
+   "Trevor Sinclair",
+   "Adel Taarabt"
+  ],
+  "foil": [
+   "Nedum Onuoha",
+   "Charlie Austin",
+   "Clint Hill",
+   "Paul Furlong",
+   "Rob Green"
+  ]
+ },
+ "Reading": {
+  "gold": [
+   "Ívar Ingimarsson",
+   "Marcus Hahnemann",
+   "Kevin Doyle"
+  ],
+  "foil": [
+   "Steve Sidwell",
+   "Dave Kitson",
+   "Shane Long",
+   "Gylfi Sigurdsson",
+   "Jimmy Kébé"
+  ]
+ },
+ "Swansea": {
+  "gold": [
+   "Leon Britton",
+   "Ashley Williams",
+   "Michu"
+  ],
+  "foil": [
+   "Gylfi Sigurdsson",
+   "Ángel Rangel",
+   "Wayne Routledge",
+   "Joe Allen",
+   "Wilfried Bony"
+  ]
+ },
+ "Watford": {
+  "gold": [
+   "Troy Deeney",
+   "Heurelho Gomes",
+   "Abdoulaye Doucouré"
+  ],
+  "foil": [
+   "Odion Ighalo",
+   "Étienne Capoue",
+   "Ismaïla Sarr",
+   "Heidar Helguson",
+   "Marlon King"
+  ]
+ },
+ "West Brom": {
+  "gold": [
+   "Chris Brunt",
+   "Zoltán Gera",
+   "Darren Moore"
+  ],
+  "foil": [
+   "Kevin Phillips",
+   "Peter Odemwingie",
+   "James Morrison",
+   "Ben Foster",
+   "Gareth McAuley"
+  ]
+ },
+ "Wigan": {
+  "gold": [
+   "Emmerson Boyce",
+   "Ben Watson",
+   "Gary Caldwell"
+  ],
+  "foil": [
+   "Will Grigg",
+   "Shaun Maloney",
+   "Jason Roberts",
+   "Nathan Ellington",
+   "Jordi Gómez"
+  ]
+ },
+ "Barnsley FC": {
+  "gold": [
+   "Brian Howard",
+   "Darren Barnard",
+   "Garry O'Connor"
+  ],
+  "foil": [
+   "Robin van der Laan",
+   "Cauley Woodrow",
+   "Jacob Butterfield",
+   "Mido",
+   "Jay Rodríguez"
+  ]
+ },
+ "Bradford": {
+  "gold": [
+   "Dean Windass",
+   "David Wetherall",
+   "Nahki Wells"
+  ],
+  "foil": [
+   "David Hopkin",
+   "Andy Gray",
+   "Aaron McLean",
+   "Ashley Ward",
+   "James Vaughan"
+  ]
+ },
+ "Charlton": {
+  "gold": [
+   "Chris Powell",
+   "Mark Kinsella",
+   "Darren Bent"
+  ],
+  "foil": [
+   "Jason Euell",
+   "Dean Kiely",
+   "Hermann Hreidarsson",
+   "Radostin Kishishev",
+   "Scott Parker"
+  ]
+ },
+ "Derby": {
+  "gold": [
+   "Igor Stimac",
+   "Paulo Wanchope",
+   "Giorgi Kinkladze"
+  ],
+  "foil": [
+   "Mart Poom",
+   "Chris Martin",
+   "Will Hughes",
+   "Branko Strupar",
+   "Tom Huddlestone"
+  ]
+ },
+ "Oldham Athletic": {
+  "gold": [
+   "Richard Jobson",
+   "Sean Gregan",
+   "Paul Gerrard"
+  ],
+  "foil": [
+   "Lee Hughes",
+   "Michael Ricketts",
+   "Chris Killen",
+   "Luke Beckett",
+   "Neil Kilkenny"
+  ]
+ },
+ "Portsmouth": {
+  "gold": [
+   "Nwankwo Kanu",
+   "David James",
+   "Paul Merson"
+  ],
+  "foil": [
+   "Sol Campbell",
+   "Svetoslav Todorov",
+   "Hermann Hreidarsson",
+   "Sylvain Distin",
+   "Jermain Defoe"
+  ]
+ },
+ "Sheffield Wednesday": {
+  "gold": [
+   "Barry Bannan",
+   "Paolo Di Canio",
+   "Fernando Forestieri"
+  ],
+  "foil": [
+   "Andy Hinchcliffe",
+   "Petter Rudi",
+   "Gary Hooper",
+   "Wim Jonk",
+   "Keiren Westwood"
+  ]
+ },
+ "Swindon Town": {
+  "gold": [
+   "Hal Robson-Kanu",
+   "Charlie Austin",
+   "Gary Alexander"
+  ],
+  "foil": [
+   "Lee Peacock",
+   "Andy Williams",
+   "Jay McEveley",
+   "Alan Navarro",
+   "Paul Ince"
+  ]
+ }
+}

@@ -196,7 +196,7 @@ function profPub() {
     dc: S.st.deep | 0,
     ts,
     al: Object.keys(S.album).length,
-    sk: Object.keys(S.stk.got).length,
+    sk: stkCount(), // earned + swapped in - swapped out
     md: Object.keys(S.md || {}).length,
     bd: S.st.bestDiv | 0,
     ws: S.st.bws | 0,

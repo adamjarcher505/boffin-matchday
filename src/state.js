@@ -64,6 +64,8 @@ const SAVE_V = 4;
 const freshCup = () => ({ club: "", rd: 0, runs: 0, won: 0, best: -1, w: 0, l: 0 });
 const freshStk = () => ({
   got: {},
+  recv: {}, // came in by swap (only goes up)
+  gone: {}, // went out by swap (only goes up)
   meta: {},
   chase: [],
   pick: "",
@@ -244,12 +246,15 @@ function mergeSaves(a, b) {
     os = other.stk || freshStk();
   m.stk = Object.assign({}, bs, {
     got: maxMap(bs.got, os.got),
+    recv: maxMap(bs.recv, os.recv),
+    gone: maxMap(bs.gone, os.gone),
     free: !!(bs.free || os.free),
     tok: max(bs.tok, os.tok),
     n: maxMap(bs.n, os.n),
     pages: Object.assign({}, os.pages || {}, bs.pages || {}),
     meta: mergeMeta(os.meta, bs.meta),
-    leg: Object.assign({}, os.leg || {}, bs.leg || {}) // Legend editions won on either device
+    leg: Object.assign({}, os.leg || {}, bs.leg || {}), // Legend editions won on either device
+    pv: max(bs.pv, os.pv) // album page version: the rebuild's token payout happens once
   });
   // medals keep the earliest date either device earned them; counters and the best streak take the higher value
   m.md = Object.assign({}, other.md || {});
