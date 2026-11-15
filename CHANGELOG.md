@@ -18,6 +18,18 @@
 - **Tap anyone** in the rankings or the league table for their card and a head to head that counts who wins more
   categories. Full stats need `supabase/005_profile.sql` (HANDOVER.md step 11).
 
+## 14/11/2026 (evening): question review
+- **Every match is a proper mix**: 2 or 3 typing rounds and 2 or 3 tapping rounds, never two "which number's
+  bigger" rounds (The Fee, Higher or Lower) or two final-table rounds (Final Standings, Name the Season) in one match.
+  The Grid is still in every match. Club Cup follows the same rules where the club's data allows.
+- **The Fee** never shows the same transfer twice in a round.
+- **Sunday League has 44 top tens** to go at instead of 16 (big clubs' scorers and signings, PL assist charts).
+- **Pub Quiz** picks a kind of question first, so no one kind takes over (nationality was a quarter of Sunday League
+  questions; "what position" guessing is now rare). It leans towards your division's difficulty.
+- **New Pub Quiz question: "Which of these clubs did he play for?"**, 632 of them, the easiest in the bank.
+- **Transfer questions** offer believable wrong answers (foreign clubs for a move abroad, English for a move here).
+- Fixed a data mix-up where Celtic was filed as AFC Wimbledon in the question pipeline (no shipped question affected).
+
 ## 14/11/2026 (late afternoon): the sticker overhaul
 - **New sticker front.** The club's shirt from his time there, seen from the back with his surname across the shoulders.
 - **Three era designs**, picked by when he was at the club: 90s cream Panini with a club-colour strip, 00s diagonal

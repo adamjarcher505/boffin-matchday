@@ -151,6 +151,47 @@ Judgment calls made while finishing the game (runs on 11 and 12/11/2026), and wh
   phone still on the old build doesn't wipe them when it syncs.
 - **Stats on phones** lives under Album → Stats to avoid a fifth tab.
 
+## Question categories and generation (14/11/2026, evening)
+Reviewed every question type against 2,000 generated league matches and the whole Pub Quiz bank (scripts were
+one-off; `node tools/difficulty.js` still covers fairness). What changed, and why:
+- **The five chances are mixed on purpose now** (`pickTypes` in src/generators.js). Before, it was any five of twelve
+  with The Grid forced in: 4% of matches had four tap rounds and only The Grid to type, 1.5% had five typing rounds on a
+  phone keyboard. Now every match has 2 or 3 of each. The Grid still turns up in every match, in a random slot.
+- **One per family.** The Fee and Higher or Lower (both "which number's bigger") met in 11% of matches; Final Standings
+  and Name the Season (both a final table) in 12%. Now never. Club Cup already kept the tables apart; it now keeps
+  both families apart and tries for the same typed/tap balance, dropping that rule only when a small club can't build
+  enough of one kind (better than padding with repeat Grids).
+- **Final Standings and Pub Quiz can still meet** (12% of matches). Same layout, but different questions entirely;
+  splitting them would have made Pub Quiz rarer. Worth revisiting if players say it feels samey.
+- **The Fee never shows the same transfer or player twice in a round.** One in ten Fee rounds did.
+- **Sunday League gets 44 top tens instead of 16** (`easyTop`): the next band's Premier League lists where at least
+  7 of the 10 are well known. A third of Sunday League top tens were repeats over 250 matches. Ligue 1 and Serie A
+  scoring charts were left out on purpose, even where they'd pass the fame test.
+- **Pub Quiz picks a template first, then a question** (`QUIZ_W`). Straight random picks meant nationality was 24% of
+  Sunday League questions and "what position did he play" (the same four buttons every time) was one in ten. Weights
+  favour the good stuff (played for, never played for, champions, transfers, finishing positions); position guesses
+  are down to 2-3%. Templates with under 60 questions are scaled down so a handful of questions doesn't repeat weekly.
+  Inside a template it leans towards the division's band (weight 3 on it, 2 one away, 1 further).
+- **QV v6.** The mix changes what every seed builds, so v5 ghosts aren't replayed; house-style results fill in until
+  players have v6 matches behind them, as with v5.
+- **Not changed:** EASE limits, the round rules, scoring and XP. The Grid repeats about one match in five for a
+  Sunday League player who stays down for 250 matches; promotion makes that unlikely, so it was left.
+- **New Pub Quiz template: "Which of these clubs did he play for?"** (`played-for`, data-pipeline/generate.mjs). The
+  bank had only 45 difficulty-1 questions, so Sunday League leaned on nationality. 632 new questions (61 at d1, 169
+  d2, 402 d3), well-known players only (fame 4.4+). The right answer is his longest Premier League spell that
+  Wikidata and data.js both have; wrong answers are clubs in the Premier League at the time that neither source has
+  him at. Bank 20261113 → 20261114: 8,320 → 8,982 questions.
+- **Transfer wrong answers are like for like.** Abroad, they were random (Juventus v San Jose, Treviso, FC Gueugnon).
+  Now they're the destinations closest to the right answer in how often PL players went there, from the same side of
+  the border: a foreign answer gets foreign wrong answers, an English one English. English clubs are recognised from
+  engsoccerdata's team names, used as a build-time filter only (nothing from it ships; it stays verification-only).
+- **Wrong Wikidata IDs fixed in config/clubs.mjs.** AFC Wimbledon pointed at Q19593, which is Celtic, so 294 Celtic
+  spells were filed as AFC Wimbledon (the new template asked about John Hartson's "AFC Wimbledon" years before this
+  was caught). Now Q48851; MK Dons fixed to Q248188 too. The bank as shipped on 13/11 had no question affected. Every
+  club ID was then checked against its Wikidata label: all 53 match. Played-for also only ever uses Premier League clubs.
+- **The other 451 "never played for" questions that changed** came from Wikidata's data moving between the 13/11 and
+  14/11 downloads (same count, different trios), not from code.
+
 ## Levelling and profiles (15/11/2026)
 - **The level curve was reshaped (Adam: the game isn't live yet, so don't hold back).** Old: 120 × n^1.6 per level, steeper for ever (10 matches a level at 50, 13 at 80, 15 at 100), so the late game became a wall. New (`TUNING.lv*`): each level costs min(40 + 30 × n^1.2, 1,300) XP plus 6 per level past 35. At about 200 XP a match: level 5 in about 3 matches, 10 in about 11, 20 in about 50, 50 in about 250, 80 in about 470; no level up to 100 costs more than about 8 matches, so a new title is never more than about 40 matches away. Once players are live, change it only above levels nobody has reached. The medals for levels 10 and 25 come sooner as a result.
 - **Titles every 5 levels, card frames by band, a sticker token every 5 levels**, and a "next reward" line everywhere XP shows. No level from 1 to 100 is more than 5 levels from its next reward (tested). Titles avoid every medal, club knowledge rank and division name (tested), so "Scout", "Anorak" and "Knows Ball" keep one meaning each.

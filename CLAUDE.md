@@ -44,7 +44,7 @@ Serve the folder: `node tools/dev-server.js` (no caching; launch config `boffin`
 ## Things Adam cares about
 - Don't ruin the league mode — it feels like being in a match with a tight promotion battle. Enhance, don't redesign.
 - No scrolling on question screens (the `.q` compact layout exists for this; the answer box sits above the keyboard).
-- Wants a bigger question bank: Phase 1 (PL 1992/93 on + Arsenal) built 13/11/2026; Phase 2 Champions League, Phase 3 old First Division, FA Cup, other leagues.
+- Wants a bigger question bank: Phase 1 (PL 1992/93 on + Arsenal) built 13/11/2026, question review + "played for" template 14/11/2026; Phase 2 Champions League, Phase 3 old First Division, FA Cup, other leagues.
 - Installable offline PWA + accounts built 11/11/2026; stickers, stakes, fair Club Wars, themes 12/11/2026; match feel, home rebuild, streaks, objectives, medals, src/ split 14/11/2026. Going live needs Adam's steps in HANDOVER.md. Adam is the Founder (#001).
 - Long-term: Club Wars — fans of different clubs proving whose fans "know ball". Arsenal first.
 - Check facts in questions; real data only, no made-up stats.

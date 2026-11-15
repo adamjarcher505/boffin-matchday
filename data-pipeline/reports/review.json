@@ -1,7 +1,7 @@
 {
- "asOf": "2026-11-13",
+ "asOf": "2026-11-14",
  "note": "Facts the pipeline would not publish: sources disagree, or only one source has them. Nothing here ships.",
- "count": 122,
+ "count": 121,
  "items": [
   {
    "template": "score",
@@ -193,20 +193,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q1435000",
+   "key": "Q1438500",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Jamie Clapham",
+    "player": "Ian Taylor",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q1438500",
+   "key": "Q1435000",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Ian Taylor",
+    "player": "Jamie Clapham",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -383,16 +383,6 @@
   },
   {
    "template": "nationality",
-   "key": "Q2964791",
-   "reason": "Wikidata and data.js disagree",
-   "detail": {
-    "player": "Chris Makin",
-    "wikidata": "United Kingdom",
-    "datajs": "England"
-   }
-  },
-  {
-   "template": "nationality",
    "key": "Q294806",
    "reason": "Wikidata and data.js disagree",
    "detail": {
@@ -419,6 +409,16 @@
     "player": "Bebé",
     "wikidata": "Portugal",
     "datajs": "Cape Verde"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q2964791",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Chris Makin",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
    }
   },
   {
@@ -613,20 +613,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q3952856",
+   "key": "Q3877698",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Scott Minto",
+    "player": "Noel Whelan",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q3877698",
+   "key": "Q3952856",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Noel Whelan",
+    "player": "Scott Minto",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -913,22 +913,22 @@
   },
   {
    "template": "nationality",
-   "key": "Q731412",
-   "reason": "Wikidata and data.js disagree",
-   "detail": {
-    "player": "Jobi McAnuff",
-    "wikidata": "United Kingdom",
-    "datajs": "Jamaica"
-   }
-  },
-  {
-   "template": "nationality",
    "key": "Q7326866",
    "reason": "Wikidata and data.js disagree",
    "detail": {
     "player": "Richard Jobson",
     "wikidata": "United Kingdom",
     "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q731412",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Jobi McAnuff",
+    "wikidata": "United Kingdom",
+    "datajs": "Jamaica"
    }
   },
   {
@@ -993,20 +993,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q932072",
+   "key": "Q93391",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Neil Emblen",
+    "player": "Glenn Murray",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q93391",
+   "key": "Q932072",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Glenn Murray",
+    "player": "Neil Emblen",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -1107,19 +1107,6 @@
     "wikidata": [
      "everton",
      "man-city"
-    ]
-   }
-  },
-  {
-   "template": "current-club",
-   "key": "Q2476368",
-   "reason": "FPL and Wikidata disagree or Wikidata has more than one open spell",
-   "detail": {
-    "player": "Harry Wilson",
-    "fpl": "Leeds United",
-    "wikidata": [
-     "leeds",
-     "liverpool"
     ]
    }
   },

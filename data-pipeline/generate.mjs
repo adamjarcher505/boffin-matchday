@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { OUT, REPO, REPORTS, fold, ord, seasonLabel, today, rng, shuffle, hashId, writeJSON } from "./lib/util.mjs";
+import { OUT, REPO, REPORTS, CACHE, fold, ord, seasonLabel, today, rng, shuffle, hashId, writeJSON } from "./lib/util.mjs";
 import { CLUBS } from "./config/clubs.mjs";
 import { LIMITS } from "./config/limits.mjs";
 
@@ -150,8 +150,18 @@ const clubKey = s => fold(s).replace(/\b(f ?c|a ?f ?c|c ?f|s ?c|a ?c|s ?s|s ?v|c
 const sameClub = (a, b) => { const x = clubKey(a), y = clubKey(b); return !!x && !!y && (x === y || x.startsWith(y + " ") || y.startsWith(x + " ")); };
 const nameOfClub = (label, cid) => cid ? cname(cid) : label.replace(/\s+(F\.C\.|A\.F\.C\.|FC|AFC|C\.F\.|CF)$/, "").replace(/^(FC|AFC|AC|AS|SS|SV|RC|CF|SC|SL|FK|SK)\s+/, "").trim();
 // clubs outside the Premier League that PL players really moved to, by year: realistic wrong answers for transfers abroad
-const DEST = {};
-for (const p of players) { const bs = JSON.parse(p.bd_spells); bs.forEach(([c, y], j) => { if (j && !CLUBS.some(k => k.of.length && sameClub(c, k.bd || k.name))) (DEST[y] = DEST[y] || new Set()).add(c); }); }
+const DEST = {}, DESTN = {};   // DESTN: how many players in data.js moved there, so wrong answers can be as well known as the right one
+for (const p of players) { const bs = JSON.parse(p.bd_spells); bs.forEach(([c, y], j) => { if (j && !CLUBS.some(k => k.of.length && sameClub(c, k.bd || k.name))) { (DEST[y] = DEST[y] || new Set()).add(c); DESTN[c] = (DESTN[c] || 0) + 1; } }); }
+// 14/11/2026: abroad, random wrong answers made the right one obvious (Juventus v San Jose, Treviso, FC Gueugnon).
+// Now the three come from the eight destinations closest to the answer in how often PL players went there.
+// Wrong answers come from the same side of the border as the right one. For a move abroad they're foreign: otherwise English lower-league sides (MK Dons,
+// Rotherham), where plenty of PL players went, got offered next to AC Milan. English League clubs come from
+// engsoccerdata's team names (all four divisions); used only as a build-time filter, nothing from it ships.
+const engKey = t => clubKey(t.replace(/\bUtd\.?/g, "United"));   // "Scunthorpe Utd." = "Scunthorpe United"
+const ENGK = new Set(["mk dons"]);
+try { fs.readFileSync(path.join(CACHE, "verify/engsoccerdata-england.csv"), "utf8").split("\n").slice(1).forEach(l => { const c = l.split(","); if (+c[1] >= 1970) [c[2], c[3]].forEach(t => t && ENGK.add(engKey(t.replace(/"/g, "")))); }); } catch (e) { if (e.code !== "ENOENT") throw e; /* no cache: no filter */ }
+const ENGM = {}, isEng = c => ENGM[c] !== undefined ? ENGM[c] : (ENGM[c] = (k => !!k && (ENGK.has(k) || [...ENGK].some(e => e.startsWith(k + " ") || k.startsWith(e + " "))))(engKey(c)));   // "Yeovil Town" = "Yeovil
+const likeFor = (pool, ans, r) => { const n = c => Math.log(1 + (DESTN[c] || 0)), t = n(ans), same = pool.filter(c => isEng(c) === isEng(ans)), p = same.length >= 3 ? same : pool; return shuffle(p.sort((a, b) => Math.abs(n(a) - t) - Math.abs(n(b) - t) || a.localeCompare(b)).slice(0, 8), r); };
 const destNear = y => [...new Set([y - 1, y, y + 1].flatMap(k => [...(DEST[k] || [])]))];
 const plPlayers = players.filter(p => plSpells.all(p.q).length);
 const natPool = {};   // nationality -> how many PL players, for realistic distractors
@@ -183,7 +193,7 @@ for (const p of plPlayers) {
     const ans = to.club_id ? cname(to.club_id) : bs[bi][0], fromN = from.club_id ? cname(from.club_id) : bs[bi - 1][0];   // data.js names are the short ones the game already uses
     const career = new Set([...ws.map(s => clubKey(nameOfClub(s.club_label, s.club_id))), ...bs.map(s => clubKey(s[0]))]);
     const pool = to.club_id ? ST["pl-" + yr] ? ST["pl-" + yr].map(x => cname(x.club_id)) : CLUBS.filter(c => c.of.length).map(c => c.name) : destNear(yr).filter(c => c.length <= LIMITS.opt);
-    const dis = shuffle(pool.filter(c => !career.has(clubKey(c)) && clubKey(c) !== clubKey(ans)), r).slice(0, 3);
+    const ok = pool.filter(c => !career.has(clubKey(c)) && clubKey(c) !== clubKey(ans)), dis = (to.club_id ? shuffle(ok, r) : likeFor(ok, ans, r)).slice(0, 3);
     if (dis.length < 3) continue;
     Q({ t: "transfer", cat: "club", clubs: [from.club_id, to.club_id].filter(Boolean), season: yr, d: Math.min(4, d + 1), q: `Which club did ${p.name} join from ${fromN}?`, sub: `In ${yr}`, a: ans, o: dis, src: ["wikidata:" + p.q + "#P54", "data.js:" + p.bd_idx], tags: ["player", "transfer"], key: "tr|" + p.q + "|" + yr });
   }
@@ -204,6 +214,24 @@ for (const c of CLUBS.filter(c => c.of.length)) {
     Q({ t: "never-played", cat: "club", clubs: [c.id], d, q: `Which of these never played for ${c.name}?`, sub: "", a: o.name, o: three.map(p => p.name), src: ["wikidata:P54 " + [o, ...three].map(p => p.q).join(","), "data.js (careers)"], tags: ["player"], key: "np|" + c.id + "|" + [o, ...three].map(p => p.q).sort().join(",") });
     made++;
   }
+}
+// played for (14/11/2026): the easy end the bank was missing (only 45 difficulty-1 questions). Well-known players only.
+// The right answer is his longest Premier League spell that Wikidata and data.js both have; the wrong ones are clubs
+// that were in the Premier League while he was, that neither source has him at.
+const pfD = f => f >= 5.6 ? 1 : f >= 5 ? 2 : f >= 4.4 ? 3 : 0;
+for (const p of plPlayers) {
+  const d = pfD(p.fame); if (!d) continue;
+  const ws = spellsOf.all(p.q).filter(s => s.start), bs = JSON.parse(p.bd_spells), r = rng("pf" + p.q);
+  const years = s => Math.max(0, (s.end_date ? +s.end_date.slice(0, 4) : +ASOF.slice(0, 4)) - +s.start.slice(0, 4));
+  const agreed = ws.filter(s => s.club_id && CL[s.club_id].of.length && bs.some(b => sameClub(b[0], cbd(s.club_id)))).sort((a, b) => years(b) - years(a) || a.start.localeCompare(b.start));
+  if (!agreed.length) continue;
+  const best = agreed[0], from = +best.start.slice(0, 4), to = best.end_date ? +best.end_date.slice(0, 4) : +ASOF.slice(0, 4);
+  const career = new Set([...ws.map(s => clubKey(nameOfClub(s.club_label, s.club_id))), ...bs.map(s => clubKey(s[0]))]);
+  const inPL = new Set(); for (let y = Math.max(1992, from - 2); y <= to + 2; y++) (ST["pl-" + y] || []).forEach(x => inPL.add(x.club_id));
+  const dis = shuffle([...inPL].sort().filter(c => !ws.some(s => s.club_id === c) && !career.has(clubKey(cname(c))) && !bs.some(b => sameClub(b[0], cbd(c)))), r).slice(0, 3);
+  if (dis.length < 3) continue;
+  const on = !best.end_date && active(p.q);
+  Q({ t: "played-for", cat: "club", clubs: [best.club_id], season: null, d, q: `Which of these clubs ${on ? "has" : "did"} ${p.name} ${on ? "played" : "play"} for?`, sub: p.pos && p.pos === p.bd_pos ? `${POSNAME[p.pos]}, born ${p.birth_year}` : `Born ${p.birth_year}`, a: cname(best.club_id), o: dis.map(cname), src: ["wikidata:" + p.q + "#P54", "data.js:" + p.bd_idx], tags: ["player"], key: "pf|" + p.q });
 }
 // current squads: FPL and Wikidata must agree on the club (FPL has no birth dates, so the link is name + club)
 const gw = +((one("SELECT v FROM meta WHERE k='fpl_gw'") || {}).v || 0);

@@ -114,3 +114,30 @@ test("league table: house form is recorded from the same results, and the table 
   const r = JSON.parse(g.run(`(() => { S = hydrate({ made: true, salt: 9, week: { pl: 6, w: 3, d: 1, l: 2, gf: 12, ga: 9, pts: 10 } }); const rows = leagueTable(), h = rows.find(x => x.house), none = leagueTable(true); S.wp = { pl: 5, w: 2, d: 1, l: 2, gf: 9, ga: 9, pts: 7 }; const back = leagueTable(true); return JSON.stringify({ form: h.form, wdl: h.w + h.d + h.l, none, backPl: back.find(x => x.house).pl, mePts: back.find(x => x.me).pts }); })()`));
   assert.strictEqual(r.form.length, 5); assert.ok(r.form.every(f => "WDL".includes(f))); assert.strictEqual(r.wdl, 6); assert.strictEqual(r.none, null); assert.strictEqual(r.backPl, 5); assert.strictEqual(r.mePts, 7);
 });
+
+// 14/11/2026: the five-chance mix and the Pub Quiz spread
+test("league: every match has The Grid, 2-3 tap rounds, and one per family", () => {
+  const g = load();
+  const bad = JSON.parse(g.run(`(() => { const bad = []; for (let t = 0; t < 4; t++) for (let k = 0; k < 150; k++) { const ts = makeMatch(QV + "mix-" + t + "-" + k, t).map(x => x.type), tap = ts.filter(x => !TYPES[x].typed).length, fam = ts.map(x => FAMILY[x]).filter(Boolean);
+    if (!ts.includes("cell") || tap < 2 || tap > 3 || new Set(fam).size < fam.length || new Set(ts).size < 5) bad.push(ts.join(",")); } return JSON.stringify(bad); })()`));
+  assert.deepStrictEqual(bad, []);
+});
+
+test("cup: never two from the same family, for any club in the picker", () => {
+  const g = load();
+  const bad = JSON.parse(g.run(`(() => { const bad = []; CLUBS_PICK.forEach(c => { for (let k = 0; k < 6; k++) { const fam = makeCupMatch("fam-" + k, c, k % 4).map(x => FAMILY[x.type]).filter(Boolean); if (new Set(fam).size < fam.length) bad.push(CLUB[c]); } }); return JSON.stringify(bad); })()`));
+  assert.deepStrictEqual(bad, []);
+});
+
+test("The Fee: five pairs, and no transfer or player shown twice in a league round", () => {
+  const g = load();
+  const bad = JSON.parse(g.run(`(() => { const bad = []; for (let t = 0; t < 4; t++) for (let k = 0; k < 200; k++) { const x = makeRaw("hl", rngOf(hash("fee" + t + k)), t, k % 2 ? { pl: 1 } : null); const ids = x.pairs.flat(), who = ids.map(h => BD.hl[h][0]);
+    if (x.pairs.length !== 5 || new Set(ids).size < 10 || new Set(who).size < 10) bad.push([t, k]); } return JSON.stringify(bad); })()`));
+  assert.deepStrictEqual(bad, []);
+});
+
+test("Pub Quiz: no template takes over, and position guesses stay rare", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { const out = []; for (let t = 0; t < 4; t++) { const c = {}; let n = 0; for (let k = 0; k < 600; k++) { const z = makeQuiz(rngOf(hash("spread" + t + k)), t, null); z.qs.forEach(q => { const tt = QB.by[q.id].t; c[tt] = (c[tt] || 0) + 1; n++; }); } out.push([Math.max(...Object.values(c)) / n, (c.position || 0) / n]); } return JSON.stringify(out); })()`));
+  r.forEach(([top, pos]) => { assert.ok(top < 0.2, "biggest template share " + top); assert.ok(pos < 0.05, "position share " + pos); });
+});

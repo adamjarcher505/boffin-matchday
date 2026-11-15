@@ -83,6 +83,9 @@ const EASE = {
   careerFameClub: [4.6, 4.2, 3.8, 3.4]
 };
 const knownN = (v, t) => v.filter(i => fame(i) >= t).length;
+/* Sunday League only had 16 top tens (a third came round again within 250 matches). It also gets the next band's
+   Premier League lists where 7 or more of the ten are well known (fame 4.5+): 3 to name, plenty to go at. */
+const easyTop = (i, tier) => tier === 0 && BD.lists[i][2] === 2 && PLLISTS.includes(i) && knownN(BD.lists[i][3].map(it => it[0]), 4.5) >= 7;
 function fairEnough(x, tier) {
   const t = x.type;
   if (t === "mates") {
@@ -138,7 +141,7 @@ function makeRaw(type, r, tier, sc) {
   if (type === "cell") return makeCell(r, tier);
   if (type === "quiz") return makeQuiz(r, tier, null) || makeScoped("champ", r, tier, {}); // no bank on this device: a Final Standings round instead
   if (type === "top") {
-    const pool = BD.lists.map((l, i) => i).filter(i => BD.lists[i][2] <= tier + 1);
+    const pool = BD.lists.map((l, i) => i).filter(i => BD.lists[i][2] <= tier + 1 || easyTop(i, tier));
     return { type, i: pickR(pool, r), target: [3, 4, 4, 5][tier] };
   }
   if (type === "xi") {
@@ -167,19 +170,46 @@ function makeRaw(type, r, tier, sc) {
         b = Math.floor(r() * n),
         fa = BD.hl[a][4],
         fb = BD.hl[b][4];
-      if (a !== b && BD.hl[a][0] !== BD.hl[b][0] && Math.max(fa, fb) / Math.min(fa, fb) >= ratio) pairs.push([a, b]);
+      if (a !== b && BD.hl[a][0] !== BD.hl[b][0] && Math.max(fa, fb) / Math.min(fa, fb) >= ratio && !hlUsed(pairs, a, b)) pairs.push([a, b]);
     }
     return { type, pairs, target: tier ? 4 : 3 };
   }
   const pool = BD.tables.map((t, i) => i).filter(i => BD.tables[i][2] <= tier + 1 && (tier > 1 || BD.tables[i][0] === "Premier League"));
   return { type: "season", i: pickR(pool, r), tol: tier === 3 ? 0 : 1 };
 }
+/* The Fee: a transfer (or a player) already shown in this round doesn't come back in another pair. A club's own
+   list can be short, so club rounds relax to "no repeated pair" once the strict search has had a fair go. */
+const hlUsed = (pairs, a, b, loose) =>
+  loose
+    ? pairs.some(q => q.includes(a) && q.includes(b))
+    : pairs.some(q => q.some(h => h === a || h === b || BD.hl[h][0] === BD.hl[a][0] || BD.hl[h][0] === BD.hl[b][0]));
 /* League matches must rebuild identically from their seed (so ghosts replay the same five chances), so they never skip seen questions inside a seed.
    Instead we try a few seed variants and keep the freshest. */
+/* ---------- the five-chance mix (14/11/2026) ----------
+   The Grid is in every match. The other four come off a shuffle with two rules:
+   - a mix of typing and tapping: 2 or 3 of each, never four tap rounds or five typing rounds on a phone keyboard;
+   - one per family: The Fee and Higher or Lower are both "which number's bigger", Final Standings and Name the
+     Season both put a final table in front of you. Two of those in one match felt like the same chance twice. */
+const FAMILY = { hl: "more", race: "more", order: "more", champ: "table", season: "table", row: "table" }; // In Order sorts numbers; Hidden Row is a final table
+const isTyped = t => !!TYPES[t].typed;
+function pickTypes(r, n, first) {
+  const out = first.slice(),
+    fam = new Set(out.map(t => FAMILY[t]).filter(Boolean));
+  for (const t of shuffle(Object.keys(TYPES), r)) {
+    if (out.length >= n) break;
+    if (out.includes(t) || (FAMILY[t] && fam.has(FAMILY[t]))) continue;
+    const typed = out.filter(isTyped).length;
+    if (isTyped(t) ? typed >= n - 2 : out.length - typed >= n - 2) continue;
+    out.push(t);
+    if (FAMILY[t]) fam.add(FAMILY[t]);
+  }
+  return out;
+}
 function makeMatch(seed, tier) {
-  const r = rngOf(hash("m" + seed));
-  let types = shuffle(Object.keys(TYPES), r).slice(0, 5);
-  if (!types.includes("cell")) types[0] = "cell";
+  const r = rngOf(hash("m" + seed)),
+    rest = pickTypes(r, 5, ["cell"]).slice(1),
+    at = Math.floor(r() * 5),
+    types = rest.slice(0, at).concat("cell", rest.slice(at));
   return types.map(t => makeRound(t, r, tier, r() < 0.7 ? { pl: 1 } : null, true));
 }
 function freshSeed(seed, tier) {
@@ -199,16 +229,48 @@ function freshSeed(seed, tier) {
 /* Pub Quiz: three questions from the bank. Difficulty follows the division (Sunday League gets d1-2, the top gets everything),
    Club Cup uses only questions about the club, and no two questions in a round come from the same template.
    Never looks at S.seen: league rounds must rebuild identically from their seed (makeRound handles freshness). */
-function makeQuiz(r, tier, sc) {
-  const club = sc && sc.club !== undefined ? CLUB[sc.club] : null,
-    maxD = Math.max(2, tier + 1);
+/* Which templates come up (14/11/2026). Picking straight from the bank meant whatever the pipeline makes most of
+   took over: nationality was a quarter of all Sunday League questions, and "what position did he play" (a 1-in-4
+   guess with the same four buttons every time) one in ten. Now a template is picked first, by these weights, then a
+   question inside it. A template with only a handful of questions is scaled down (full weight at 60), so the one
+   unbeaten-season question doesn't turn up every week. Unknown templates (a new pipeline one) count as 1. */
+const QUIZ_W = {
+  "played-for": 3, champion: 2, "never-played": 2.5, transfer: 2, "current-club": 2, finished: 2, "club-finish": 2,
+  "big-win": 2, relegated: 2, "title-count": 2, "titles-span": 2, h2h: 1.5, nationality: 1.5, score: 1.2, unbeaten: 1,
+  points: 1, losses: 0.6, "h2h-draws": 0.6, position: 0.4
+};
+const QPOOL = {};
+function quizPool(tier, club) {
+  const key = tier + "|" + (club || "");
+  if (QPOOL[key]) return QPOOL[key];
+  const maxD = Math.max(2, tier + 1);
   let pool = QB.all.filter(x => x.d <= maxD && (!club || x.k.includes(club)));
   if (club && pool.length < 12) pool = QB.all.filter(x => x.k.includes(club)); // smaller clubs: any difficulty rather than nothing
-  if (pool.length < 3) return null;
+  const by = {};
+  pool.forEach(x => (by[x.t] = by[x.t] || []).push(x));
+  // inside a template, lean towards the division's own band: weight 3 on it, 2 one away, 1 further
+  const dw = x => Math.max(1, 3 - Math.abs(x.d - (tier + 1)));
+  const ts = Object.keys(by)
+    .sort()
+    .map(t => ({ t, qs: by[t], w: (QUIZ_W[t] !== undefined ? QUIZ_W[t] : 1) * Math.min(1, by[t].length / 60), dws: by[t].map(dw) }));
+  return (QPOOL[key] = { n: pool.length, ts });
+}
+const pickW = (a, w, r) => {
+  let x = r() * w.reduce((s, v) => s + v, 0);
+  for (let k = 0; k < a.length; k++) if ((x -= w[k]) < 0) return a[k];
+  return a[a.length - 1];
+};
+function makeQuiz(r, tier, sc) {
+  const club = sc && sc.club !== undefined ? CLUB[sc.club] : null,
+    P = quizPool(tier, club);
+  if (P.n < 3) return null;
   const picks = [];
   for (let g = 0; picks.length < 3 && g < 80; g++) {
-    const x = pickR(pool, r);
-    if (!picks.some(p => p.id === x.id || (g < 60 && p.t === x.t))) picks.push(x);
+    const left = P.ts.filter(T => g >= 60 || !picks.some(p => p.t === T.t)); // no two from the same template while there's a choice
+    if (!left.length) continue;
+    const T = pickW(left, left.map(T => T.w || 0.01), r),
+      x = pickW(T.qs, T.dws, r);
+    if (!picks.some(p => p.id === x.id)) picks.push(x);
   }
   if (picks.length < 3) return null;
   return {
@@ -232,7 +294,7 @@ function makeScoped(type, r, tier, sc) {
   if (type === "quiz") return makeQuiz(r, tier, sc);
   if (MORE_TYPES.includes(type)) return makeMore(type, r, tier, sc);
   if (type === "top") {
-    let pool = club ? listsOf(C) : pl ? PLLISTS.filter(i => BD.lists[i][2] <= tier + 1) : BD.lists.map((l, i) => i);
+    let pool = club ? listsOf(C) : pl ? PLLISTS.filter(i => BD.lists[i][2] <= tier + 1 || easyTop(i, tier)) : BD.lists.map((l, i) => i);
     if (!pool.length) return null;
     return { type, i: pickR(pool, r), target: club ? [3, 3, 4, 5][tier] : [3, 4, 4, 5][tier] };
   }
@@ -286,8 +348,7 @@ function makeScoped(type, r, tier, sc) {
         b = pickR(pool, r),
         fa = BD.hl[a][4],
         fb = BD.hl[b][4];
-      if (a !== b && BD.hl[a][0] !== BD.hl[b][0] && Math.max(fa, fb) / Math.min(fa, fb) >= ratio && !pairs.some(q => q.includes(a) && q.includes(b)))
-        pairs.push([a, b]);
+      if (a !== b && BD.hl[a][0] !== BD.hl[b][0] && Math.max(fa, fb) / Math.min(fa, fb) >= ratio && !hlUsed(pairs, a, b, guard > 400)) pairs.push([a, b]);
     }
     return pairs.length === 5 ? { type, pairs, target: tier ? 4 : 3 } : null;
   }
