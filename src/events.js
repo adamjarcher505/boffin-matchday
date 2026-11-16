@@ -266,6 +266,12 @@ document.addEventListener("click", e => {
     renderLeague();
   } else if (act === "cell") cellSheet(+v);
   else if (act === "chaingo") chainGo();
+  else if (act === "pinlock") pnLock();
+  else if (act === "pinnext") pnNext();
+  else if (act === "pinshare") {
+    SHARE = pnShare();
+    doShare();
+  }
   else if (act === "sharechain") {
     SHARE = shareChain();
     doShare();

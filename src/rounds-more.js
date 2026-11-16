@@ -325,16 +325,6 @@ function makeMore(type, r, tier, sc) {
     }
     return qs.length === 3 ? { type, qs, target: [2, 3, 3, 4][tier] } : null;
   }
-  if (type === "pin") {
-    // Pin the Ground: three clubs from the grounds list (src/grounds.js); a ground with no coordinates is never picked
-    const pool = GROUNDS.map((g, i) => i);
-    const qs = [];
-    for (let g = 0; qs.length < 3 && g < 60; g++) {
-      const i = pickR(pool, r);
-      if (!qs.includes(i)) qs.push(i);
-    }
-    return qs.length === 3 ? { type, qs, target: [3, 4, 4, 5][tier] } : null;
-  }
   return null;
 }
 /* Exact Score uses the bank's "what was the score?" questions (two-source checked) */
@@ -355,12 +345,6 @@ function careerPath(p) {
   for (let k = 0; k < a.length; k += 2) if (!path.length || path[path.length - 1][0] !== a[k]) path.push([a[k], a[k + 1] + 1990]);
   return path;
 }
-function gKm(a, b) {
-  const R = 6371, t = x => (x * Math.PI) / 180;
-  const dLa = t(b[0] - a[0]), dLn = t(b[1] - a[1]);
-  const h = Math.sin(dLa / 2) ** 2 + Math.cos(t(a[0])) * Math.cos(t(b[0])) * Math.sin(dLn / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
 function moreKey(x) {
   const t = x.type;
   if (t === "six") return "6" + x.a + "." + x.b;
@@ -371,7 +355,6 @@ function moreKey(x) {
   if (t === "order") return "r" + x.sets.map(s => s.v + (s.h || s.o).join(".") + (s.t !== undefined ? "t" + s.t : s.li !== undefined ? "l" + s.li : "")).join("_");
   if (t === "flags") return "g" + x.qs.map(q => q.i).join(".");
   if (t === "exact") return "e" + x.qs.join(".");
-  if (t === "pin") return "p" + x.qs.join(".");
   return t;
 }
 
@@ -741,100 +724,6 @@ Object.assign(RUN, {
     };
     R.review = () =>
       `<div class="rv">${qs.map((x, k) => `<div class="${k >= R.res.length ? "" : R.res[k] ? "ok" : "no"}"><span>${esc(x.home)}</span><i>${x.hg}–${x.ag}</i><span>${esc(x.away)}</span><small>${esc(x.sub)}</small></div>`).join("")}</div>`;
-    R.end = () => ({
-      goal: R.pts >= spec.target,
-      xp: R.pts >= spec.target ? 30 + 5 * R.pts : 4 * R.pts,
-      html: `<p><b>${R.pts}</b> of ${N * 2} points.</p>`
-    });
-    return R;
-  },
-  pin(spec) {
-    const gs = spec.qs.map(i => GROUNDS[i]).filter(Boolean),
-      N = gs.length,
-      R = { k: 0, pts: 0, res: [], dists: [], over: !N, shown: false, lock: false, pin: null, view: null, map: null, rule: `Drop a pin on each home ground. Within 1.5km is 2 points, within 8km is 1. Get ${spec.target} of ${N * 2}.` };
-    R.cover = "Three home grounds, satellite view, no names. You'll see which clubs when the clock starts.";
-    R.body = () => {
-      if (R.k >= N) return "";
-      const g = gs[R.k],
-        pips = `<div class="pips">${gs.map((x, k) => `<i class="${k < R.res.length ? (R.res[k] === 2 ? "ok" : R.res[k] === 1 ? "half" : "no") : ""}"></i>`).join("")}</div>`,
-        verdict = R.shown ? `<p class="exv ${R.res[R.k] === 2 ? "right" : R.res[R.k] === 1 ? "half" : "wrong"}">${esc(g.s)} · ${R.dists[R.k] < 1 ? Math.round(R.dists[R.k] * 1000) + " m" : R.dists[R.k].toFixed(1) + " km"} away · ${R.res[R.k] === 2 ? "2 points" : R.res[R.k] === 1 ? "1 point" : "0 points"}</p>` : "";
-      return (
-        pips +
-        `<p class="ask">${esc(g.c)} home ground<span>Tap the map to drop your pin</span></p><div id="pinmap" class="pinmap" aria-label="Satellite map, no labels"></div>` +
-        verdict +
-        (R.shown ? "" : `<button class="btn" data-act="tap" data-v="lock" ${R.pin ? "" : "disabled"}>Lock it in</button>`)
-      );
-    };
-    // called by the match engine after every paint: builds the satellite map in the new container
-    R.mount = () => {
-      const el = document.getElementById("pinmap");
-      if (!el || typeof L === "undefined" || R.k >= N) return;
-      if (R.map) {
-        try { R.map.remove(); } catch (e) {}
-        R.map = null;
-      }
-      const g = gs[R.k],
-        map = L.map(el, { minZoom: 3, maxZoom: 19, zoomControl: true, attributionControl: true, worldCopyJump: false });
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-        attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics"
-      }).addTo(map);
-      if (R.view) map.setView(R.view.c, R.view.z);
-      else map.setView([53.6, -2.4], 6);
-      map.on("moveend", () => (R.view = { c: map.getCenter(), z: map.getZoom() }));
-      if (R.pin && !R.shown) R.marker = L.circleMarker(R.pin, { radius: 8, color: "#ffb000", weight: 3, fillColor: "#ffb000", fillOpacity: 0.9 }).addTo(map);
-      if (!R.shown) {
-        map.on("click", e => {
-          if (R.lock) return;
-          R.pin = [e.latlng.lat, e.latlng.lng];
-          if (R.marker) R.marker.remove();
-          R.marker = L.circleMarker(R.pin, { radius: 8, color: "#ffb000", weight: 3, fillColor: "#ffb000", fillOpacity: 0.9 }).addTo(map);
-          const b = document.querySelector('[data-act="tap"][data-v="lock"]');
-          if (b) b.disabled = false;
-        });
-      } else {
-        // reveal: the real ground in green, your pin, and a line between them
-        const real = [g.la, g.ln];
-        L.circleMarker(real, { radius: 9, color: "#2ecc71", weight: 3, fillColor: "#2ecc71", fillOpacity: 0.9 }).addTo(map);
-        if (R.pin) {
-          L.circleMarker(R.pin, { radius: 8, color: "#ffb000", weight: 3, fillColor: "#ffb000", fillOpacity: 0.9 }).addTo(map);
-          L.polyline([R.pin, real], { color: "#ffffff", weight: 2, dashArray: "6 6" }).addTo(map);
-        }
-        map.setView(real, Math.max(map.getZoom(), 13));
-      }
-      R.map = map;
-      setTimeout(() => map.invalidateSize(), 0);
-    };
-    R.onTap = v => {
-      if (R.over || R.lock) return;
-      if (v !== "lock" || !R.pin) return;
-      const g = gs[R.k],
-        d = gKm(R.pin, [g.la, g.ln]),
-        p = d <= 1.5 ? 2 : d <= 8 ? 1 : 0;
-      R.dists.push(d);
-      R.res.push(p);
-      R.pts += p;
-      R.lock = true;
-      R.shown = true;
-      if (p) sfx.tick();
-      else sfx.no();
-      ctx.paint();
-      setTimeout(() => {
-        R.shown = false;
-        R.lock = false;
-        R.pin = null;
-        R.view = null;
-        R.k++;
-        if (R.k >= N) {
-          R.over = true;
-          if (R.map) try { R.map.remove(); } catch (e) {}
-          R.map = null;
-          ctx.done();
-        } else ctx.paint();
-      }, 2600);
-    };
-    R.review = () =>
-      `<div class="rv">${gs.map((x, k) => `<div class="${k >= R.res.length ? "" : R.res[k] ? "ok" : "no"}"><span>${esc(x.c)}</span><i>${k < R.dists.length ? (R.dists[k] < 1 ? Math.round(R.dists[k] * 1000) + " m" : R.dists[k].toFixed(1) + " km") : "–"}</i><span>${esc(x.s)}</span></div>`).join("")}</div>`;
     R.end = () => ({
       goal: R.pts >= spec.target,
       xp: R.pts >= spec.target ? 30 + 5 * R.pts : 4 * R.pts,

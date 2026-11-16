@@ -51,7 +51,7 @@ function renderHome() {
       : Net.checked && !Net.ready
         ? `<div class="panel pad"><p class="note"><b>Playing offline.</b> Your progress saves on this device, but your results won't show in your mates' tables and your opponents are house sides. Share your result after a match to show off.</p></div>`
         : "";
-  const pTiles = `<div class="tiles2">${cupTile()}${gridTile()}${chainTile()}${sotdTile()}</div>`;
+  const pTiles = `<div class="tiles2">${cupTile()}${gridTile()}${chainTile()}${pnTile()}${sotdTile()}</div>`;
   const pTrain = `<div class="hd"><h2>Training ground</h2><span class="eyebrow">No table, small XP</span></div>
   <div class="trgrid">${Object.keys(TYPES)
     .map(k => `<button class="panel tr2" data-act="train" data-v="${k}"><i>${qart(k)}</i><b>${TYPES[k].n}</b></button>`)
@@ -207,6 +207,7 @@ function renderStats() {
 function render() {
   settleSeason();
   if (view === "stats") view = "me"; // the old Stats tab is now your profile
+  if (view !== "pin") pnUnmount();
   chrome();
   if (view === "home") renderHome();
   else if (view === "me") renderProfile(null);
@@ -214,6 +215,7 @@ function render() {
   else if (view === "league") renderLeague();
   else if (view === "grid") renderGrid();
   else if (view === "chain") renderChain();
+  else if (view === "pin") renderPin();
   else if (view === "album") renderAlbum();
   window.scrollTo(0, 0);
 }

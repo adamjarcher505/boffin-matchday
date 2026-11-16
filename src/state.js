@@ -161,7 +161,7 @@ const hydrate = o => {
   s.sk = Object.assign({ d: "", n: 0, best: 0 }, o.sk || {});
   s.ob = Object.assign({ d: "", p: {}, done: {}, all: false }, o.ob || {});
   if (!s.sn || typeof s.sn !== "object") s.sn = { ty: {} };
-  ["album", "grid", "chain", "g", "ts", "lb", "md", "ct"].forEach(k => {
+  ["album", "grid", "chain", "pn", "g", "ts", "lb", "md", "ct"].forEach(k => {
     if (!s[k] || typeof s[k] !== "object") s[k] = {};
   });
   ["form", "played", "recent", "hist"].forEach(k => {
