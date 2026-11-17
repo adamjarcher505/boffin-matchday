@@ -1,9 +1,9 @@
 # Question bank validation report
 
-Generated 2026-11-14 by `data-pipeline/generate.mjs`. Bank version `20261114`.
+Generated 2026-11-17 by `data-pipeline/generate.mjs`. Bank version `20261117`.
 
-**8982 questions published.** Each one is backed by two independent sources (listed in its `src`).
-121 facts held back for review (`reports/review.json`); 21 rejected on shape (below).
+**8992 questions published.** Each one is backed by two independent sources (listed in its `src`).
+121 facts held back for review (`reports/review.json`); 18 rejected on shape (below).
 
 ## By template and difficulty (1 easiest, 4 hardest)
 
@@ -17,36 +17,36 @@ Generated 2026-11-14 by `data-pipeline/generate.mjs`. Bank version `20261114`.
 | h2h | 0 | 0 | 12 | 0 | 12 |
 | h2h-draws | 0 | 0 | 0 | 11 | 11 |
 | losses | 0 | 1 | 0 | 135 | 136 |
-| nationality | 23 | 174 | 377 | 637 | 1211 |
-| never-played | 0 | 77 | 544 | 43 | 664 |
-| played-for | 61 | 169 | 402 | 0 | 632 |
+| nationality | 23 | 174 | 378 | 637 | 1212 |
+| never-played | 1 | 81 | 550 | 35 | 667 |
+| played-for | 61 | 170 | 402 | 0 | 633 |
 | points | 0 | 0 | 34 | 652 | 686 |
-| position | 0 | 52 | 222 | 949 | 1223 |
+| position | 0 | 52 | 223 | 950 | 1225 |
 | relegated | 0 | 0 | 63 | 40 | 103 |
 | score | 0 | 0 | 612 | 216 | 828 |
 | title-count | 0 | 3 | 4 | 0 | 7 |
 | titles-span | 0 | 3 | 0 | 0 | 3 |
-| transfer | 0 | 71 | 354 | 1257 | 1682 |
+| transfer | 0 | 71 | 355 | 1259 | 1685 |
 | unbeaten | 0 | 1 | 0 | 0 | 1 |
 
 | Category | Questions |
 |---|---:|
-| club | 7670 |
+| club | 7680 |
 | competition | 1312 |
 
 ## Club coverage (questions tagged with each club, used by Club Cup)
 
 | Club | Questions |
 |---|---:|
-| (several clubs) | 3317 |
+| (several clubs) | 3321 |
 | Chelsea | 436 |
-| Arsenal | 391 |
+| Arsenal | 393 |
 | Liverpool | 359 |
 | Manchester United | 358 |
 | Manchester City | 352 |
 | Tottenham | 305 |
 | Newcastle | 237 |
-| Everton | 208 |
+| Everton | 209 |
 | West Ham | 203 |
 | Aston Villa | 202 |
 | Blackburn | 159 |
@@ -55,13 +55,13 @@ Generated 2026-11-14 by `data-pipeline/generate.mjs`. Bank version `20261114`.
 | Leicester | 131 |
 | Crystal Palace | 126 |
 | Sunderland | 122 |
-| Leeds | 120 |
+| Leeds | 119 |
 | Middlesbrough | 111 |
 | Bolton | 109 |
-| Wolves | 96 |
-| West Brom | 94 |
+| Wolves | 97 |
+| West Brom | 95 |
 | Nott'm Forest | 88 |
-| Watford | 80 |
+| Watford | 81 |
 | Stoke | 69 |
 | Norwich | 65 |
 | Birmingham | 65 |
@@ -73,8 +73,8 @@ Generated 2026-11-14 by `data-pipeline/generate.mjs`. Bank version `20261114`.
 | Burnley | 56 |
 | Derby | 55 |
 | Swansea | 55 |
+| Bournemouth | 52 |
 | Wigan | 51 |
-| Bournemouth | 51 |
 | Charlton | 50 |
 | Sheffield Wednesday | 44 |
 | Hull | 40 |
@@ -143,12 +143,12 @@ No mismatches.
 | score: openfootball and engsoccerdata disagree | 9 |
 | score: only one source has this season (engsoccerdata stops at 2024/25) | 3 |
 
-Matches not confirmed by engsoccerdata (big wins and derbies only): 48. Nationality disagreements: 92. Position disagreements (skipped silently, usually winger vs forward): 224.
+Matches not confirmed by engsoccerdata (big wins and derbies only): 48. Nationality disagreements: 92. Position disagreements (skipped silently, usually winger vs forward): 223.
 
 ## Rejected on shape
 
 - **question too long**: 1 (h2hd|man-utd|man-city (73))
-- **answer option too long**: 20 (e.g. tr|Q17619350|2025 Sociedade Esportiva Palmeiras; tr|Q481330|2025 São Paulo Futebol Clube; np|arsenal|Q16302330,Q192923,Q29162,Q50600 Sokratis Papastathopoulos)
+- **answer option too long**: 17 (e.g. tr|Q17619350|2025 Sociedade Esportiva Palmeiras; tr|Q481330|2025 São Paulo Futebol Clube; np|arsenal|Q192971,Q1937,Q194149,Q219248 Alex Oxlade-Chamberlain)
 
 ## Limits used (so questions fit a phone without scrolling)
 

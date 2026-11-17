@@ -1,5 +1,5 @@
 {
- "asOf": "2026-11-14",
+ "asOf": "2026-11-17",
  "note": "Facts the pipeline would not publish: sources disagree, or only one source has them. Nothing here ships.",
  "count": 121,
  "items": [
@@ -193,20 +193,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q1438500",
+   "key": "Q1435000",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Ian Taylor",
+    "player": "Jamie Clapham",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q1435000",
+   "key": "Q1438500",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Jamie Clapham",
+    "player": "Ian Taylor",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -283,16 +283,6 @@
   },
   {
    "template": "nationality",
-   "key": "Q22694710",
-   "reason": "Wikidata and data.js disagree",
-   "detail": {
-    "player": "Pablo Maffeo",
-    "wikidata": "Spain",
-    "datajs": "Argentina"
-   }
-  },
-  {
-   "template": "nationality",
    "key": "Q2262185",
    "reason": "Wikidata and data.js disagree",
    "detail": {
@@ -309,6 +299,16 @@
     "player": "Michael Duberry",
     "wikidata": "United Kingdom",
     "datajs": "England"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q22694710",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Pablo Maffeo",
+    "wikidata": "Spain",
+    "datajs": "Argentina"
    }
   },
   {
@@ -473,20 +473,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q3189086",
+   "key": "Q3206955",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Julian Dicks",
+    "player": "Michael Ricketts",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q3206955",
+   "key": "Q3189086",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Michael Ricketts",
+    "player": "Julian Dicks",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -573,20 +573,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q372619",
+   "key": "Q3675448",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "John Curtis",
+    "player": "Chris Armstrong",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q3675448",
+   "key": "Q372619",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Chris Armstrong",
+    "player": "John Curtis",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -613,20 +613,20 @@
   },
   {
    "template": "nationality",
-   "key": "Q3877698",
+   "key": "Q3952856",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Noel Whelan",
+    "player": "Scott Minto",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
   },
   {
    "template": "nationality",
-   "key": "Q3952856",
+   "key": "Q3877698",
    "reason": "Wikidata and data.js disagree",
    "detail": {
-    "player": "Scott Minto",
+    "player": "Noel Whelan",
     "wikidata": "United Kingdom",
     "datajs": "England"
    }
@@ -913,22 +913,22 @@
   },
   {
    "template": "nationality",
-   "key": "Q7326866",
-   "reason": "Wikidata and data.js disagree",
-   "detail": {
-    "player": "Richard Jobson",
-    "wikidata": "United Kingdom",
-    "datajs": "England"
-   }
-  },
-  {
-   "template": "nationality",
    "key": "Q731412",
    "reason": "Wikidata and data.js disagree",
    "detail": {
     "player": "Jobi McAnuff",
     "wikidata": "United Kingdom",
     "datajs": "Jamaica"
+   }
+  },
+  {
+   "template": "nationality",
+   "key": "Q7326866",
+   "reason": "Wikidata and data.js disagree",
+   "detail": {
+    "player": "Richard Jobson",
+    "wikidata": "United Kingdom",
+    "datajs": "England"
    }
   },
   {
