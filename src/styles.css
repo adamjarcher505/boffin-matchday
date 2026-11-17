@@ -1073,3 +1073,5 @@ tr[data-act]:not(.me):hover td{background:rgba(255,255,255,.03)}
 /* 15/11/2026: Pin the Ground round. Satellite map from Esri World Imagery (no labels), Leaflet vendored in vendor/leaflet */
 .pinmap { width: 100%; height: min(44vh, 360px); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); background: #0d0f11; margin: 6px 0 8px; }
 .pinmap .leaflet-control-attribution { font-size: 9px; }
+/* 17/11/2026: on short phones (375×667, 375×400) the map pushed the question screen 18-22px past the bottom: a smaller map there */
+@media (max-height: 720px) { .pinmap { height: calc(44vh - 40px); } }

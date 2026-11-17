@@ -22,16 +22,20 @@ function msg(t, cls) {
   }
 }
 const QV = "v6." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
+// ...and with the 1X2 database in play or not: it changes what a seed builds (src/dbx.js)
+const qvx = tier => (DBX.ready(tier) ? QV.replace("|", "x|") : QV);
 function startLeagueMatch() {
   settleSeason();
   const opp = nextOpponent(),
     tier = tierOf(S.div);
-  const fx = QV + S.season + "-" + S.div + "-" + S.week.pl + "-" + S.salt;
+  DBX.warm(tier);
+  const qv = qvx(tier),
+    fx = qv + S.season + "-" + S.div + "-" + S.week.pl + "-" + S.salt;
   let seed = fx + (S.ab && S.ab.f === fx && S.ab.n ? "~a" + S.ab.n : ""),
     ghost = null;
   if (opp.real && opp.g) {
     const k = Object.keys(opp.g).find(
-      k => k.indexOf(QV) === 0 && !S.played.includes(k) && Array.isArray(opp.g[k]) && opp.g[k].length === 5 && k.split("-")[1] === String(S.div)
+      k => k.indexOf(qv) === 0 && !S.played.includes(k) && Array.isArray(opp.g[k]) && opp.g[k].length === 5 && k.split("-")[1] === String(S.div)
     );
     if (k) {
       seed = k;

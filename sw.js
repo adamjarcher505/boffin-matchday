@@ -7,9 +7,9 @@
 //
 //   >>> Run `node tools/bump-sw.js` before every deploy. It sets VERSION from the contents of the shipped
 //   >>> files and checks the list below is complete. (tests/unit/sw.test.js fails if you forget.)
-const VERSION = "boffin-016e868836";
+const VERSION = "boffin-b44d316f06";
 const SHELL = [
-  "./", "index.html", "config.js", "data.js", "grounds.js", "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "questions.js", "sticker-pages.js", "kits.js", "src/styles.css", "src/core.js", "src/state.js", "src/fx.js", "src/career.js", "src/league.js", "src/generators.js", "src/rounds.js", "src/rounds-more.js", "src/match.js", "src/grid.js", "src/chain.js", "src/screens.js", "src/events.js", "src/extras.js", "src/stickers.js", "src/stickers2.js", "src/progress.js", "src/net.js", "src/boot.js", "manifest.webmanifest",
+  "./", "index.html", "config.js", "data.js", "grounds.js", "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "questions.js", "sticker-pages.js", "kits.js", "src/styles.css", "src/core.js", "src/state.js", "src/fx.js", "src/career.js", "src/league.js", "src/generators.js", "src/rounds.js", "src/rounds-more.js", "src/dbx.js", "src/match.js", "src/grid.js", "src/chain.js", "src/screens.js", "src/events.js", "src/extras.js", "src/stickers.js", "src/stickers2.js", "src/progress.js", "src/net.js", "src/boot.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"
 ];
 // Third-party files worth keeping offline: fonts and the Supabase client library (refreshed in the background).
@@ -31,6 +31,18 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url), same = url.origin === location.origin;
   if (!same && !RUNTIME.test(req.url)) return;          // Supabase API calls etc. go straight to the network
+  if (same && url.pathname.includes("/data/x/")) {
+    // 1X2 database chunks (loaded on demand, see src/dbx.js). The manifest asks the network first so a fresh build is seen; the chunks are
+    // named by content hash, so once cached they're good forever and play offline.
+    const isManifest = url.pathname.endsWith("manifest.json");
+    e.respondWith(caches.open(VERSION).then(async cache => {
+      const hit = await cache.match(req);
+      if (hit && !isManifest) return hit;
+      try { const res = await fetch(req); if (res && res.ok) cache.put(req, res.clone()); return res; }
+      catch (err) { return hit || new Response("Offline", { status: 503, statusText: "Offline" }); }
+    }));
+    return;
+  }
   e.respondWith(caches.open(VERSION).then(async cache => {
     if (same) {
       // the page itself: ignore ?query (sign-in return links, ?preview=) so it still opens offline

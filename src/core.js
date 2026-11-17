@@ -190,10 +190,11 @@ const TYPES = {
   order: { n: "In Order", rule: "", t: 35, typed: 0 },
   flags: { n: "Flag XI", rule: "", t: 30, typed: 0 },
   exact: { n: "Exact Score", rule: "", t: 35, typed: 0 },
-  pin: { n: "Pin the Ground", rule: "", t: 45, typed: 0 }
+  pin: { n: "Pin the Ground", rule: "", t: 45, typed: 0 },
+  gboot: { n: "Golden Boot", rule: "", t: 25, typed: 1 } // 17/11/2026: from the 1X2 database; only offered while its data is loaded
 };
 /* added 14/11/2026: makers and runtimes in src/rounds-more.js */
-const MORE_TYPES = ["six", "pals", "fake", "buy", "row", "order", "flags", "exact", "pin"];
+const MORE_TYPES = ["six", "pals", "fake", "buy", "row", "order", "flags", "exact", "pin", "gboot"];
 const QDESC = {
   cell: "Two categories, one player.",
   top: "Top scorers, record signings, most appearances.",
@@ -214,7 +215,8 @@ const QDESC = {
   order: "Fees, finishes, top tens. Sort them.",
   flags: "A line-up shown only as flags.",
   exact: "Name the scoreline. Exact gets the most.",
-  pin: "Drop a pin where the club plays. Closest wins."
+  pin: "Drop a pin where the club plays. Closest wins.",
+  gboot: "Name a top scorer from a Premier League season."
 };
 /* line drawings for each question type (original, drawn in code): a faint backdrop on question screens and the badge on each chance's title card */
 const QART = {
@@ -238,7 +240,8 @@ const QART = {
   order: '<path d="M10 14h8M10 28h8M10 42h8M26 14h28M26 28h22M26 42h16M14 50v6"/>',
   flags: '<path d="M14 56V8M14 10h30l-6 9 6 9H14M34 56V36M34 38h18l-4 6 4 6H34"/>',
   exact: '<rect x="6" y="16" width="20" height="32" rx="3"/><rect x="38" y="16" width="20" height="32" rx="3"/><path d="M30 28v2M30 36v2"/>',
-  pin: '<circle cx="32" cy="26" r="14"/><path d="M32 40v16M26 52h12"/><circle cx="32" cy="26" r="4"/>'
+  pin: '<circle cx="32" cy="26" r="14"/><path d="M32 40v16M26 52h12"/><circle cx="32" cy="26" r="4"/>',
+  gboot: '<path d="M22 10h20v16a10 10 0 0 1-20 0zM22 15h-9v5a9 9 0 0 0 9 9M42 15h9v5a9 9 0 0 1-9 9M32 36v12M22 54h20"/>'
 };
 const qart = t =>
   `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${QART[t] || QART.cell}</svg>`;

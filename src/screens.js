@@ -54,6 +54,7 @@ function renderHome() {
   const pTiles = `<div class="tiles2">${cupTile()}${gridTile()}${chainTile()}${sotdTile()}</div>`;
   const pTrain = `<div class="hd"><h2>Training ground</h2><span class="eyebrow">No table, small XP</span></div>
   <div class="trgrid">${Object.keys(TYPES)
+    .filter(k => k !== "gboot" || DBX.ready(tierOf(S.div)))
     .map(k => `<button class="panel tr2" data-act="train" data-v="${k}"><i>${qart(k)}</i><b>${TYPES[k].n}</b></button>`)
     .join("")}</div>`;
   const pFoot = `<p class="foot">${fmt(PL.length)} PLAYERS · ${fmt(QB.all.length)} QUIZ QUESTIONS · ${fmt(BD.xi.length)} LINE-UPS · ${fmt(BD.lists.length)} TOP TENS<br>${

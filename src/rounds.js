@@ -61,7 +61,7 @@ function nameOne(spec, valid, intro) {
 }
 const RUN = {
   cell(spec) {
-    const v = validSet(spec.a, spec.b);
+    const v = validSetX(spec.a, spec.b); // plain validSet, plus anyone the 1X2 database adds (src/dbx.js)
     const R = nameOne(
       spec,
       v,

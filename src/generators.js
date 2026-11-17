@@ -4,6 +4,10 @@
 const CAREERS = ALLIDX.filter(i => PL[i][7] & 64 && clubsOf(i).length >= 3);
 function makeCell(r, tier, sc) {
   sc = sc || {};
+  if (sc.club === undefined && DBX.ready(tier) && r() < 0.3) {
+    const c = dbCell(r, tier, !!sc.pl); // two clubs the 1X2 database can fill (needs enough answers, some of them famous)
+    if (c) return c;
+  }
   const nC = [16, 26, 38, 99][tier],
     nN = [8, 12, 18, 26][tier],
     minV = sc.club !== undefined ? [5, 4, 3, 2][tier] : [8, 6, 4, 3][tier],
@@ -192,10 +196,10 @@ const hlUsed = (pairs, a, b, loose) =>
      Season both put a final table in front of you. Two of those in one match felt like the same chance twice. */
 const FAMILY = { hl: "more", race: "more", order: "more", champ: "table", season: "table", row: "table" }; // In Order sorts numbers; Hidden Row is a final table
 const isTyped = t => !!TYPES[t].typed;
-function pickTypes(r, n, first) {
+function pickTypes(r, n, first, tier) {
   const out = first.slice(),
     fam = new Set(out.map(t => FAMILY[t]).filter(Boolean));
-  for (const t of shuffle(Object.keys(TYPES), r)) {
+  for (const t of shuffle(Object.keys(TYPES).filter(k => k !== "gboot" || DBX.ready(tier)), r)) {
     if (out.length >= n) break;
     if (out.includes(t) || (FAMILY[t] && fam.has(FAMILY[t]))) continue;
     const typed = out.filter(isTyped).length;
@@ -207,7 +211,7 @@ function pickTypes(r, n, first) {
 }
 function makeMatch(seed, tier) {
   const r = rngOf(hash("m" + seed)),
-    rest = pickTypes(r, 5, ["cell"]).slice(1),
+    rest = pickTypes(r, 5, ["cell"], tier).slice(1),
     at = Math.floor(r() * 5),
     types = rest.slice(0, at).concat("cell", rest.slice(at));
   return types.map(t => makeRound(t, r, tier, r() < 0.7 ? { pl: 1 } : null, true));

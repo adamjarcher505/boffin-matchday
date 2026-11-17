@@ -84,3 +84,9 @@ Supabase → **SQL Editor** → **New query** → paste the whole of `supabase/0
 This lets players see each other's full stats (scoring rate, deep cuts, medals, specialist subject...) on their cards
 and in head to head. Until it's run, cards and rankings still work but only show level, title, club, division and cups
 for other people.
+
+
+## The 1X2 database (17/11/2026)
+- **Roll it back:** in `config.js` set `useDb: false`, run `node tools/bump-sw.js`, push. Every mode goes back to the old question bank.
+- **Check before any paid launch:** Esri's terms for the free satellite imagery in Pin the Ground (not verified), and the engsoccerdata (GPL-2) / Fantasy Premier League licences. One switch each in `data-pipeline/db/config.mjs`.
+- **Refreshing it:** `data-pipeline/db/README.md` ("Weekly top-up").

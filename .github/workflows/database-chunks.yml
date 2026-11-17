@@ -1,0 +1,41 @@
+# 1X2 database → game chunks. Rebuilds data/x/ from the committed database (data-pipeline/db/football.db.gz) and opens a pull request for review.
+# Run it by hand (Actions → "1X2 database chunks" → Run workflow) after a new football.db.gz is committed.
+# It is NOT on a weekly schedule yet: refreshing football.db itself needs data-pipeline/db/scripts/build_db.py, which reads a raw/ folder
+# (engsoccerdata, openfootball, FPL archive, Wikidata dumps) that isn't in the repo. See data-pipeline/db/README.md, "Weekly top-up".
+# Needs no new account or plan. Same repo setting as the question-bank Action: Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests".
+name: 1X2 database chunks
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  chunks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build the chunks
+        run: node --no-warnings data-pipeline/db/build.mjs
+      - name: Bump the offline cache version
+        run: node tools/bump-sw.js
+      - name: Tests (the chunks must pass before a PR is opened)
+        working-directory: tests
+        run: node --test unit/*.test.js
+      - name: Open or update the pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/database-chunks
+          base: main
+          delete-branch: true
+          add-paths: |
+            data/x/**
+            sw.js
+            data-pipeline/db/report.md
+          commit-message: "1X2 database: rebuild chunks"
+          title: "1X2 database: rebuild chunks"
+          body-path: data-pipeline/db/report.md
+          labels: database

@@ -21,6 +21,7 @@ Full map and data model in README.md. Judgment calls in DECISIONS.md; what's blo
 - `src/league.js`: `leagueTable`, `settleSeason`, house sides.
 - `src/generators.js`: `makeMatch`, `makeRound`, `makeScoped`, `makeCupMatch`, seeded with `rngOf(hash(...))`. `EASE` = fair-for-the-division limits (tuned with `node tools/difficulty.js`).
 - `src/rounds-more.js`: makers + runtimes for the 14/11 types (`MORE_TYPES`: six, pals, fake, buy, row, order, flags, exact), team-mate lookups (`tmOf`), flags. `src/chain.js`: Chain Reaction daily game.
+- `src/dbx.js`: the 1X2 database in the game: lazy chunk loader (`DBX`), DB makers (`makeDB`) and runtimes (`RUNX`), Golden Boot, Grid answers (`validSetX`). Everything falls back to the old makers; rollback is `useDb: false` in config.js. Chunks are built by `data-pipeline/db/` into `data/x/`.
 - `src/rounds.js`: `RUN` (how each type plays). `src/match.js`: match engine, verdict, full time; `QV` = question-generator version (bump whenever a seed's questions change). `src/grid.js`, `src/screens.js`, `src/events.js`.
 - `src/extras.js`: share cards, season stakes and Final Day, "around you" lines, training XP cap, Club Wars (top 10 ÷ 10), question log, theme of the day (`THEMES`, `THEME_ROTA` from `tools/theme-support.js`), haptics.
 - `src/stickers.js`: sticker album (`S.stk`), offers after matches, the "name the man on the sticker" attempt, pages, tokens, the card (`stkCard`: back-of-shirt, era styles). Separate from the Names log (`S.album`, shown as Knowledge).
@@ -32,6 +33,7 @@ Full map and data model in README.md. Judgment calls in DECISIONS.md; what's blo
 - `sticker-pages.js`: album pages, rebuilt 14/11/2026 by `node tools/rebuild-sticker-pages.js` from hand-picked tiers in `tools/sticker-picks.json` (Gold = club legends). Frozen again: any reshuffle must bump `PAGES_V` in stickers2.js (removed stickers become tokens). STICKER-PAGES.md lists every page.
 - `src/net.js`: `Net` over three backends (supabase / claude artifact db / local). Sync is pull-merge-push. Features needing `supabase/002_additions.sql` fail soft.
 - `src/boot.js`: start-up, service worker, "New version ready" toast.
+- `data/x/`: GENERATED chunks from `data-pipeline/db/build.mjs` (football.db.gz → JSON). Never hand-edit. Source switches (FPL, engsoccerdata) in `data-pipeline/db/config.mjs`. Cached by sw.js as they're fetched.
 - `sw.js`: versioned cache-first offline cache. **Run `node tools/bump-sw.js` before every deploy.**
 - `config.js`, `manifest.webmanifest`, `icons/`, `supabase/` (schema.sql, 002_additions.sql, make-founder.sql), `tools/`, `tests/` (dev-only).
 - `data.js`: `window.BD`, ~1.5 MB of real football data. Don't hand-edit; no build script exists (BLOCKED.md). Club trails miss some moves, so never show departure years.

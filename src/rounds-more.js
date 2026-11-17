@@ -114,6 +114,8 @@ function famePool(base, thr, min, floor) {
 /* ---------- makers ---------- */
 function makeMore(type, r, tier, sc) {
   sc = sc || {};
+  const dx = makeDB(type, r, tier, sc); // the 1X2 database (src/dbx.js), when its data is loaded; null otherwise and the makers below take over
+  if (dx) return dx;
   const C = sc.club,
     club = C !== undefined,
     pl = !!sc.pl;
@@ -362,6 +364,7 @@ function gKm(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 function moreKey(x) {
+  if (x.xk) return x.xk; // database specs
   const t = x.type;
   if (t === "six") return "6" + x.a + "." + x.b;
   if (t === "pals") return "y" + x.pairs.map(p => p[0] + "." + p[1]).join("_");
@@ -374,6 +377,9 @@ function moreKey(x) {
   if (t === "pin") return "p" + x.qs.join(".");
   return t;
 }
+
+/* a Hidden Row question carries its own table when it comes from the database (src/dbx.js), else it points into data.js */
+const rowT = q => q.T || BD.tables[q.t];
 
 /* ---------- runtimes ---------- */
 Object.assign(RUN, {
@@ -569,7 +575,7 @@ Object.assign(RUN, {
     const N = spec.qs.length,
       R = tapRun({ rule: `Name the club in the blank row. Get ${spec.target} of ${N} right.` }, N, 1300);
     const table = (q, rev) => {
-      const T = BD.tables[q.t];
+      const T = rowT(q);
       return `<div class="panel"><table class="tbl"><tr><th></th><th>${esc(T[0])} ${seasonLabel(T[1])}</th><th>GF</th><th>GA</th><th>PTS</th></tr>${T[3]
         .map((x, k) => `<tr class="${k === q.k ? "hid" : ""}"><td>${k + 1}</td><td>${k === q.k && !rev ? "? ? ?" : esc(x[0])}</td><td>${x[2]}</td><td>${x[3]}</td><td>${x[1]}</td></tr>`)
         .join("")}</table></div>`;
@@ -577,7 +583,7 @@ Object.assign(RUN, {
     R.body = () => {
       if (R.k >= N) return R.pips();
       const q = spec.qs[R.k],
-        ans = BD.tables[q.t][3][q.k][0],
+        ans = rowT(q)[3][q.k][0],
         s = R.shown;
       return (
         R.pips() +
@@ -588,11 +594,11 @@ Object.assign(RUN, {
     R.onTap = v => {
       if (R.over || R.lock) return;
       const q = spec.qs[R.k];
-      R.answer(q.o[+v] === BD.tables[q.t][3][q.k][0], +v);
+      R.answer(q.o[+v] === rowT(q)[3][q.k][0], +v);
     };
     R.end = () =>
       Object.assign(tapEnd(R, N, spec.target, 5)(), {
-        after: `<div class="panel pad"><p class="note">${spec.qs.map(q => "<b>" + esc(BD.tables[q.t][3][q.k][0]) + "</b> (" + ord(q.k + 1) + ", " + seasonLabel(BD.tables[q.t][1]) + ")").join(", ")}.</p></div>`
+        after: `<div class="panel pad"><p class="note">${spec.qs.map(q => "<b>" + esc(rowT(q)[3][q.k][0]) + "</b> (" + ord(q.k + 1) + ", " + seasonLabel(rowT(q)[1]) + ")").join(", ")}.</p></div>`
       });
     return R;
   },
@@ -611,6 +617,7 @@ Object.assign(RUN, {
           sub: "Transfer fees",
           it: st.h.map(h => ({ b: PL[BD.hl[h][0]][0], s: CLUB[BD.hl[h][1]] + " to " + CLUB[BD.hl[h][2]] + ", " + BD.hl[h][3], e: "€" + BD.hl[h][4] + "m", v: BD.hl[h][4] }))
         };
+      if (st.v === "dtab") return { ask: "Highest finish first", sub: "Premier League " + seasonLabel(st.y) + " · final table", it: st.it.map(x => ({ b: x.n, s: "", e: ord(x.pos) + " · " + x.pts + " pts", v: 100 - x.pos })) };
       if (st.v === "tab") {
         const T = BD.tables[st.t];
         return { ask: "Champions first", sub: T[0] + " " + seasonLabel(T[1]) + " · the top four", it: st.o.map(k => ({ b: T[3][k][0], s: "", e: ord(k + 1) + " · " + T[3][k][1] + " pts", v: 4 - k })) };

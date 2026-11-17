@@ -1,6 +1,7 @@
 /* ============ boot.js: start the game (loaded last) ============ */
 if (S.made) medalCheck(true); // fill the cabinet with what an existing player has already done, quietly
 render();
+DBX.warm(tierOf(S.div)); // the 1X2 database chunks for this division, in the background; modes use them once they are all here (see src/dbx.js)
 if (!S.made) profileSheet(true);
 Net.init();
 

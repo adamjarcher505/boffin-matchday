@@ -79,7 +79,7 @@ function gridPick(i) {
   const g = gridState(),
     a = GRID.rows[Math.floor(gridCell / 3)],
     b = GRID.cols[gridCell % 3],
-    v = validSet(a, b);
+    v = validSetX(a, b);
   if (g.c.includes(pkey(i))) {
     msg("Already used him today.", "");
     return;

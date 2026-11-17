@@ -36,3 +36,8 @@ copied into the game: they confirm facts that come from the CC0 sources.
 A paid fixtures API (API-Football or football-data.org) for current-season line-ups and scorers. The hook is
 `data-pipeline/sources/paid-api.mjs`; it does nothing unless a `FOOTBALL_API_KEY` secret is set in GitHub, and the
 key is only read on the build runner, never in the browser.
+
+## Credits and data sources: the 1X2 database (added 17/11/2026)
+Results and tables: openfootball (CC0) and James Curley's engsoccerdata (GPL-2; checked against openfootball and Wikipedia, 0 mismatches over 13,266 Premier League matches).
+Players, clubs, careers, grounds: Wikidata (CC0). Appearances, season stats and 2026-27 results: Fantasy Premier League (the Premier League's data; switchable, see
+data-pipeline/db/config.mjs). Satellite imagery in Pin the Ground: Esri World Imagery (terms not yet verified, see DECISIONS.md). Built into data/x/ by data-pipeline/db/.

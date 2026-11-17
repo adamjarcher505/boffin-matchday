@@ -1,5 +1,13 @@
 # Changelog
 
+## 17/11/2026: the 1X2 football database
+- **Eight modes now run on a much bigger set of real data** (when it has loaded; otherwise exactly as before): Exact Score (13,266 Premier League matches, 1992 on), Hidden Row and In Order (every final table 1992-93 to 2025-26, with the deductions right), Ever Team-mates (1,390 pairs from who actually shared a pitch since 2016-17), Six Degrees (224 looked-up puzzles, nothing searched on the phone), Who Bought Him (about 9,000 moves), Spot the Fake (about 2,000 careers), Flag XI (146 most-used XIs).
+- **The Grid** accepts anyone the database knows played for both clubs, and a third of league Grid cells are new club pairs.
+- **New round: Golden Boot.** Name two of a season's top three scorers (ties count).
+- **Pin the Ground** no longer scrolls on short phones.
+- **Rollback:** `useDb: false` in config.js.
+- Details and every data problem found: DECISIONS.md and data-pipeline/db/report.md.
+
 ## 15/11/2026: Pin the Ground
 - **New round, Pin the Ground.** Three clubs; drop a pin where each one plays. Satellite imagery with no place names
   (Esri World Imagery), Leaflet vendored in `vendor/leaflet/`. Within 1.5km scores 2, within 8km scores 1. After each

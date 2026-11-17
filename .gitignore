@@ -7,3 +7,6 @@ tests/node_modules/
 # question pipeline: raw downloads and the build db never get committed
 data-pipeline/cache/
 data-pipeline/out/
+
+# the unpacked 1X2 database (58 MB): the committed copy is football.db.gz, build.mjs unpacks it when this is missing
+data-pipeline/db/football.db

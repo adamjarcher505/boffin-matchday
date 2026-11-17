@@ -3,11 +3,14 @@
   "private": true,
   "description": "Build-time question bank pipeline for Boffin Matchday. Never runs in the app. No dependencies (Node 22+, node:sqlite).",
   "type": "module",
-  "engines": { "node": ">=22.13" },
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "all": "node --no-warnings run.mjs",
     "fetch": "node fetch.mjs",
     "build": "node --no-warnings build.mjs",
-    "generate": "node --no-warnings generate.mjs"
+    "generate": "node --no-warnings generate.mjs",
+    "chunks": "node --no-warnings db/build.mjs"
   }
 }

@@ -15,11 +15,18 @@ window.QA = {
     localStorage.setItem("boffin-matchday-v1", JSON.stringify({ v: 2, made: true, name: "Big Dave", club: "Arsenal", xp: 2200, div: 3, season: 2, salt: 77, week: { pl: 16, w: 9, d: 3, l: 4, gf: 40, ga: 30, pts: 30 } }));
     S = hydrate(JSON.parse(localStorage.getItem("boffin-matchday-v1")));
     const R = out.results;
-    // every question type, typed and tapped, on the live question screen
+    // the 1X2 database (src/dbx.js): wait until this division has every chunk, so the DB question layouts are the ones tested
+    await DBX.warm(tierOf(S.div));
+    out.db = DBX.ready(tierOf(S.div));
+    // every question type, typed and tapped, on the live question screen. Once on the old question bank, once on the database.
+    for (const mode of DBX.ready(tierOf(S.div)) ? [false, true] : [false]) {
+    DBX.on = mode;
     for (const t of Object.keys(TYPES)) {
-      R.push(await screen("question: " + TYPES[t].n, async () => { M = null; view = "home"; render(); startTraining(t); document.querySelector("[data-act=take]").click(); await wait(80); const q = document.getElementById("q"); if (q) { q.value = "ha"; q.dispatchEvent(new Event("input", { bubbles: true })); } }));
+      R.push(await screen((mode ? "DB question: " : "question: ") + TYPES[t].n, async () => { M = null; view = "home"; render(); startTraining(t); document.querySelector("[data-act=take]").click(); await wait(80); const q = document.getElementById("q"); if (q) { q.value = "ha"; q.dispatchEvent(new Event("input", { bubbles: true })); } }));
       cancelAnimationFrame(raf); if (M) M.live = false;
     }
+    }
+    DBX.on = true;
     if (innerWidth >= 1024) for (const k of Object.keys(LONG)) { R.push(await screen("extra time: " + LONG[k].n, async () => { M = null; startLong(k); document.querySelector("[data-act=take]").click(); })); cancelAnimationFrame(raf); if (M) M.live = false; }
     // Chain Reaction: start screen, live (with suggestions open), finished
     // (the start and finished screens are ordinary pages and may scroll, like the Daily Grid page; the live one may not)
