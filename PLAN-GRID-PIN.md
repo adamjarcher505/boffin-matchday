@@ -61,17 +61,17 @@ already made here. If a task needs a decision that isn't in this file, **stop an
 
 ## Phase 1: fixes, no new features (do first, low risk)
 
-- [ ] **P1. Pin unit tests** (`tests/unit/pin.test.js`, new). Use the harness like `more.test.js` does.
+- [x] **P1. Pin unit tests** (`tests/unit/pin.test.js`, new). Use the harness like `more.test.js` does.
   Cover: `makeRound("pin", ...)` gives 3 distinct indexes into `GROUNDS` for every tier over 200 seeds; same seed
   gives same spec; every ground has numeric `la`/`ln` inside the UK + Ireland box (49–61 N, −11–2 E);
   `gKm` gives ~0 for identical points and Emirates→Tottenham Hotspur Stadium between 5 and 7 km; scoring returns
   2 / 1 / 0 at 1.4 / 7.9 / 8.1 km (extract a `pinPoints(km)` helper in `rounds-more.js` so it's testable).
   Done when: tests pass, nothing else changes.
 
-- [ ] **P2. Thresholds into TUNING.** Add `pinNear: 1.5, pinFar: 8` to `TUNING` in `src/state.js`; `pinPoints`
+- [x] **P2. Thresholds into TUNING.** Add `pinNear: 1.5, pinFar: 8` to `TUNING` in `src/state.js`; `pinPoints`
   and the rule text in `RUN.pin` read them. No behaviour change.
 
-- [ ] **P3. Offline / failed-tile fallback.** In `RUN.pin`, if `typeof L === "undefined"`, or
+- [x] **P3. Offline / failed-tile fallback.** In `RUN.pin`, if `typeof L === "undefined"`, or
   `navigator.onLine === false` at mount, or the tile layer fires 4+ `tileerror` events before any `tileload`,
   switch that round (all remaining grounds) to **"Which ground?"**: four stadium names, tap one. Options are built
   deterministically from the spec (`rngOf(hash("pinmc" + spec.qs.join(".")))`): the right ground plus three others

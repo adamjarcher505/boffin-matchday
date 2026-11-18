@@ -363,6 +363,31 @@ function gKm(a, b) {
   const h = Math.sin(dLa / 2) ** 2 + Math.cos(t(a[0])) * Math.cos(t(b[0])) * Math.sin(dLn / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
+/* Pin the Ground with no map: no signal (the satellite tiles aren't kept offline), or the map library didn't load */
+const pinNoMap = () => typeof L === "undefined" || (typeof navigator !== "undefined" && navigator.onLine === false);
+/* four ground names for ground number k of a round: the right one and three others, from the same division where there are enough.
+   Seeded from the spec, so the same round always shows the same four in the same order. */
+function pinOptions(spec, k) {
+  const right = spec.qs[k],
+    r = rngOf(hash("pinmc" + spec.qs.join(".") + "." + k)),
+    names = new Set([GROUNDS[right].s]),
+    pick = pool => {
+      const out = [];
+      for (const i of shuffle(pool, r)) {
+        if (out.length >= 3) break;
+        if (i === right || names.has(GROUNDS[i].s) || spec.qs.includes(i)) continue;
+        names.add(GROUNDS[i].s);
+        out.push(i);
+      }
+      return out;
+    },
+    all = GROUNDS.map((g, i) => i);
+  let o = pick(all.filter(i => GROUNDS[i].d === GROUNDS[right].d));
+  if (o.length < 3) o = o.concat(pick(all));
+  return shuffle(o.concat(right), r);
+}
+/* Pin the Ground scoring: 2 points inside pinNear km, 1 inside pinFar km, else 0 */
+const pinPoints = km => (km <= TUNING.pinNear ? 2 : km <= TUNING.pinFar ? 1 : 0);
 function moreKey(x) {
   if (x.xk) return x.xk; // database specs
   const t = x.type;
@@ -758,13 +783,24 @@ Object.assign(RUN, {
   pin(spec) {
     const gs = spec.qs.map(i => GROUNDS[i]).filter(Boolean),
       N = gs.length,
-      R = { k: 0, pts: 0, res: [], dists: [], over: !N, shown: false, lock: false, pin: null, view: null, map: null, rule: `Drop a pin on each home ground. Within 1.5km is 2 points, within 8km is 1. Get ${spec.target} of ${N * 2}.` };
+      R = { k: 0, pts: 0, res: [], dists: [], over: !N, shown: false, lock: false, pin: null, view: null, map: null, mc: pinNoMap(), picked: -1, rule: `Drop a pin on each home ground. Within ${TUNING.pinNear}km is 2 points, within ${TUNING.pinFar}km is 1. Get ${spec.target} of ${N * 2}.` };
     R.cover = "Three home grounds, satellite view, no names. You'll see which clubs when the clock starts.";
+    const far = d => (d < 1 ? Math.round(d * 1000) + " m" : d.toFixed(1) + " km");
+    const mcOpts = () => pinOptions(spec, R.k);
     R.body = () => {
       if (R.k >= N) return "";
       const g = gs[R.k],
-        pips = `<div class="pips">${gs.map((x, k) => `<i class="${k < R.res.length ? (R.res[k] === 2 ? "ok" : R.res[k] === 1 ? "half" : "no") : ""}"></i>`).join("")}</div>`,
-        verdict = R.shown ? `<p class="exv ${R.res[R.k] === 2 ? "right" : R.res[R.k] === 1 ? "half" : "wrong"}">${esc(g.s)} · ${R.dists[R.k] < 1 ? Math.round(R.dists[R.k] * 1000) + " m" : R.dists[R.k].toFixed(1) + " km"} away · ${R.res[R.k] === 2 ? "2 points" : R.res[R.k] === 1 ? "1 point" : "0 points"}</p>` : "";
+        pips = `<div class="pips">${gs.map((x, k) => `<i class="${k < R.res.length ? (R.res[k] === 2 ? "ok" : R.res[k] === 1 ? "half" : "no") : ""}"></i>`).join("")}</div>`;
+      if (R.mc) {
+        // no map (offline, or the tiles won't load): pick the ground's name from four
+        const o = mcOpts();
+        return (
+          pips +
+          `<p class="ask">${esc(g.c)} home ground<span>No signal for the map, so it's names today</span></p><div class="quad sm">${o.map((x, j) => `<button class="tc ${R.shown ? (GROUNDS[x].s === g.s ? "right" : R.picked === j ? "wrong" : "") : ""}" data-act="tap" data-v="${j}"><b>${esc(GROUNDS[x].s)}</b></button>`).join("")}</div>` +
+          (R.shown ? `<p class="exv ${R.res[R.k] ? "right" : "wrong"}">${esc(g.s)} · ${R.res[R.k] ? "2 points" : "0 points"}</p>` : "")
+        );
+      }
+      const verdict = R.shown ? `<p class="exv ${R.res[R.k] === 2 ? "right" : R.res[R.k] === 1 ? "half" : "wrong"}">${esc(g.s)} · ${far(R.dists[R.k])} away · ${R.res[R.k] === 2 ? "2 points" : R.res[R.k] === 1 ? "1 point" : "0 points"}</p>` : "";
       return (
         pips +
         `<p class="ask">${esc(g.c)} home ground<span>Tap the map to drop your pin</span></p><div id="pinmap" class="pinmap" aria-label="Satellite map, no labels"></div>` +
@@ -774,6 +810,7 @@ Object.assign(RUN, {
     };
     // called by the match engine after every paint: builds the satellite map in the new container
     R.mount = () => {
+      if (R.mc) return;
       const el = document.getElementById("pinmap");
       if (!el || typeof L === "undefined" || R.k >= N) return;
       if (R.map) {
@@ -781,11 +818,23 @@ Object.assign(RUN, {
         R.map = null;
       }
       const g = gs[R.k],
-        map = L.map(el, { minZoom: 3, maxZoom: 19, zoomControl: true, attributionControl: true, worldCopyJump: false });
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-        attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics"
-      }).addTo(map);
+        map = L.map(el, { minZoom: 3, maxZoom: 19, zoomControl: true, attributionControl: true, worldCopyJump: false }),
+        tiles = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+          maxZoom: 19,
+          attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics"
+        }).addTo(map);
+      // tiles that never arrive (signal dropped, host blocked): after four errors and not one good tile, swap this and the remaining grounds to names
+      let bad = 0, good = 0;
+      tiles.on("tileload", () => good++);
+      tiles.on("tileerror", () => {
+        bad++;
+        if (bad >= 4 && !good && !R.mc && !R.shown) {
+          R.mc = true;
+          try { map.remove(); } catch (e) {}
+          R.map = null;
+          ctx.paint();
+        }
+      });
       if (R.view) map.setView(R.view.c, R.view.z);
       else map.setView([53.6, -2.4], 6);
       map.on("moveend", () => (R.view = { c: map.getCenter(), z: map.getZoom() }));
@@ -812,13 +861,38 @@ Object.assign(RUN, {
       R.map = map;
       setTimeout(() => map.invalidateSize(), 0);
     };
+    // after the reveal: next ground, or the end of the round
+    R.advance = () => {
+      R.shown = false;
+      R.lock = false;
+      R.pin = null;
+      R.view = null;
+      R.picked = -1;
+      R.k++;
+      if (R.k >= N) {
+        R.over = true;
+        if (R.map) try { R.map.remove(); } catch (e) {}
+        R.map = null;
+        ctx.done();
+      } else ctx.paint();
+    };
     R.onTap = v => {
       if (R.over || R.lock) return;
-      if (v !== "lock" || !R.pin) return;
-      const g = gs[R.k],
-        d = gKm(R.pin, [g.la, g.ln]),
-        p = d <= 1.5 ? 2 : d <= 8 ? 1 : 0;
-      R.dists.push(d);
+      const g = gs[R.k];
+      let p;
+      if (R.mc) {
+        const j = +v,
+          o = mcOpts();
+        if (!(j >= 0 && j < o.length)) return;
+        R.picked = j;
+        p = GROUNDS[o[j]].s === g.s ? 2 : 0;
+        R.dists.push(null);
+      } else {
+        if (v !== "lock" || !R.pin) return;
+        const d = gKm(R.pin, [g.la, g.ln]);
+        p = pinPoints(d);
+        R.dists.push(d);
+      }
       R.res.push(p);
       R.pts += p;
       R.lock = true;
@@ -826,22 +900,10 @@ Object.assign(RUN, {
       if (p) sfx.tick();
       else sfx.no();
       ctx.paint();
-      setTimeout(() => {
-        R.shown = false;
-        R.lock = false;
-        R.pin = null;
-        R.view = null;
-        R.k++;
-        if (R.k >= N) {
-          R.over = true;
-          if (R.map) try { R.map.remove(); } catch (e) {}
-          R.map = null;
-          ctx.done();
-        } else ctx.paint();
-      }, 2600);
+      setTimeout(R.advance, R.mc ? 1800 : 2600);
     };
     R.review = () =>
-      `<div class="rv">${gs.map((x, k) => `<div class="${k >= R.res.length ? "" : R.res[k] ? "ok" : "no"}"><span>${esc(x.c)}</span><i>${k < R.dists.length ? (R.dists[k] < 1 ? Math.round(R.dists[k] * 1000) + " m" : R.dists[k].toFixed(1) + " km") : "–"}</i><span>${esc(x.s)}</span></div>`).join("")}</div>`;
+      `<div class="rv">${gs.map((x, k) => `<div class="${k >= R.res.length ? "" : R.res[k] ? "ok" : "no"}"><span>${esc(x.c)}</span><i>${k < R.dists.length && R.dists[k] !== null ? far(R.dists[k]) : "–"}</i><span>${esc(x.s)}</span></div>`).join("")}</div>`;
     R.end = () => ({
       goal: R.pts >= spec.target,
       xp: R.pts >= spec.target ? 30 + 5 * R.pts : 4 * R.pts,

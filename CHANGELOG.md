@@ -1,5 +1,8 @@
 # Changelog
 
+## 18/11/2026: Pin the Ground works with no signal
+- **No map, no problem.** With no signal (or when the satellite pictures won't load) Pin the Ground switches to picking the right stadium name from four, so a match never stalls. Two points a right answer, same target.
+
 ## 17/11/2026: the 1X2 football database
 - **Eight modes now run on a much bigger set of real data** (when it has loaded; otherwise exactly as before): Exact Score (13,266 Premier League matches, 1992 on), Hidden Row and In Order (every final table 1992-93 to 2025-26, with the deductions right), Ever Team-mates (1,390 pairs from who actually shared a pitch since 2016-17), Six Degrees (224 looked-up puzzles, nothing searched on the phone), Who Bought Him (about 9,000 moves), Spot the Fake (about 2,000 careers), Flag XI (146 most-used XIs).
 - **The Grid** accepts anyone the database knows played for both clubs, and a third of league Grid cells are new club pairs.

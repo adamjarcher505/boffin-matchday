@@ -14,6 +14,8 @@ const TUNING = {
   finalDay: 3, // the last N fixtures of a season get the Final Day treatment
   warsTop: 10, // Club Wars: a club's score is its top N fans' weekly goals divided by N
   gridHint: [2, 3], // daily grid: % off a square's share of the score for the first and second hint (one hint on a full grid = 98%)
+  pinNear: 1.5, // Pin the Ground: km for 2 points...
+  pinFar: 8, // ...and for 1 point
   chainXp: 5, // Chain Reaction: XP per link...
   chainXpCap: 60, // ...up to this much a day
   gridHintXp: 5, // ...and XP off that square per hint taken

@@ -41,7 +41,7 @@ const PLAY = `async (score) => {
   else if (t === "six") { const nb = new Set(tmOf(spec.b)), mid = tmOf(spec.a).find(i => nb.has(i)); if (mid !== undefined) run.onPick(mid); else { M.timeout = true; endChance(); } }
   else if (t === "exact") { for (let g = 0; g < 4 && M.live; g++) { const x = SCORE_BY[spec.qs[run.k]]; run.h = x.hg; run.a = x.ag; run.onTap("lock"); await wait(1650); } }
   else if (t === "gboot") spec.top.slice(0, spec.target).forEach(t => run.onPick(t[1]));
-  else if (t === "pin") { for (let g = 0; g < 3 && M.live; g++) { const gd = GROUNDS[spec.qs[run.k]]; run.pin = [gd.la, gd.ln]; run.onTap("lock"); await wait(2700); } }   // drop the pin exactly on each ground
+  else if (t === "pin") { for (let g = 0; g < 3 && M.live; g++) { if (run.mc) run.onTap(String(pinOptions(spec, run.k).indexOf(spec.qs[run.k]))); else { const gd = GROUNDS[spec.qs[run.k]]; run.pin = [gd.la, gd.ln]; run.onTap("lock"); } await wait(2700); } }   // drop the pin exactly on each ground
   else if (t === "order") { for (let g = 0; g < 4 && M.live; g++) { const st = spec.sets[run.k]; const vals = st.v === "dtab" ? st.it.map(x => 100 - x.pos) : st.v === "fee" ? st.h.map(h => BD.hl[h][4]) : st.v === "tab" ? st.o.map(k => 4 - k) : st.o.map(k => BD.lists[st.li][3][k][1]); vals.map((v, j) => j).sort((x, y) => vals[y] - vals[x]).forEach(j => run.onTap(String(j))); await wait(1750); } }
   else {   // tap rounds: find the right button each time from the round's own data
     for (let g = 0; g < 8 && M.live; g++) {
@@ -129,6 +129,23 @@ async function playMatch(page, start, plan) {
         await page.click("[data-act=take]"); await page.waitForTimeout(300); await shot("question-" + t);
         await page.evaluate("cancelAnimationFrame(raf); if (M) M.live = false; M = null; view = 'home'; render();");
       }
+    }
+
+    // Pin the Ground with the satellite tiles blocked (no signal): it must fall back to names and still play to the end
+    if (h === 844) {
+      const blocked = await browser.newPage({ viewport: { width: w, height: h }, hasTouch: true });
+      await blocked.route(/arcgisonline\.com/, r => r.abort());
+      await blocked.goto(base);
+      await blocked.evaluate(s => localStorage.setItem("boffin-matchday-v1", JSON.stringify(s)), SAVE);
+      await blocked.reload();
+      await blocked.waitForFunction("typeof render === 'function' && !!document.getElementById('tabs').innerHTML");
+      await blocked.evaluate("startTraining('pin')");
+      await blocked.click("[data-act=take]");
+      try { await blocked.waitForFunction("M && M.run && M.run.mc === true", { timeout: 8000 }); } catch (e) {}
+      const fell = await blocked.evaluate("!!(M && M.run && M.run.mc)");
+      const plog = await blocked.evaluate(`(${PLAY})(true)`);
+      note(fell && plog === "pin" && (await blocked.evaluate("M.run.pts")) === 6, "Pin the Ground with the map blocked falls back to names and scores 6 of 6");
+      await blocked.close();
     }
 
     // league match: score three, miss two
