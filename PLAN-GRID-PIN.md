@@ -6,7 +6,8 @@ already made here. If a task needs a decision that isn't in this file, **stop an
 ## How to run this (for the build model)
 
 1. Read `CLAUDE.md`, then this file. Read only the files a task names.
-2. Before starting: `cd tests && node --test unit/*.test.js` (baseline 18/11: **103 pass**).
+2. Before starting: `cd tests && node --test unit/*.test.js` (baseline 18/11: **103 pass**). The test run rewrites
+   the date line in `data-pipeline/db/report.md`; undo it with `git checkout -- data-pipeline/db/report.md`, don't commit it.
 3. Do **one task per commit**, in order. After each task: unit tests, plus `node tests/browser/run.js` if the task
    touches a screen. Commit message starts with the task id, e.g. `G1: ...`.
 4. Tick the box in this file in the same commit. Add a line to `CHANGELOG.md` (player-facing words) and, for any
