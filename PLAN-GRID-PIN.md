@@ -137,10 +137,9 @@ already made here. If a task needs a decision that isn't in this file, **stop an
   street.", < 50 km "Wrong side of the ring road.", else "Not even the right county." Put lines in `TALK` in fx.js.
   Check no-scroll at all three sizes.
 
-- [ ] **P6. Pin of the Day** (new daily game, home tile next to Grid and Chain). Copy the shape of `src/chain.js`
+- [x] **P6. Pin of the Day** (new daily game, home tile next to Grid and Chain). Copy the shape of `src/chain.js`
   into `src/pinday.js` (add to `index.html` after chain.js and to `sw.js` SHELL). Five grounds, same for everyone,
-  seeded `rngOf(hash("pinday" + dayKey()))`, all divisions, no repeat within 30 days (pick by day index through a
-  seeded shuffle of `GROUNDS`). Score = total km (lower is better) and points by the same thresholds. One go per
+  seeded `rngOf(hash("pinday" + dayKey()))`, all divisions, no repeat within 18 days (**corrected while building**: 30 days x 5 = 150 grounds, and there are only 91, so 91 / 5 = 18 days is the most that can be promised; one fixed shuffle, five along it a day). Score = total km (lower is better) and points by the same thresholds. One go per
   day; state in `S.pd = { day, i, km: [], done }`, merged like `S.chain`. Share card: `1X2 PIN No. n` then one
   emoji per ground (🟩 ≤ near, 🟨 ≤ far, 🟥 beyond) and total km. Objective in `OBJ`: "Play Pin of the Day", 30 XP.
   Uses P3's fallback when offline. Tests: same five grounds for a given day, no repeats over 30 days, share text

@@ -1084,3 +1084,4 @@ button.gc{cursor:pointer}
 .pinbox{position:relative}
 .pinhint{position:absolute;left:8px;right:8px;bottom:14px;z-index:500;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.6);padding:5px 8px;border-radius:6px;pointer-events:none}
 .pinhint[hidden]{display:none}
+.tiles2 .pindayt .sub{min-height:0}

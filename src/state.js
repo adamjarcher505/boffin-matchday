@@ -18,6 +18,8 @@ const TUNING = {
   gridDays: { 1: [20, 8, 0, "Gentle"], 2: [20, 8, 0, "Gentle"], 3: [30, 5, 0, "Proper"], 4: [30, 5, 0, "Proper"], 5: [40, 4, 1, "Brutal"], 6: [40, 4, 1, "Brutal"], 0: [40, 4, 1, "Brutal"] },
   pinZoom: 11, // Pin the Ground: zoom level before the pin can be locked (street level at 11+)...
   pinZoomWait: 20, // ...or this many seconds into the chance, whichever comes first
+  pinDayBase: 10, // Pin of the Day: XP for finishing, plus pinDayXp a point (max 10 points)
+  pinDayXp: 4,
   pinNear: 1.5, // Pin the Ground: km for 2 points...
   pinFar: 8, // ...and for 1 point
   chainXp: 5, // Chain Reaction: XP per link...
@@ -168,7 +170,7 @@ const hydrate = o => {
   s.sk = Object.assign({ d: "", n: 0, best: 0 }, o.sk || {});
   s.ob = Object.assign({ d: "", p: {}, done: {}, all: false }, o.ob || {});
   if (!s.sn || typeof s.sn !== "object") s.sn = { ty: {} };
-  ["album", "grid", "gh", "chain", "g", "ts", "lb", "md", "ct"].forEach(k => {
+  ["album", "grid", "gh", "chain", "pd", "g", "ts", "lb", "md", "ct"].forEach(k => {
     if (!s[k] || typeof s[k] !== "object") s[k] = {};
   });
   ["form", "played", "recent", "hist"].forEach(k => {
@@ -235,6 +237,12 @@ function mergeSaves(a, b) {
     m.gh[k] = !y || base.gh[k][0] >= y[0] ? base.gh[k] : y;
   });
   Object.keys(m.gh).sort().slice(0, -60).forEach(k => delete m.gh[k]);
+  // Pin of the Day: one go a day, keep whichever device got further with today's
+  Object.keys(other.pd || {}).forEach(k => {
+    const x = (m.pd || {})[k],
+      y = other.pd[k];
+    if (!x || (y.done && !x.done) || (!x.done && (y.res || []).length > (x.res || []).length)) m.pd = Object.assign({}, m.pd, { [k]: y });
+  });
   m.lb = maxMap(base.lb, other.lb);
   m.ts = Object.assign({}, other.ts || {});
   Object.keys(base.ts || {}).forEach(k => {

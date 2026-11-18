@@ -47,6 +47,7 @@ const OBJ = {
   names: { t: "Add five new names to the album", n: 5, xp: 40, g: "names", on: e => (e.k === "match" ? e.newN : 0) },
   cup: { t: "Win a Club Cup tie", n: 1, xp: 50, g: "cup", on: e => (e.k === "match" && e.mode === "cup" && e.res === "W" ? 1 : 0) },
   grid: { t: "Finish today's Daily Grid", n: 1, xp: 40, g: "grid", on: e => (e.k === "grid" ? 1 : 0) },
+  pinday: { t: "Play Pin of the Day", n: 1, xp: 30, g: "pinday", on: e => (e.k === "pinday" ? 1 : 0) },
   train: { t: "Score three times in training", n: 3, xp: 30, g: "train", on: e => (e.k === "train" && e.goal ? 1 : 0) },
   types: { t: "Score from four different question types", n: 4, xp: 50, g: "types", on: (e, ob) => {
     if (e.k !== "match") return 0;
@@ -235,6 +236,15 @@ function careerTrain(goal) {
 function careerGrid(score) {
   if (score >= 100) S.ct.gridp = (S.ct.gridp || 0) + 1;
   const lines = objEvent({ k: "grid", score });
+  medalCheck().forEach(m => lines.push(["Medal: " + m.n, CAREER.medalXp[m.t]]));
+  lines.forEach(l => {
+    addXp(l[1]);
+    toast(l[0] + " +" + l[1] + " XP");
+  });
+}
+/* Pin of the Day has just finished */
+function careerPinDay() {
+  const lines = objEvent({ k: "pinday" });
   medalCheck().forEach(m => lines.push(["Medal: " + m.n, CAREER.medalXp[m.t]]));
   lines.forEach(l => {
     addXp(l[1]);

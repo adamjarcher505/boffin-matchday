@@ -267,6 +267,13 @@ document.addEventListener("click", e => {
   } else if (act === "cell") cellSheet(+v);
   else if (act === "gans") answersSheet(+v);
   else if (act === "chaingo") chainGo();
+  else if (act === "pdgo") pdGo();
+  else if (act === "pdlock") pdLock();
+  else if (act === "pdopt") pdOption(+v);
+  else if (act === "sharepd") {
+    SHARE = sharePinDay();
+    doShare();
+  }
   else if (act === "sharechain") {
     SHARE = shareChain();
     doShare();
