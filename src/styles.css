@@ -1078,3 +1078,4 @@ tr[data-act]:not(.me):hover td{background:rgba(255,255,255,.03)}
 
 /* 18/11/2026: Daily Grid weekday difficulty line */
 .gday{margin:-4px 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--amber)}
+button.gc{cursor:pointer}

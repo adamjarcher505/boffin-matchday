@@ -119,7 +119,7 @@ already made here. If a task needs a decision that isn't in this file, **stop an
   least the day's minimum valid answers; for a day before `GRID_V2_FROM` it returns exactly what `dailyGridV1`
   returns (determinism test).
 
-- [ ] **G5. Answers sheet after finishing.** On a finished grid, tapping any square opens a sheet: your answer and
+- [x] **G5. Answers sheet after finishing.** On a finished grid, tapping any square opens a sheet: your answer and
   its obscurity, then "Best-known" (top 5 by fame) and "Deep cuts" (bottom 4), total valid count. Reuse the markup
   of `nameOne`'s `R.review`. Must fit without scrolling at 360×640 (cap names, `.q` compact styles).
 

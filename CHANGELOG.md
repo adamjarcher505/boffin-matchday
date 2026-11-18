@@ -1,6 +1,7 @@
 # Changelog
 
 ## 18/11/2026: Pin the Ground works with no signal
+- **Finished Grid: tap any square** to see who else fitted: the best-known names and the deep cuts.
 - **Daily Grid, from No. 10 (20/11):** harder at weekends, gentle on Mondays (the day is shown above the grid), and a new Position header (Goalkeeper, Defender, Midfielder, Forward).
 - **Grid streak.** The Grid remembers your last 60 days: a flame for days running, a 7-day average on the finished panel, and a new medal, Seven-Day Grid.
 - **Grid obscurity is honest.** "% obscure" now follows how famous the player is, so a household name can't score as a deep cut. Wrong guesses say which half missed ("never played for Chelsea"). Missed squares show the best-known answer.

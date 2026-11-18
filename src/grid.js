@@ -203,10 +203,12 @@ function renderGrid() {
     GRID.cols.forEach((b, ci) => {
       const k = ri * 3 + ci,
         v = g.c[k];
+      const el = done ? "button" : "div",
+        tap = done ? ` data-act="gans" data-v="${k}" aria-label="${esc(catLabel(a))} and ${esc(catLabel(b))}: all the answers"` : "";
       h += v
-        ? `<div class="gc done${g.h[k] ? " hinted" : ""}"><b>${esc(v.split("|")[0])}</b><span>${g.r[k]}% obscure</span>${g.h[k] ? `<i class="hintdot" title="${g.h[k]} hint${g.h[k] > 1 ? "s" : ""}">${g.h[k] > 1 ? "2 hints" : "hint"}</i>` : ""}</div>`
+        ? `<${el} class="gc done${g.h[k] ? " hinted" : ""}"${tap}><b>${esc(v.split("|")[0])}</b><span>${g.r[k]}% obscure</span>${g.h[k] ? `<i class="hintdot" title="${g.h[k]} hint${g.h[k] > 1 ? "s" : ""}">${g.h[k] > 1 ? "2 hints" : "hint"}</i>` : ""}</${el}>`
         : done
-          ? `<div class="gc"><span style="color:var(--mute)">${esc((x => (x.length ? PL[x[0]][0] : ""))(validSet(a, b).slice().sort((p, q) => fame(q) - fame(p))))}</span></div>`
+          ? `<button class="gc"${tap}><span style="color:var(--mute)">${esc((x => (x.length ? PL[x[0]][0] : ""))(validSet(a, b).slice().sort((p, q) => fame(q) - fame(p))))}</span></button>`
           : `<button class="gc open" data-act="cell" data-v="${k}" aria-label="${esc(catLabel(a))} and ${esc(catLabel(b))}"><span class="plus">+</span></button>`;
     });
   });
@@ -215,7 +217,22 @@ function renderGrid() {
     const sc = gridScore(g),
       nh = gridHints(g);
     h += `<div class="panel pad gscore"><div class="gsc"><span class="eyebrow">Grid score</span><b class="led">${sc}%</b><span class="note">${sc === 100 ? "Perfect. Nine from nine, no help." : got === 9 ? `All nine, with ${nh} hint${nh === 1 ? "" : "s"}.` : nh ? `${got} of 9, ${nh} hint${nh === 1 ? "" : "s"} used.` : `${got} of 9, no hints.`}</span></div><div class="statline"><span><b>${got}</b> of 9</span><span>Hints <b>${nh}</b></span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span>${gridAvg7() !== null && Object.keys(S.gh).length > 1 ? `<span>Avg 7 days <b>${gridAvg7()}%</b></span>` : ""}</div></div>`;
-    h += `<div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the best-known answer. A new grid lands at midnight.</p>`;
+    h += `<div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the best-known answer. Tap any square to see who else fitted. A new grid lands at midnight.</p>`;
   }
   $("main").innerHTML = h;
+}
+/* a finished grid: tap a square for what fitted it (18/11/2026): your answer, the best-known names and the deep cuts */
+function answersSheet(k) {
+  const g = gridState(),
+    a = GRID.rows[Math.floor(k / 3)],
+    b = GRID.cols[k % 3],
+    v = validSetX(a, b).slice().sort((x, y) => fame(y) - fame(x)),
+    mine = g.c[k] ? KEY2IDX[g.c[k]] : undefined,
+    nm = l => l.map(i => `<b>${esc(PL[i][0])}</b>`).join(", ");
+  $("over").innerHTML =
+    `<div class="sheet"><div class="box"><div class="hd"><span class="eyebrow">${v.length} players fit</span><button class="linkb" data-act="closeover">Close</button></div><div class="cats"><div class="cat"><span>${catSub(a)}</span><b>${esc(catLabel(a))}</b></div><div class="amp">+</div><div class="cat"><span>${catSub(b)}</span><b>${esc(catLabel(b))}</b></div></div>` +
+    `<p class="note">${mine !== undefined ? `You had <b>${esc(PL[mine][0])}</b>, ${g.r[k]}% obscure.` : "You didn't get this one."}</p>` +
+    `<p class="note">Best-known: ${nm(v.slice(0, 5))}.</p>` +
+    (v.length > 9 ? `<p class="note">Deep cuts: ${nm(v.slice(-4))}.</p>` : "") +
+    `</div></div>`;
 }

@@ -130,3 +130,17 @@ test("a wrong guess against a position or nationality header reads properly", ()
     gridPick(i); return $("msg").textContent + "|" + PL[i][0]; })()`);
   assert.ok(/isn't a goalkeeper\./.test(m), m);
 });
+
+test("a finished grid: every square opens an answers sheet with best-known and deep cuts, and an unfinished one doesn't", () => {
+  const g = load({ localStorage: SAVE });
+  g.run(`renderGrid()`);
+  assert.ok(!g.els.main.innerHTML.includes('data-act="gans"'), "open grid has no answers buttons");
+  g.run(`(() => { const G = gridState(); G.left = 0; renderGrid(); })()`);
+  const html = g.els.main.innerHTML;
+  assert.strictEqual((html.match(/data-act="gans"/g) || []).length, 9, "all nine squares tap through when finished");
+  g.run(`answersSheet(4)`);
+  const sheet = g.els.over.innerHTML;
+  assert.ok(/players fit/.test(sheet) && /Best-known:/.test(sheet) && /You didn't get this one/.test(sheet), sheet.slice(0, 200));
+  const n = g.run(`validSetX(GRID.rows[1], GRID.cols[1]).length`);
+  assert.ok(n < 10 || /Deep cuts:/.test(sheet));
+});

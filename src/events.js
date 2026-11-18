@@ -265,6 +265,7 @@ document.addEventListener("click", e => {
     leagueTab = v;
     renderLeague();
   } else if (act === "cell") cellSheet(+v);
+  else if (act === "gans") answersSheet(+v);
   else if (act === "chaingo") chainGo();
   else if (act === "sharechain") {
     SHARE = shareChain();

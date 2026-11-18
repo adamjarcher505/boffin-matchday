@@ -32,6 +32,8 @@ window.QA = {
     // (the start and finished screens are ordinary pages and may scroll, like the Daily Grid page; the live one may not)
     R.push(await screen("chain live", async () => { M = null; S.chain = {}; view = "chain"; render(); document.querySelector("[data-act=chaingo]").click(); await wait(60); const q = document.getElementById("q"); if (q) { q.value = "sa"; q.dispatchEvent(new Event("input", { bubbles: true })); } }));
     S.chain = {}; save();
+    // finished grid: the answers sheet (the longest names, nothing may need scrolling)
+    R.push(await screen("grid answers sheet", async () => { M = null; view = "grid"; render(); const G = gridState(), keep = G.left; G.left = 0; render(); answersSheet(0); G.left = keep; }, true));
     // grid sheet
     R.push(await screen("grid sheet", async () => { M = null; view = "grid"; render(); const c = document.querySelector("[data-act=cell]"); if (c) c.click(); await wait(60); const q = document.getElementById("q"); if (q) { q.value = "sa"; q.dispatchEvent(new Event("input", { bubbles: true })); } }, true));
     document.getElementById("over").innerHTML = "";
