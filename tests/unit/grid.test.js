@@ -76,3 +76,57 @@ test("Seven-Day Grid medal needs seven days running", () => {
     for (let n = 0; n < 7; n++) S.gh[daysAgo(n)] = [50, 5, 0]; return JSON.stringify([a, m.ok()]); })()`));
   assert.deepStrictEqual(r, [false, true]);
 });
+
+test("grids before No. 10 are rebuilt exactly as they were, and the old generator hasn't drifted", () => {
+  const g = load({ localStorage: SAVE });
+  const snap = require("../fixtures/grid-v1.json"); // made from the generator as it was before 18/11/2026
+  for (const day of Object.keys(snap)) {
+    assert.deepStrictEqual(JSON.parse(g.run(`JSON.stringify(dailyGridV1(${JSON.stringify(day)}))`)), snap[day], "V1 drifted on " + day);
+    if (g.run(`gridNo(${JSON.stringify(day)}) < GRID_V2_FROM`)) assert.deepStrictEqual(JSON.parse(g.run(`JSON.stringify(dailyGrid(${JSON.stringify(day)}))`)), snap[day], "dailyGrid changed a past grid on " + day);
+  }
+  assert.strictEqual(g.run(`gridNo("2026-11-20")`), g.run("GRID_V2_FROM"), "No. 10 is 20/11/2026");
+});
+
+test("new grids: 3 + 3 different headers, at most one position, never two grids the same, enough answers for the weekday", () => {
+  const g = load({ localStorage: SAVE });
+  const r = JSON.parse(g.run(`(() => { const bad = [], seen = new Set(); let pos = 0, twoNat = 0;
+    for (let n = 0; n < 70; n++) {
+      const d = new Date(2026, 10, 20 + n, 12), day = dayKey(d), G = dailyGrid(day), min = gridDay(day)[1];
+      const heads = G.rows.concat(G.cols), keys = heads.map(h => h.t + h.v);
+      if (G.rows.length !== 3 || G.cols.length !== 3) bad.push("shape " + day);
+      if (G.rows.some(h => h.t !== "c")) bad.push("rows not clubs " + day);
+      if (new Set(keys).size !== 6) bad.push("duplicate header " + day);
+      if (G.cols.filter(h => h.t === "p").length > 1) bad.push("two positions " + day);
+      if (G.cols.filter(h => h.t === "n").length === 2) { twoNat++; if (!gridDay(day)[2]) bad.push("two nats on a weekday that forbids it " + day); }
+      if (G.cols.some(h => h.t === "p")) pos++;
+      let lowest = 1e9; G.rows.forEach(a => G.cols.forEach(b => { lowest = Math.min(lowest, validSet(a, b).length); }));
+      if (lowest < min) bad.push("only " + lowest + " answers on " + day + " (wanted " + min + ")");
+      const s = JSON.stringify(G); if (seen.has(s)) bad.push("repeat " + day); seen.add(s);
+      if (JSON.stringify(dailyGrid(day)) !== s) bad.push("unstable " + day);
+    } return JSON.stringify({ bad, pos }); })()`));
+  assert.deepStrictEqual(r.bad, []);
+  assert.ok(r.pos > 3, "position headers turn up (" + r.pos + " of 70)");
+});
+
+test("position headers: labels, phrases, who fits, hint doesn't give the position away", () => {
+  const g = load({ localStorage: SAVE });
+  const r = JSON.parse(g.run(`(() => {
+    const gk = { t: "p", v: 0 }, fw = { t: "p", v: 3 }, ars = { t: "c", v: CLUB.indexOf("Arsenal") };
+    const v = validSet(ars, gk);
+    renderGrid(); GRID.rows[0] = ars; GRID.cols[0] = gk; gridState().h[0] = 2;
+    const hint = gridHintText(0);
+    return JSON.stringify([catLabel(gk), catPhrase(fw), catSub(gk), v.length > 3, v.every(i => PL[i][2] === 0 && hasClub(i, ars.v)), hint]);
+  })()`));
+  assert.strictEqual(r[0], "Goalkeeper"); assert.strictEqual(r[1], "is a forward"); assert.strictEqual(r[2], "Position");
+  assert.ok(r[3] && r[4]);
+  assert.ok(!/GK|DEF|MID|FWD/.test(r[5]), "hint leaks the position: " + r[5]);
+});
+
+test("a wrong guess against a position or nationality header reads properly", () => {
+  const g = load({ localStorage: SAVE });
+  const m = g.run(`(() => { renderGrid(); const A = CLUB.indexOf("Arsenal");
+    GRID.rows[0] = { t: "c", v: A }; GRID.cols[0] = { t: "p", v: 0 }; gridCell = 0;
+    const out = hasClub(0, A) ? 0 : 0, i = ALLIDX.find(i => hasClub(i, A) && PL[i][2] === 3);
+    gridPick(i); return $("msg").textContent + "|" + PL[i][0]; })()`);
+  assert.ok(/isn't a goalkeeper\./.test(m), m);
+});

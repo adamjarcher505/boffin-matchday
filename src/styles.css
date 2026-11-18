@@ -1075,3 +1075,6 @@ tr[data-act]:not(.me):hover td{background:rgba(255,255,255,.03)}
 .pinmap .leaflet-control-attribution { font-size: 9px; }
 /* 17/11/2026: on short phones (375×667, 375×400) the map pushed the question screen 18-22px past the bottom: a smaller map there */
 @media (max-height: 720px) { .pinmap { height: calc(44vh - 40px); } }
+
+/* 18/11/2026: Daily Grid weekday difficulty line */
+.gday{margin:-4px 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--amber)}

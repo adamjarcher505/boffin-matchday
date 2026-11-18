@@ -14,6 +14,8 @@ const TUNING = {
   finalDay: 3, // the last N fixtures of a season get the Final Day treatment
   warsTop: 10, // Club Wars: a club's score is its top N fans' weekly goals divided by N
   gridHint: [2, 3], // daily grid: % off a square's share of the score for the first and second hint (one hint on a full grid = 98%)
+  // daily grid from GRID_V2_FROM: by weekday (0 = Sunday). clubs = how many of the top clubs the rows/columns draw from, minV = fewest valid answers a square may have, twoNats = may have two nationality columns
+  gridDays: { 1: [20, 8, 0, "Gentle"], 2: [20, 8, 0, "Gentle"], 3: [30, 5, 0, "Proper"], 4: [30, 5, 0, "Proper"], 5: [40, 4, 1, "Brutal"], 6: [40, 4, 1, "Brutal"], 0: [40, 4, 1, "Brutal"] },
   pinNear: 1.5, // Pin the Ground: km for 2 points...
   pinFar: 8, // ...and for 1 point
   chainXp: 5, // Chain Reaction: XP per link...

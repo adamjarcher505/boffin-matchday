@@ -57,6 +57,7 @@ PL.forEach((p, i) => {
 });
 const clubPl = CLUB.map(() => []),
   natPl = NAT.map(() => []),
+  posPl = [[], [], [], []], // by position index (GK, DEF, MID, FWD)
   ALLIDX = PL.map((p, i) => i);
 PL.forEach((p, i) => {
   const c = p[5],
@@ -67,6 +68,7 @@ PL.forEach((p, i) => {
       clubPl[c[k]].push(i);
     }
   if (p[1] >= 0) natPl[p[1]].push(i);
+  if (posPl[p[2]]) posPl[p[2]].push(i);
 });
 const POSN = ["GK", "DEF", "MID", "FWD"];
 const DIVS = ["Sunday League", "Non-League", "League Two", "League One", "Championship", "Top Flight", "European Nights", "Knows Ball"];
@@ -398,18 +400,21 @@ const clubsOf = i => {
   for (let k = 0; k < a.length; k += 2) if (!out.includes(a[k])) out.push(a[k]);
   return out;
 };
-const fits = (i, c) => (c.t === "c" ? hasClub(i, c.v) : c.t === "n" ? PL[i][1] === c.v : c.t === "l" ? !!(PL[i][7] & (1 << c.v)) : !!(PL[i][7] & 32));
-const poolOf = c => (c.t === "c" ? clubPl[c.v] : c.t === "n" ? natPl[c.v] : ALLIDX);
-const catLabel = c => (c.t === "c" ? CLUB[c.v] : c.t === "n" ? NAT[c.v] : c.t === "l" ? BD.leagues[c.v] : "15+ league goals");
+const fits = (i, c) => (c.t === "c" ? hasClub(i, c.v) : c.t === "n" ? PL[i][1] === c.v : c.t === "p" ? PL[i][2] === c.v : c.t === "l" ? !!(PL[i][7] & (1 << c.v)) : !!(PL[i][7] & 32));
+const poolOf = c => (c.t === "c" ? clubPl[c.v] : c.t === "n" ? natPl[c.v] : c.t === "p" ? posPl[c.v] : ALLIDX);
+const POSLONG = ["Goalkeeper", "Defender", "Midfielder", "Forward"]; // POSN holds the short codes
+const catLabel = c => (c.t === "c" ? CLUB[c.v] : c.t === "n" ? NAT[c.v] : c.t === "p" ? POSLONG[c.v] : c.t === "l" ? BD.leagues[c.v] : "15+ league goals");
 const catPhrase = c =>
   c.t === "c"
     ? "played for " + CLUB[c.v]
     : c.t === "n"
       ? "is from " + NAT[c.v]
-      : c.t === "l"
+      : c.t === "p"
+        ? "is a " + POSLONG[c.v].toLowerCase()
+        : c.t === "l"
         ? "played in " + BD.leagues[c.v]
         : "scored 15+ league goals in a season";
-const catSub = c => (c.t === "c" ? "Played for" : c.t === "n" ? "Nationality" : c.t === "l" ? "Played in" : "In one season, 2009–22");
+const catSub = c => (c.t === "c" ? "Played for" : c.t === "n" ? "Nationality" : c.t === "p" ? "Position" : c.t === "l" ? "Played in" : "In one season, 2009–22");
 function validSet(a, b) {
   const [x, y] = poolOf(a).length <= poolOf(b).length ? [a, b] : [b, a];
   return poolOf(x).filter(i => fits(i, y));

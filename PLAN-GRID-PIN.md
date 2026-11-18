@@ -101,7 +101,7 @@ already made here. If a task needs a decision that isn't in this file, **stop an
   Add a medal in `career.js` `MEDALS`: `grid7` "Seven-Day Grid", finish 7 days running. Save round-trip test in
   `save.test.js`.
 
-- [ ] **G4. Fresh grids: new category kinds, weekday difficulty.** Add `const GRID_V2_FROM = <gridNo of the day
+- [x] **G4. Fresh grids: new category kinds, weekday difficulty.** Add `const GRID_V2_FROM = <gridNo of the day
   after this ships>` in `grid.js`; `dailyGrid()` keeps the current generator for `gridNo() < GRID_V2_FROM` exactly
   as it is (copy it to `dailyGridV1`, don't edit it).
   The v2 generator:

@@ -1,12 +1,14 @@
 "use strict";
 /* ============ grid.js: the Daily Grid ============ */
 /* ============ daily grid ============ */
-const gridNo = () => Math.max(1, Math.round((new Date(dayKey() + "T12:00:00") - new Date("2026-11-11T12:00:00")) / 864e5) + 1);
-function dailyGrid() {
+const gridNo = (day = dayKey()) => Math.max(1, Math.round((new Date(day + "T12:00:00") - new Date("2026-11-11T12:00:00")) / 864e5) + 1);
+/* Grids from this number on use dailyGridV2 (position headers, weekday difficulty). Earlier ones are rebuilt exactly as they were, so nobody's past grid changes. No. 10 = 20/11/2026. */
+const GRID_V2_FROM = 10;
+function dailyGridV1(day = dayKey()) {
   const gc = BD.gridClubs.slice(0, 30),
     gn = BD.gridNats.slice(0, 14);
   for (let t = 0; t < 400; t++) {
-    const r = rngOf(hash("grid" + dayKey() + "-" + t)),
+    const r = rngOf(hash("grid" + day + "-" + t)),
       rows = shuffle(gc, r)
         .slice(0, 3)
         .map(v => ({ t: "c", v })),
@@ -24,6 +26,35 @@ function dailyGrid() {
   }
   return { rows: [0, 1, 2].map(k => ({ t: "c", v: BD.gridClubs[k] })), cols: [3, 4, 5].map(k => ({ t: "c", v: BD.gridClubs[k] })) };
 }
+/* the weekday's setting: [club pool, fewest answers a square may have, two nationality columns allowed, label] */
+const gridDay = (day = dayKey()) => TUNING.gridDays[new Date(day + "T12:00:00").getDay()];
+function dailyGridV2(day = dayKey()) {
+  const [nc, minV0, twoNats] = gridDay(day),
+    gc = BD.gridClubs.slice(0, nc),
+    gn = BD.gridNats.slice(0, 14);
+  for (let minV = minV0; minV >= 3; minV--)
+    for (let t = 0; t < 400; t++) {
+      const r = rngOf(hash("grid2" + day + "-" + minV + "-" + t)),
+        rows = shuffle(gc, r)
+          .slice(0, 3)
+          .map(v => ({ t: "c", v })),
+        cols = [],
+        c1 = shuffle(
+          gc.filter(v => !rows.some(x => x.v === v)),
+          r
+        );
+      cols.push({ t: "c", v: c1[0] });
+      cols.push(r() < 0.5 ? { t: "c", v: c1[1] } : { t: "n", v: pickR(gn, r) });
+      const x = r();
+      // third column: nationality, position (never more than one), a league or 15+ goals
+      cols.push(x < 0.4 ? { t: "n", v: pickR(gn, r) } : x < 0.6 ? { t: "p", v: Math.floor(r() * 4) } : x < 0.85 ? { t: "l", v: Math.floor(r() * 5) } : { t: "g", v: 0 });
+      if (sameCat(cols[1], cols[2])) continue;
+      if (!twoNats && cols[1].t === "n" && cols[2].t === "n") continue;
+      if (rows.every(a => cols.every(b => validSet(a, b).length >= minV))) return { rows, cols };
+    }
+  return dailyGridV1(day);
+}
+const dailyGrid = (day = dayKey()) => (gridNo(day) < GRID_V2_FROM ? dailyGridV1(day) : dailyGridV2(day));
 let GRID = null,
   gridCell = -1;
 const gridState = () => {
@@ -93,13 +124,13 @@ function gridHintText(k) {
   const a = GRID.rows[Math.floor(k / 3)],
     b = GRID.cols[k % 3],
     p = PL[i],
-    bits = [POSN[p[2]], "born in the " + (Math.floor(p[3] / 10) * 10 + 1900) + "s"];
+    bits = [a.t === "p" || b.t === "p" ? "" : POSN[p[2]], "born in the " + (Math.floor(p[3] / 10) * 10 + 1900) + "s"];
   if (p[1] >= 0 && a.t !== "n" && b.t !== "n") bits.push(NAT[p[1]]);
   else {
     const other = clubsOf(i).find(c => !(a.t === "c" && a.v === c) && !(b.t === "c" && b.v === c));
     if (other !== undefined) bits.push("also played for " + CLUB[other]);
   }
-  let h = bits.join(" · ");
+  let h = bits.filter(x => x).join(" · ");
   if (n >= 2) {
     const w = p[0].split(" "),
       sn = w[w.length - 1];
@@ -149,7 +180,7 @@ function gridPick(i) {
       const fa = fits(i, a),
         fb = fits(i, b),
         miss = fa ? b : a,
-        why = fa === fb ? "" : miss.t === "n" ? " isn't from " + NAT[miss.v] + "." : " never " + catPhrase(miss) + ".";
+        why = fa === fb ? "" : miss.t === "n" || miss.t === "p" ? " isn't " + catPhrase(miss).replace(/^is /, "") + "." : " never " + catPhrase(miss) + ".";
       msg(PL[i][0] + (why ? "?" + why : "? " + pickR(SAY.no)) + " " + g.left + " guesses left.", "bad");
       const q = $("q");
       if (q) {
@@ -166,7 +197,7 @@ function renderGrid() {
     got = g.c.filter(x => x).length,
     obs = got ? Math.round(g.r.reduce((s, x) => s + x, 0) / got) : 0;
   if (done && !(S.gh || {})[dayKey()]) recordGrid(g); // a grid finished before history existed
-  let h = `<div class="hd"><h2>Daily Grid No. ${gridNo()}</h2><span class="eyebrow">${done ? "Finished" : g.left + " guesses left"}${gridStreak() >= 2 ? " · 🔥 " + gridStreak() + " days" : ""}</span></div><div class="grid"><div></div>${GRID.cols.map(c => `<div class="gh">${esc(catLabel(c))}</div>`).join("")}`;
+  let h = `<div class="hd"><h2>Daily Grid No. ${gridNo()}</h2><span class="eyebrow">${done ? "Finished" : g.left + " guesses left"}${gridStreak() >= 2 ? " · 🔥 " + gridStreak() + " days" : ""}</span></div>${gridNo() >= GRID_V2_FROM ? `<p class="gday">${["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date(dayKey() + "T12:00:00").getDay()]} · ${gridDay()[3]}</p>` : ""}<div class="grid"><div></div>${GRID.cols.map(c => `<div class="gh">${esc(catLabel(c))}</div>`).join("")}`;
   GRID.rows.forEach((a, ri) => {
     h += `<div class="gh">${esc(catLabel(a))}</div>`;
     GRID.cols.forEach((b, ci) => {
