@@ -68,3 +68,30 @@ test("no map: the round plays as pick-the-name, always offers the right ground, 
   g.run(`M.run.advance(); (() => { const o = pinOptions(curSpec(), 2); M.run.onTap(String(o.indexOf(curSpec().qs[2]))); })()`);
   assert.strictEqual(g.run("M.run.pts"), 4);
 });
+
+test("pools follow the division, easy tiers never pair near neighbours, and a club's own ground is always in its round", () => {
+  const g = load();
+  const r = JSON.parse(g.run(`(() => { const bad = [], allow = [["PL"], ["PL", "CH"], ["PL", "CH", "L1"], null];
+    for (let tier = 0; tier < 4; tier++) for (let k = 0; k < 150; k++) {
+      const x = makeRound("pin", rngOf(hash("div" + tier + k)), tier, null, true);
+      if (allow[tier] && x.qs.some(i => !allow[tier].includes(GROUNDS[i].d))) bad.push("division " + tier + " " + k);
+      if (tier < 2) for (let a = 0; a < 3; a++) for (let b = a + 1; b < 3; b++) if (gKm([GROUNDS[x.qs[a]].la, GROUNDS[x.qs[a]].ln], [GROUNDS[x.qs[b]].la, GROUNDS[x.qs[b]].ln]) < 3) bad.push("near " + tier + " " + k);
+    }
+    let withOwn = 0, tried = 0;
+    for (let c = 0; c < CLUB.length; c++) {
+      const own = GROUNDS.findIndex(x => x.c === CLUB[c]); if (own < 0) continue;
+      for (let tier = 0; tier < 4; tier++) for (let k = 0; k < 6; k++) {
+        const x = makeMore("pin", rngOf(hash("own" + c + tier + k)), tier, { club: c });
+        tried++; if (!x || x.qs.length !== 3 || new Set(x.qs).size !== 3) { bad.push("shape " + CLUB[c]); continue; }
+        if (x.qs.includes(own)) withOwn++; else bad.push("no own ground " + CLUB[c] + " " + tier);
+      }
+    }
+    return JSON.stringify({ bad, withOwn, tried }); })()`));
+  assert.deepStrictEqual(r.bad, []);
+  assert.ok(r.tried > 100 && r.withOwn === r.tried, JSON.stringify(r));
+});
+
+test("the generator version moved on when the pin pool changed", () => {
+  const g = load();
+  assert.ok(/^v7\./.test(g.run("QV")), g.run("QV"));
+});

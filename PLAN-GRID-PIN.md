@@ -125,7 +125,7 @@ already made here. If a task needs a decision that isn't in this file, **stop an
 
 ## Phase 3: Pin the Ground plays fairer, plus a daily version
 
-- [ ] **P4. Pool by division and club** (bump `QV` once in this phase). In `makeRound("pin")`: tier 0 picks only
+- [x] **P4. Pool by division and club** (bump `QV` once in this phase). In `makeRound("pin")`: tier 0 picks only
   `PL` grounds, tier 1 `PL` + `CH`, tier 2 adds `L1`, tier 3 all. When the round has a club (`club` option, Cup and
   club-scoped matches), one of the three is that club's ground if it's in `GROUNDS` (match on `GROUNDS[i].c ===
   CLUB[C]`). Never two grounds in one round within 3 km of each other at tiers 0–1 (no Arsenal + Spurs on Sunday

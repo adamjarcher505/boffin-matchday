@@ -1,6 +1,7 @@
 # Changelog
 
 ## 18/11/2026: Pin the Ground works with no signal
+- **Pin the Ground fits your division.** Sunday League gets Premier League grounds, harder divisions add the Championship, League One and below. Cup ties always include your own club's ground.
 - **Finished Grid: tap any square** to see who else fitted: the best-known names and the deep cuts.
 - **Daily Grid, from No. 10 (20/11):** harder at weekends, gentle on Mondays (the day is shown above the grid), and a new Position header (Goalkeeper, Defender, Midfielder, Forward).
 - **Grid streak.** The Grid remembers your last 60 days: a flame for days running, a 7-day average on the finished panel, and a new medal, Seven-Day Grid.

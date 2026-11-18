@@ -328,14 +328,20 @@ function makeMore(type, r, tier, sc) {
     return qs.length === 3 ? { type, qs, target: [2, 3, 3, 4][tier] } : null;
   }
   if (type === "pin") {
-    // Pin the Ground: three clubs from the grounds list (src/grounds.js); a ground with no coordinates is never picked
-    const pool = GROUNDS.map((g, i) => i);
-    const qs = [];
-    for (let g = 0; qs.length < 3 && g < 60; g++) {
+    // Pin the Ground (18/11/2026: by division). Tier 0 is Premier League grounds, tier 1 adds the Championship, tier 2 League One, tier 3 everything.
+    // A round for one club's fans (a Cup tie) always includes that club's own ground. Easy tiers never pair two grounds within 3 km
+    // (no Arsenal and Spurs on a Sunday League day). A ground with no coordinates is never picked.
+    const allowed = [["PL"], ["PL", "CH"], ["PL", "CH", "L1"], null][tier],
+      pool = GROUNDS.map((g, i) => i).filter(i => !allowed || allowed.includes(GROUNDS[i].d)),
+      own = club ? GROUNDS.findIndex(g => g.c === CLUB[C]) : -1,
+      qs = own >= 0 ? [own] : [];
+    for (let g = 0; qs.length < 3 && g < 80; g++) {
       const i = pickR(pool, r);
-      if (!qs.includes(i)) qs.push(i);
+      if (qs.includes(i)) continue;
+      if (tier < 2 && qs.some(j => gKm([GROUNDS[i].la, GROUNDS[i].ln], [GROUNDS[j].la, GROUNDS[j].ln]) < 3)) continue;
+      qs.push(i);
     }
-    return qs.length === 3 ? { type, qs, target: [3, 4, 4, 5][tier] } : null;
+    return qs.length === 3 ? { type, qs: own >= 0 ? shuffle(qs, r) : qs, target: [3, 4, 4, 5][tier] } : null;
   }
   return null;
 }

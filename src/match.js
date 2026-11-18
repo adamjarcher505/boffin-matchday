@@ -21,7 +21,7 @@ function msg(t, cls) {
     m.className = "msg " + (cls || "");
   }
 }
-const QV = "v6." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
+const QV = "v7." + QB.v + "|"; // question-generator version + question-bank version: ghosts only replay matches built by both
 // ...and with the 1X2 database in play or not: it changes what a seed builds (src/dbx.js)
 const qvx = tier => (DBX.ready(tier) ? QV.replace("|", "x|") : QV);
 function startLeagueMatch() {

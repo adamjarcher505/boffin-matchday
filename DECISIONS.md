@@ -4,6 +4,7 @@
 - **New Grids start at No. 10 (20/11/2026).** `GRID_V2_FROM` in grid.js. Anything earlier is rebuilt by `dailyGridV1`, which is the old generator unchanged (tests/fixtures/grid-v1.json is its output from before the change). Why 10 and not "tomorrow": a phone still on the old cached version would build a different grid for a day it isn't expecting; two days gives the service-worker update time to land. **Raise the number if this ships later than 19/11**: it must always be a day that hasn't started when the update goes live.
 - **Weekday difficulty is in `TUNING.gridDays`.** Mon/Tue gentle (top 20 clubs, 8+ answers a square), Wed/Thu proper (top 30, 5+), Fri-Sun brutal (top 40, 4+). Mon-Thu never have two nationality columns. If a day can't be built at its minimum the generator lowers the minimum one at a time (never below 3), and a test over 70 days checks it never has to.
 - **Position is a new header kind (`t: "p"`), columns only, never more than one.** Match Grid rounds don't use it, so no match seed changed and QV stays at v6.
+- **QV is now v7** (Pin the Ground builds different rounds from the same seed: division pools, own ground in club rounds). Matches in progress or ghosts from v6 simply don't replay.
 - **Obscurity is now ranked by fame** (`rarity` in rounds.js). It also changes the XP and deep-cut count on match Grid rounds, slightly, because the database's extra answers used to count as deep cuts whatever their fame. Seeds are unaffected.
 
 ## 17/11/2026: the 1X2 database
