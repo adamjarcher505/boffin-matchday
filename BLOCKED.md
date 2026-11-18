@@ -13,3 +13,4 @@
 | **Real-phone tests** | Need real devices. | TESTING-CHECKLIST.md. |
 | **Re-running the stuck Pages build** | Needs a GitHub login. A `.nojekyll` file was added and the final push triggers a new build. | If it sticks again: repo → Actions → the run → "Re-run all jobs". |
 | **Throttled first-load timing** | Not measured. The built-in browser doesn't throttle the network. data.js is 1.5 MB raw; GitHub Pages gzips it on the way out. It isn't lazy-loaded because every screen needs it. | Chrome DevTools → Network → "Slow 4G", on the live site. |
+| **21 grounds still single-source in Pin the Ground** | A second independent source wasn't reachable on 18/11/2026: OpenStreetMap was blocked, Wikipedia was rate-limited, is already the one source for 8 of them, and returned nothing for 12 more. Preston's Deepdale is 414 m from Wikipedia's figure. | Check them on OpenStreetMap or the clubs' own sites from a normal connection; list is in DECISIONS.md (18/11/2026). |

@@ -145,7 +145,7 @@ already made here. If a task needs a decision that isn't in this file, **stop an
   Uses P3's fallback when offline. Tests: same five grounds for a given day, no repeats over 30 days, share text
   has no ground names (spoiler-free).
 
-- [ ] **P7. Check the 22 single-source grounds** (only if the session can reach Wikipedia). For each `v: "single"`
+- [x] **P7. Check the 22 single-source grounds** (only if the session can reach Wikipedia). For each `v: "single"`
   row, find a second independent source (Wikipedia infobox coordinates + the club's own site or OpenStreetMap).
   Agree within 300 m → set `v: "yes"`. Disagree → leave it, list it in `DECISIONS.md` and stop-and-ask. Record the
   sources in the `grounds.js` header. If the network blocks it, write that in `BLOCKED.md` and move on.

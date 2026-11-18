@@ -1,6 +1,7 @@
 /* Pin the Ground: one row per club's current home ground (2026-27). Coordinates looked up from Wikipedia and
    TheSportsDB/latlong.net (see stadiums_v2.csv). v: yes = two sources agree, single = one source, check before
-   relying on it. Generated 15/11/2026; edit by hand only with a source. */
+   relying on it. Generated 15/11/2026; edit by hand only with a source.
+   18/11/2026: Reading set to yes (Wikipedia's Madejski Stadium coordinates are 240 m from ours). See DECISIONS.md for the rest. */
 window.GROUNDS = [
 {
 "d": "PL",
@@ -504,7 +505,7 @@ window.GROUNDS = [
 "s": "Madejski Stadium",
 "la": 51.4202,
 "ln": -0.984,
-"v": "single"
+"v": "yes"
 },
 {
 "d": "L1",
