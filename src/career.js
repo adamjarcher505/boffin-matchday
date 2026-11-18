@@ -144,6 +144,7 @@ const MEDALS = [
   { id: "alb500", n: "Chief Scout", d: "500 names in the album", t: "s", i: "500", ok: () => Object.keys(S.album).length >= 500 },
   { id: "alb1k", n: "Encyclopaedia", d: "1,000 names in the album", t: "g", i: "1K", ok: () => Object.keys(S.album).length >= 1000 },
   { id: "grid9", n: "Nine From Nine", d: "A perfect Daily Grid, no hints", t: "s", i: "9/9", ok: () => S.ct.gridp >= 1 },
+  { id: "grid7", n: "Seven-Day Grid", d: "Finish the Daily Grid 7 days running", t: "s", i: "7D", ok: () => gridStreak() >= 7 },
   { id: "grid10", n: "Grid Regular", d: "Finish 10 Daily Grids", t: "b", i: "▦", ok: () => S.st.grids >= 10 },
   { id: "stk10", n: "Collector", d: "Stick in 10 stickers", t: "b", i: "S10", ok: () => stkCount() >= 10 },
   { id: "stk50", n: "Got, Got, Need", d: "Stick in 50 stickers", t: "s", i: "S50", ok: () => stkCount() >= 50 },

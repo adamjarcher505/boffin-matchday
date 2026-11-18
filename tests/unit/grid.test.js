@@ -37,3 +37,42 @@ test("a wrong grid guess says which half failed", () => {
   assert.ok(!/never played for Arsenal/.test(out[0][0]));
   assert.ok(out[0][1].includes(out[2]) && !/never played for/.test(out[0][1]), "fits neither: the old line: " + out[0][1]);
 });
+
+test("grid history: a finished grid is recorded once, streak counts days running, and today not being done yet doesn't break it", () => {
+  const g = load({ localStorage: SAVE });
+  const r = JSON.parse(g.run(`(() => {
+    S.gh = {}; const out = [];
+    out.push(gridStreak());
+    [1, 2, 3].forEach(n => { S.gh[daysAgo(n)] = [60, 5, 0]; });
+    out.push(gridStreak());                         // yesterday back three days, today not done: 3
+    S.gh[daysAgo(0)] = [80, 7, 1];
+    out.push(gridStreak());                         // today done too: 4
+    delete S.gh[daysAgo(2)];
+    out.push(gridStreak());                         // gap: today + yesterday = 2
+    out.push(gridAvg7());                           // (80 + 60 + 60) / 3 = 67
+    for (let n = 10; n < 90; n++) S.gh[daysAgo(n)] = [10, 1, 0];
+    renderGrid(); const g1 = gridState(); g1.c = g1.c.map((x, i) => i < 3 ? "x|" + i : null); recordGrid(g1);
+    out.push(Object.keys(S.gh).length <= 60);
+    return JSON.stringify(out);
+  })()`));
+  assert.deepStrictEqual(r, [0, 3, 4, 2, 67, true]);
+});
+
+test("grid history merges by day, keeping the better score, and survives hydrate", () => {
+  const g = load({ localStorage: SAVE });
+  const r = JSON.parse(g.run(`(() => {
+    const a = hydrate({ v: 4, made: true, name: "A", club: "Arsenal", xp: 10, t: 2, gh: { "2026-11-01": [50, 5, 0], "2026-11-02": [90, 9, 0] } }),
+      b = hydrate({ v: 4, made: true, name: "A", club: "Arsenal", xp: 10, t: 1, gh: { "2026-11-01": [70, 7, 0], "2026-11-03": [30, 3, 0] } });
+    const m = mergeSaves(a, b);
+    return JSON.stringify([m.gh, hydrate({ v: 2, made: true, name: "x", club: "Arsenal" }).gh]);
+  })()`));
+  assert.deepStrictEqual(r[0], { "2026-11-01": [70, 7, 0], "2026-11-02": [90, 9, 0], "2026-11-03": [30, 3, 0] });
+  assert.deepStrictEqual(r[1], {});
+});
+
+test("Seven-Day Grid medal needs seven days running", () => {
+  const g = load({ localStorage: SAVE });
+  const r = JSON.parse(g.run(`(() => { const m = MEDALS.find(x => x.id === "grid7"); S.gh = {}; const a = m.ok();
+    for (let n = 0; n < 7; n++) S.gh[daysAgo(n)] = [50, 5, 0]; return JSON.stringify([a, m.ok()]); })()`));
+  assert.deepStrictEqual(r, [false, true]);
+});

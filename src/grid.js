@@ -37,6 +37,38 @@ const gridState = () => {
   return g;
 };
 /* grid score: each filled square is worth a ninth of 100%, less what its hints cost. Hints on a square you never fill cost nothing (it's already 0). */
+/* grid history and streak (18/11/2026). S.gh keeps the last 60 finished days. */
+const daysAgo = n => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return dayKey(d);
+};
+function recordGrid(g) {
+  S.gh = S.gh || {};
+  S.gh[dayKey()] = [gridScore(g), g.c.filter(x => x).length, gridHints(g)];
+  Object.keys(S.gh).sort().slice(0, -60).forEach(k => delete S.gh[k]);
+}
+/* consecutive finished days, counting back from today (or from yesterday if today isn't done yet) */
+function gridStreak() {
+  const gh = S.gh || {};
+  let n = 0,
+    k = gh[daysAgo(0)] ? 0 : 1;
+  while (gh[daysAgo(k)]) {
+    n++;
+    k++;
+  }
+  return n;
+}
+/* average score over the finished days of the last 7, or null */
+function gridAvg7() {
+  const v = [0, 1, 2, 3, 4, 5, 6].map(k => (S.gh || {})[daysAgo(k)]).filter(x => x);
+  return v.length ? Math.round(v.reduce((t, x) => t + x[0], 0) / v.length) : null;
+}
+function gridFinished(g) {
+  recordGrid(g);
+  S.st.grids++;
+  careerGrid(gridScore(g));
+}
 const hintCost = n => TUNING.gridHint.slice(0, n).reduce((a, b) => a + b, 0);
 const gridScore = g => Math.max(0, Math.round(g.c.reduce((t, v, k) => t + (v ? 100 / 9 - hintCost((g.h || [])[k] || 0) : 0), 0)));
 const gridHints = g => (g.h || []).reduce((t, n, k) => t + (g.c[k] ? n : 0), 0);
@@ -99,8 +131,7 @@ function gridPick(i) {
     sfx.goal();
     $("over").innerHTML = "";
     if (g.c.every(x => x) || g.left <= 0) {
-      S.st.grids++;
-      careerGrid(gridScore(g));
+      gridFinished(g);
     }
     save(true);
     render();
@@ -109,8 +140,7 @@ function gridPick(i) {
     sfx.no();
     save();
     if (g.left <= 0) {
-      S.st.grids++;
-      careerGrid(gridScore(g));
+      gridFinished(g);
       save(true);
       $("over").innerHTML = "";
       render();
@@ -135,7 +165,8 @@ function renderGrid() {
     done = g.left <= 0 || g.c.every(x => x),
     got = g.c.filter(x => x).length,
     obs = got ? Math.round(g.r.reduce((s, x) => s + x, 0) / got) : 0;
-  let h = `<div class="hd"><h2>Daily Grid No. ${gridNo()}</h2><span class="eyebrow">${done ? "Finished" : g.left + " guesses left"}</span></div><div class="grid"><div></div>${GRID.cols.map(c => `<div class="gh">${esc(catLabel(c))}</div>`).join("")}`;
+  if (done && !(S.gh || {})[dayKey()]) recordGrid(g); // a grid finished before history existed
+  let h = `<div class="hd"><h2>Daily Grid No. ${gridNo()}</h2><span class="eyebrow">${done ? "Finished" : g.left + " guesses left"}${gridStreak() >= 2 ? " · 🔥 " + gridStreak() + " days" : ""}</span></div><div class="grid"><div></div>${GRID.cols.map(c => `<div class="gh">${esc(catLabel(c))}</div>`).join("")}`;
   GRID.rows.forEach((a, ri) => {
     h += `<div class="gh">${esc(catLabel(a))}</div>`;
     GRID.cols.forEach((b, ci) => {
@@ -152,7 +183,7 @@ function renderGrid() {
   if (done) {
     const sc = gridScore(g),
       nh = gridHints(g);
-    h += `<div class="panel pad gscore"><div class="gsc"><span class="eyebrow">Grid score</span><b class="led">${sc}%</b><span class="note">${sc === 100 ? "Perfect. Nine from nine, no help." : got === 9 ? `All nine, with ${nh} hint${nh === 1 ? "" : "s"}.` : nh ? `${got} of 9, ${nh} hint${nh === 1 ? "" : "s"} used.` : `${got} of 9, no hints.`}</span></div><div class="statline"><span><b>${got}</b> of 9</span><span>Hints <b>${nh}</b></span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span></div></div>`;
+    h += `<div class="panel pad gscore"><div class="gsc"><span class="eyebrow">Grid score</span><b class="led">${sc}%</b><span class="note">${sc === 100 ? "Perfect. Nine from nine, no help." : got === 9 ? `All nine, with ${nh} hint${nh === 1 ? "" : "s"}.` : nh ? `${got} of 9, ${nh} hint${nh === 1 ? "" : "s"} used.` : `${got} of 9, no hints.`}</span></div><div class="statline"><span><b>${got}</b> of 9</span><span>Hints <b>${nh}</b></span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span>${gridAvg7() !== null && Object.keys(S.gh).length > 1 ? `<span>Avg 7 days <b>${gridAvg7()}%</b></span>` : ""}</div></div>`;
     h += `<div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the best-known answer. A new grid lands at midnight.</p>`;
   }
   $("main").innerHTML = h;

@@ -94,7 +94,7 @@ already made here. If a task needs a decision that isn't in this file, **stop an
 
 ## Phase 2: Grid becomes a habit
 
-- [ ] **G3. Grid history and streak.** New save field `S.gh` = `{ "2026-11-18": [score, got, hints], ... }`, last 60
+- [x] **G3. Grid history and streak.** New save field `S.gh` = `{ "2026-11-18": [score, got, hints], ... }`, last 60
   days only, written when a grid finishes (same place `careerGrid` is called). `mergeSaves`: union by day, keep the
   entry with the higher score. Grid streak = consecutive days finished up to today or yesterday. Show on the Grid
   screen header ("🔥 4 days") and the finished panel ("Avg last 7: 71%"), add streak to `shareGrid()` when ≥ 2.

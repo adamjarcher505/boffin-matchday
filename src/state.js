@@ -95,6 +95,7 @@ const fresh = () => ({
   album: {},
   recent: [],
   grid: {},
+  gh: {}, // grid history: { "yyyy-mm-dd": [score, squares, hints] }, last 60 days
   st: { m: 0, w: 0, goals: 0, deep: 0, bestDiv: 0, grids: 0 },
   sound: true,
   salt: Math.floor(Math.random() * 1e9),
@@ -163,7 +164,7 @@ const hydrate = o => {
   s.sk = Object.assign({ d: "", n: 0, best: 0 }, o.sk || {});
   s.ob = Object.assign({ d: "", p: {}, done: {}, all: false }, o.ob || {});
   if (!s.sn || typeof s.sn !== "object") s.sn = { ty: {} };
-  ["album", "grid", "chain", "g", "ts", "lb", "md", "ct"].forEach(k => {
+  ["album", "grid", "gh", "chain", "g", "ts", "lb", "md", "ct"].forEach(k => {
     if (!s[k] || typeof s[k] !== "object") s[k] = {};
   });
   ["form", "played", "recent", "hist"].forEach(k => {
@@ -223,6 +224,13 @@ function mergeSaves(a, b) {
       y = other.chain[k];
     if (!x || (y.done && !x.done) || (y.c || []).length > (x.c || []).length) m.chain = { [k]: y };
   });
+  // Daily Grid history: every day either device finished, the better score where both did
+  m.gh = Object.assign({}, other.gh || {});
+  Object.keys(base.gh || {}).forEach(k => {
+    const y = m.gh[k];
+    m.gh[k] = !y || base.gh[k][0] >= y[0] ? base.gh[k] : y;
+  });
+  Object.keys(m.gh).sort().slice(0, -60).forEach(k => delete m.gh[k]);
   m.lb = maxMap(base.lb, other.lb);
   m.ts = Object.assign({}, other.ts || {});
   Object.keys(base.ts || {}).forEach(k => {

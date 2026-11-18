@@ -39,7 +39,7 @@ function shareGrid() {
         })
         .join("")
     )
-    .join("\n")}\nScore ${gridScore(g)}% · ${got}/9${nh ? " · " + nh + (nh === 1 ? " hint" : " hints") : ""} · Obscurity ${obs}%\n${shareTail()}`;
+    .join("\n")}\nScore ${gridScore(g)}% · ${got}/9${nh ? " · " + nh + (nh === 1 ? " hint" : " hints") : ""} · Obscurity ${obs}%${gridStreak() >= 2 ? " · 🔥" + gridStreak() : ""}\n${shareTail()}`;
 }
 function shareSeason(n) {
   const out = n.to > n.from ? "PROMOTED to " + DIVS[n.to] + " ⬆️" : n.to < n.from ? "Relegated to " + DIVS[n.to] + " ⬇️" : "Staying in " + DIVS[n.to];
