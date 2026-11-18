@@ -192,7 +192,7 @@ const TYPES = {
   order: { n: "In Order", rule: "", t: 35, typed: 0 },
   flags: { n: "Flag XI", rule: "", t: 30, typed: 0 },
   exact: { n: "Exact Score", rule: "", t: 35, typed: 0 },
-  pin: { n: "Pin the Ground", rule: "", t: 45, typed: 0 },
+  pin: { n: "Pin the Ground", rule: "", t: 60, typed: 0 },
   gboot: { n: "Golden Boot", rule: "", t: 25, typed: 1 } // 17/11/2026: from the 1X2 database; only offered while its data is loaded
 };
 /* added 14/11/2026: makers and runtimes in src/rounds-more.js */

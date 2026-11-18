@@ -789,7 +789,7 @@ Object.assign(RUN, {
   pin(spec) {
     const gs = spec.qs.map(i => GROUNDS[i]).filter(Boolean),
       N = gs.length,
-      R = { k: 0, pts: 0, res: [], dists: [], over: !N, shown: false, lock: false, pin: null, view: null, map: null, mc: pinNoMap(), picked: -1, rule: `Drop a pin on each home ground. Within ${TUNING.pinNear}km is 2 points, within ${TUNING.pinFar}km is 1. Get ${spec.target} of ${N * 2}.` };
+      R = { k: 0, pts: 0, res: [], dists: [], over: !N, shown: false, lock: false, pin: null, view: null, map: null, mc: pinNoMap(), picked: -1, say: [], rule: `Drop a pin on each home ground. Within ${TUNING.pinNear}km is 2 points, within ${TUNING.pinFar}km is 1. Get ${spec.target} of ${N * 2}.` };
     R.cover = "Three home grounds, satellite view, no names. You'll see which clubs when the clock starts.";
     const far = d => (d < 1 ? Math.round(d * 1000) + " m" : d.toFixed(1) + " km");
     const mcOpts = () => pinOptions(spec, R.k);
@@ -809,10 +809,19 @@ Object.assign(RUN, {
       const verdict = R.shown ? `<p class="exv ${R.res[R.k] === 2 ? "right" : R.res[R.k] === 1 ? "half" : "wrong"}">${esc(g.s)} · ${far(R.dists[R.k])} away · ${R.res[R.k] === 2 ? "2 points" : R.res[R.k] === 1 ? "1 point" : "0 points"}</p>` : "";
       return (
         pips +
-        `<p class="ask">${esc(g.c)} home ground<span>Tap the map to drop your pin</span></p><div id="pinmap" class="pinmap" aria-label="Satellite map, no labels"></div>` +
+        `<p class="ask">${esc(g.c)} home ground<span>${R.shown ? esc(R.say[R.k] || "") : "Tap the map to drop your pin"}</span></p><div class="pinbox"><div id="pinmap" class="pinmap" aria-label="Satellite map, no labels"></div>${R.shown ? "" : `<span class="pinhint" id="pinhint">Zoom in to drop it accurately</span>`}</div>` +
         verdict +
-        (R.shown ? "" : `<button class="btn" data-act="tap" data-v="lock" ${R.pin ? "" : "disabled"}>Lock it in</button>`)
+        (R.shown ? "" : `<button class="btn" data-act="tap" data-v="lock" ${R.pin && R.canLock() ? "" : "disabled"}>Lock it in</button>`)
       );
+    };
+    // the pin can only be locked once the map is zoomed in (a tap at country zoom is miles wide), or after 20 s so nobody gets stuck
+    const zoomOk = () => !R.map || R.map.getZoom() >= TUNING.pinZoom || (typeof M !== "undefined" && M && Date.now() - M.t0 >= TUNING.pinZoomWait * 1000);
+    R.canLock = zoomOk;
+    R.syncLock = () => {
+      const b = document.querySelector('[data-act="tap"][data-v="lock"]'),
+        h = document.getElementById("pinhint");
+      if (b) b.disabled = !(R.pin && zoomOk());
+      if (h) h.hidden = zoomOk();
     };
     // called by the match engine after every paint: builds the satellite map in the new container
     R.mount = () => {
@@ -843,7 +852,11 @@ Object.assign(RUN, {
       });
       if (R.view) map.setView(R.view.c, R.view.z);
       else map.setView([53.6, -2.4], 6);
-      map.on("moveend", () => (R.view = { c: map.getCenter(), z: map.getZoom() }));
+      map.on("moveend", () => {
+        R.view = { c: map.getCenter(), z: map.getZoom() };
+        R.syncLock();
+      });
+      if (!R.shown) setTimeout(R.syncLock, Math.max(0, TUNING.pinZoomWait * 1000 - (typeof M !== "undefined" && M ? Date.now() - M.t0 : 0)) + 60);
       if (R.pin && !R.shown) R.marker = L.circleMarker(R.pin, { radius: 8, color: "#ffb000", weight: 3, fillColor: "#ffb000", fillOpacity: 0.9 }).addTo(map);
       if (!R.shown) {
         map.on("click", e => {
@@ -851,8 +864,7 @@ Object.assign(RUN, {
           R.pin = [e.latlng.lat, e.latlng.lng];
           if (R.marker) R.marker.remove();
           R.marker = L.circleMarker(R.pin, { radius: 8, color: "#ffb000", weight: 3, fillColor: "#ffb000", fillOpacity: 0.9 }).addTo(map);
-          const b = document.querySelector('[data-act="tap"][data-v="lock"]');
-          if (b) b.disabled = false;
+          R.syncLock();
         });
       } else {
         // reveal: the real ground in green, your pin, and a line between them
@@ -898,6 +910,7 @@ Object.assign(RUN, {
         const d = gKm(R.pin, [g.la, g.ln]);
         p = pinPoints(d);
         R.dists.push(d);
+        R.say[R.k] = pickR(TALK.pin.find(x => d <= x[0])[1], Math.random);
       }
       R.res.push(p);
       R.pts += p;

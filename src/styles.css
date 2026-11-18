@@ -1079,3 +1079,8 @@ tr[data-act]:not(.me):hover td{background:rgba(255,255,255,.03)}
 /* 18/11/2026: Daily Grid weekday difficulty line */
 .gday{margin:-4px 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--amber)}
 button.gc{cursor:pointer}
+
+/* 18/11/2026: Pin the Ground, "zoom in" nudge sits over the map so it costs no height */
+.pinbox{position:relative}
+.pinhint{position:absolute;left:8px;right:8px;bottom:14px;z-index:500;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.6);padding:5px 8px;border-radius:6px;pointer-events:none}
+.pinhint[hidden]{display:none}

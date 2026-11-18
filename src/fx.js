@@ -166,6 +166,8 @@ const myCrest = () => crest(S.name || "You", (window.BOFFIN_KITS || {})[S.club])
 
 /* ---------- commentary: one line after each chance, read off the real score. Terrace voice, never an invented fact. ---------- */
 const TALK = {
+  // Pin the Ground reveal, by how far off: [up to km, lines]
+  pin: [[0.3, ["On the centre spot.", "Dead centre. Groundsman's work."]], [1.5, ["In the car park.", "Round the corner from the turnstiles."]], [8, ["Right town, wrong street.", "Close enough to hear the roar."]], [50, ["Wrong side of the ring road.", "You'd miss kick-off."]], [1e9, ["Not even the right county.", "Sat nav's packed in."]]],
   lead: ["In front. Don't do anything daft now.", "You lead. The away end's gone quiet.", "Ahead. Now see it out.", "That's put you in front. Deserved, on balance."],
   level: ["Level. Game on.", "Back in it. They don't fancy this now.", "All square. Momentum's yours.", "Pegged them back."],
   clear: ["Daylight between you. Lovely stuff.", "Cruise control. They're chasing shadows.", "That should be that.", "The gaffer's sat down. Always a good sign."],

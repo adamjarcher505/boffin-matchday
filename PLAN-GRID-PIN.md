@@ -131,7 +131,7 @@ already made here. If a task needs a decision that isn't in this file, **stop an
   CLUB[C]`). Never two grounds in one round within 3 km of each other at tiers 0–1 (no Arsenal + Spurs on Sunday
   League). Update P1 tests for the new pools.
 
-- [ ] **P5. Map feel.** Timer `TYPES.pin.t` 45 → 60. Show "Zoom in to drop it accurately" over the map while zoom
+- [x] **P5. Map feel.** Timer `TYPES.pin.t` 45 → 60. Show "Zoom in to drop it accurately" over the map while zoom
   < 11, and keep the Lock button disabled until zoom ≥ 11 *or* 20 s have passed (so nobody's stuck). Reveal line
   gets banter by distance: < 0.3 km "On the centre spot.", < 1.5 km "In the car park.", < 8 km "Right town, wrong
   street.", < 50 km "Wrong side of the ring road.", else "Not even the right county." Put lines in `TALK` in fx.js.

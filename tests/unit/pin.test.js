@@ -95,3 +95,18 @@ test("the generator version moved on when the pin pool changed", () => {
   const g = load();
   assert.ok(/^v7\./.test(g.run("QV")), g.run("QV"));
 });
+
+test("the pin can't be locked at country zoom until 20 s have passed, banter follows the distance, and the clock is 60 s", () => {
+  const g = load({ localStorage: { "boffin-matchday-v1": JSON.stringify({ v: 2, made: true, name: "T", club: "Arsenal", salt: 1 }) } });
+  assert.strictEqual(g.run("TYPES.pin.t"), 60);
+  g.run(`startTraining("pin"); takeChance(); M.run.mc = false; M.run.map = { getZoom: () => 6, remove() {} }; M.t0 = Date.now()`);
+  assert.strictEqual(g.run("M.run.canLock()"), false, "country zoom, just started");
+  g.run(`M.run.map.getZoom = () => 11`);
+  assert.strictEqual(g.run("M.run.canLock()"), true, "street zoom");
+  g.run(`M.run.map.getZoom = () => 6; M.t0 = Date.now() - 21000`);
+  assert.strictEqual(g.run("M.run.canLock()"), true, "20 s gone: never stuck");
+  // banter: every band has lines, and the right band is picked
+  assert.deepStrictEqual(JSON.parse(g.run(`JSON.stringify([0.1, 1, 5, 20, 400].map(d => TALK.pin.find(x => d <= x[0])[1].length > 0))`)), [true, true, true, true, true]);
+  g.run(`M.t0 = Date.now(); M.run.map = null; M.run.shown = false; M.run.lock = false; (() => { const gd = GROUNDS[curSpec().qs[0]]; M.run.pin = [gd.la, gd.ln]; M.run.onTap("lock"); })()`);
+  assert.ok(["On the centre spot.", "Dead centre. Groundsman's work."].includes(g.run("M.run.say[0]")), g.run("M.run.say[0]"));
+});
