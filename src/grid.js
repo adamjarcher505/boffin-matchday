@@ -115,7 +115,12 @@ function gridPick(i) {
       $("over").innerHTML = "";
       render();
     } else {
-      msg(PL[i][0] + "? " + pickR(SAY.no) + " " + g.left + " guesses left.", "bad");
+      // say which half failed: he fits one header but not the other
+      const fa = fits(i, a),
+        fb = fits(i, b),
+        miss = fa ? b : a,
+        why = fa === fb ? "" : miss.t === "n" ? " isn't from " + NAT[miss.v] + "." : " never " + catPhrase(miss) + ".";
+      msg(PL[i][0] + (why ? "?" + why : "? " + pickR(SAY.no)) + " " + g.left + " guesses left.", "bad");
       const q = $("q");
       if (q) {
         q.value = "";
@@ -139,7 +144,7 @@ function renderGrid() {
       h += v
         ? `<div class="gc done${g.h[k] ? " hinted" : ""}"><b>${esc(v.split("|")[0])}</b><span>${g.r[k]}% obscure</span>${g.h[k] ? `<i class="hintdot" title="${g.h[k]} hint${g.h[k] > 1 ? "s" : ""}">${g.h[k] > 1 ? "2 hints" : "hint"}</i>` : ""}</div>`
         : done
-          ? `<div class="gc"><span style="color:var(--mute)">${esc((x => (x.length ? PL[x[0]][0] : ""))(validSet(a, b)))}</span></div>`
+          ? `<div class="gc"><span style="color:var(--mute)">${esc((x => (x.length ? PL[x[0]][0] : ""))(validSet(a, b).slice().sort((p, q) => fame(q) - fame(p))))}</span></div>`
           : `<button class="gc open" data-act="cell" data-v="${k}" aria-label="${esc(catLabel(a))} and ${esc(catLabel(b))}"><span class="plus">+</span></button>`;
     });
   });
@@ -148,7 +153,7 @@ function renderGrid() {
     const sc = gridScore(g),
       nh = gridHints(g);
     h += `<div class="panel pad gscore"><div class="gsc"><span class="eyebrow">Grid score</span><b class="led">${sc}%</b><span class="note">${sc === 100 ? "Perfect. Nine from nine, no help." : got === 9 ? `All nine, with ${nh} hint${nh === 1 ? "" : "s"}.` : nh ? `${got} of 9, ${nh} hint${nh === 1 ? "" : "s"} used.` : `${got} of 9, no hints.`}</span></div><div class="statline"><span><b>${got}</b> of 9</span><span>Hints <b>${nh}</b></span><span>Obscurity <b>${obs}%</b></span><span><b>+${g.xp}</b> XP</span></div></div>`;
-    h += `<div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the answer most people would have given. A new grid lands at midnight.</p>`;
+    h += `<div class="row"><button class="btn line" data-act="sharegrid">Copy result</button><a class="btn line" href="https://wa.me/?text=${encodeURIComponent(shareGrid())}" target="_blank" rel="noopener">WhatsApp</a></div><p class="note">Greyed squares show the best-known answer. A new grid lands at midnight.</p>`;
   }
   $("main").innerHTML = h;
 }

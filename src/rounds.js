@@ -1,9 +1,18 @@
 "use strict";
 /* ============ rounds.js: how each question type plays (RUN), plus the long-form desktop modes ============ */
 /* ============ round runtimes ============ */
+/* 0 = the obvious answer, 1 = the deepest cut. Ranked by fame (18/11/2026), not by position in the list: players the 1X2 database adds are
+   appended to the end of validSetX, and used to score as deep cuts however famous they were. Ties keep list order. */
 function rarity(valid, i) {
-  const k = valid.indexOf(i);
-  return valid.length > 1 && k >= 0 ? k / (valid.length - 1) : 0;
+  if (valid.length < 2 || !valid.includes(i)) return 0;
+  const f = PL[i][4];
+  let rank = 0,
+    seen = false;
+  for (const j of valid) {
+    if (j === i) seen = true;
+    else if (PL[j][4] > f || (PL[j][4] === f && !seen)) rank++;
+  }
+  return rank / (valid.length - 1);
 }
 const rarText = x => (x >= 0.7 ? pickR(SAY.deep) : x >= 0.35 ? "A decent pull." : "The obvious one. Still counts.");
 function nameOne(spec, valid, intro) {

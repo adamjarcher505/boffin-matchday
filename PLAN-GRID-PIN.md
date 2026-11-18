@@ -81,14 +81,14 @@ already made here. If a task needs a decision that isn't in this file, **stop an
   Done when: `?offline` with network blocked in Playwright plays the round to the end (add a case to
   `tests/browser/run.js` that aborts `server.arcgisonline.com` requests).
 
-- [ ] **G1. Real obscurity.** In `gridPick` (and `nameOne`'s `rarity` call for match Grid rounds), rank the valid
+- [x] **G1. Real obscurity.** In `gridPick` (and `nameOne`'s `rarity` call for match Grid rounds), rank the valid
   set by `fame()` descending before calling `rarity`, so a database-added famous player isn't scored as a deep
   cut. Ties keep current order. Stored `g.r` for past squares are left alone. Also make the finished-grid greyed
   name the most famous answer explicitly (sort by fame) and change the note from "the answer most people would
   have given" to "the best-known answer" until G8 gives real numbers.
   Unit test: for a cell where `validSetX` adds a player, that player's rarity matches his fame rank, not ~1.
 
-- [ ] **G2. Say why a guess missed.** In `gridPick`'s wrong branch, if the player fits one category, say
+- [x] **G2. Say why a guess missed.** In `gridPick`'s wrong branch, if the player fits one category, say
   "`{name}` never {catPhrase of the other}" (use `catPhrase` from core.js, e.g. "never played for Chelsea");
   if he fits neither, keep the current line. Still costs a guess. Text only.
 
